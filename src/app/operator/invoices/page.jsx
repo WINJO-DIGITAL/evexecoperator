@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import {
   FileText, Plus, X, Printer, Trash2, Check, Send, CircleDollarSign, Clock,
-  MapPin, Plane, Users, Briefcase, Car, CalendarClock, ImageDown,
+  MapPin, ImageDown,
   Calendar, CreditCard, Gem, Phone, Mail, Globe, Loader2, Search,
 } from "lucide-react";
 import { useInvoices, computeTotals } from "@/hooks/operator/useInvoices";
