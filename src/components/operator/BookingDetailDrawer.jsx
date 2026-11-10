@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import {
   X, Phone, Mail, Plane, MapPin, Clock, Car, PoundSterling,
-  User, AlertTriangle, FileText, ChevronDown, Check, Edit3, Loader2, RefreshCw,
+  User, AlertTriangle, ChevronDown, Check, Edit3, Loader2, RefreshCw,
   CreditCard, Trash2, ShieldCheck, Send, Users, Briefcase, Calendar, RotateCcw, XCircle,
 } from "lucide-react";
 import { bookingStatusColor } from "@/lib/operator/statusColor";

@@ -42,7 +42,6 @@ function defaultDirection(journeyType?: string | null): Direction {
 export default function FlightVerificationCard({
   bookingId,
   flightNumberInput,
-  airportInput,
   journeyType,
 }: FlightVerificationCardProps) {
   const { verification, loading, busy, error, verify } = useFlightVerification(bookingId);
