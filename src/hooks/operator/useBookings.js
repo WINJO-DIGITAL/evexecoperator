@@ -14,6 +14,10 @@ import {
 import { markBookingCreated } from "@/lib/operator/recentBookingRefs";
 import { looksLikeAirport } from "@/lib/bookingUtils";
 import { ukToIso } from "@/lib/dates";
+import { ukDateDaysAgo, OPERATIONAL_DAYS_BACK } from "@/lib/operator/ukDate";
+
+// Re-exported: screens import these from here.
+export { ukDateDaysAgo, OPERATIONAL_DAYS_BACK };
 
 function compact(value) {
   return value ? String(value).split(",")[0] : null;
@@ -63,6 +67,9 @@ export function shapedBooking(row) {
     driverId: row.driver_id ?? row.assigned_driver_id ?? null,
     // Pence kept (£87.50): screens, invoices and the edit form parse this back.
     price: row.quoted_price ? `£${Number(row.quoted_price).toFixed(Number.isInteger(Number(row.quoted_price)) ? 0 : 2)}` : "TBC",
+    // The fare as a number (null when not priced), for totals that must not
+    // lose the pence (calendar revenue).
+    priceValue: row.quoted_price == null || row.quoted_price === "" ? null : Number(row.quoted_price),
     status: row.status,
     source: row.source ?? null,
     operatorResponse: row.operator_response ?? null,
@@ -86,15 +93,7 @@ export function shapedBooking(row) {
 // more than 100, today's and upcoming jobs fell off the first page.
 const PAGE_SIZE = 200;
 const ALL_PAGE_SIZE = 2000;
-export const OPERATIONAL_DAYS_BACK = 14;
 
-/** UK calendar date `daysBack` days before today, as YYYY-MM-DD. */
-export function ukDateDaysAgo(daysBack, now = new Date()) {
-  const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/London" }).format(now); // YYYY-MM-DD
-  const d = new Date(`${today}T12:00:00Z`);
-  d.setUTCDate(d.getUTCDate() - daysBack);
-  return d.toISOString().slice(0, 10);
-}
 
 const SELECT = "*, drivers!driver_id(name)";
 

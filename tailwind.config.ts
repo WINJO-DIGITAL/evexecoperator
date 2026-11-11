@@ -48,18 +48,59 @@ const config: Config = {
           800: "#553f16",
           900: "#2e210a",
         },
+        // Operator calendar (Bookings → Calendar). Warm paper, deep ink and a
+        // muted brass accent; status colours are the only saturated hues.
+        // Mirrored in src/components/operator/calendar/tokens.js.
+        cal: {
+          paper: "#F6F2EA",
+          sheet: "#FFFDF8",
+          well: "#EEE7D9",
+          line: "#E5DDCC",
+          rule: "#D2C7B1",
+          ink: "#141821",
+          ink2: "#3A3F4A",
+          muted: "#6D6656",
+          faint: "#8A8170",
+          brass: "#9C7B34",
+          "brass-ink": "#76591F",
+          "brass-soft": "#F2E8CF",
+          ok: "#2F6B50",
+          "ok-soft": "#E3EEE6",
+          alert: "#A3402C",
+          "alert-soft": "#F7E4DC",
+          road: "#2E5C88",
+          "road-soft": "#E1EAF3",
+        },
       },
       fontFamily: {
         // One font everywhere (Manrope, src/app/globals.css), including the
-        // serif and monospace utilities.
+        // serif and monospace utilities. The calendar's heading font
+        // (font-display) is Manrope too.
         sans: ["Manrope", "system-ui", "sans-serif"],
         serif: ["Manrope", "system-ui", "sans-serif"],
         mono: ["Manrope", "system-ui", "sans-serif"],
+        display: ["Manrope", "system-ui", "sans-serif"],
+      },
+      // Operator calendar type scale and radii (see calendar/tokens.js).
+      fontSize: {
+        "cal-label": ["10.5px", { lineHeight: "14px", letterSpacing: "0.09em" }],
+        "cal-xs": ["12px", { lineHeight: "16px" }],
+        "cal-sm": ["13px", { lineHeight: "18px" }],
+        "cal-base": ["14px", { lineHeight: "19px" }],
+        "cal-time": ["15px", { lineHeight: "19px" }],
+        "cal-lg": ["18px", { lineHeight: "23px" }],
+        "cal-xl": ["24px", { lineHeight: "28px", letterSpacing: "-0.01em" }],
+        "cal-2xl": ["30px", { lineHeight: "34px", letterSpacing: "-0.015em" }],
+      },
+      borderRadius: {
+        cal: "6px",
+        "cal-lg": "10px",
       },
       boxShadow: {
         "gold-sm": "0 0 12px rgba(201,165,80,0.15)",
         "gold-md": "0 0 24px rgba(201,165,80,0.25)",
         "card":    "0 4px 20px rgba(15,27,51,0.08)",
+        "cal-pop": "0 12px 32px -12px rgba(20,24,33,0.28)",
       },
       backgroundImage: {
         "gold-gradient": "linear-gradient(135deg, #C9A550 0%, #E8C97A 50%, #C9A550 100%)",

@@ -6,8 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { CalendarDays, Columns3, List } from "lucide-react";
 import BookingsList from "@/components/operator/BookingsList";
 import BookingsBoard from "@/components/operator/BookingsBoard";
-import { CalendarApp } from "@/components/CalendarApp";
-import { ToastProvider } from "@/hooks/useToast";
+import OperatorCalendar from "@/components/operator/calendar/OperatorCalendar";
 
 // One Bookings screen with three views of the same bookings (was Dispatch and
 // Calendar). The view is in the URL (?view=list|calendar|board) so links and
@@ -49,11 +48,7 @@ function BookingsPageContent() {
       </div>
       {view === "list" && <BookingsList key={q ?? ""} />}
       {view === "board" && <BookingsBoard />}
-      {view === "calendar" && (
-        <ToastProvider>
-          <CalendarApp />
-        </ToastProvider>
-      )}
+      {view === "calendar" && <OperatorCalendar />}
     </div>
   );
 }
