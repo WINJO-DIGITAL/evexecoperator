@@ -7,9 +7,11 @@
 // is enough. Dates DD/MM/YYYY, times HH:MM (UK).
 
 import { renderEmail, renderText, when, longDate, hhmm, relativeDay, esc, mapsSearch, mapsDirections, calendarUrl } from './template.js';
-import { getStops, getPrice, paymentLine, needsPayment } from './format.js';
+import { getStops, getPrice, onPriceList, paymentLine, needsPayment } from './format.js';
+import * as P from './cancellation.js';
+import { withBrandOf, currentBrand, telNumber } from './brand.js';
 
-const SITE = () => (process.env.EVEXEC_SITE_URL || 'https://www.evexec.co.uk').replace(/\/$/, '');
+const SITE = () => (process.env.EVEXEC_SITE_URL || currentBrand().site).replace(/\/$/, '');
 const first = (n) => String(n || '').trim().split(/\s+/)[0] || 'there';
 const oneLine = (s) => String(s == null ? '' : s).replace(/[\r\n]+/g, ', ').replace(/\s+/g, ' ').trim();
 const money = (n) => (n == null || n === '' || isNaN(Number(n)) ? null : `£${Number(n).toFixed(2)}`);
@@ -60,12 +62,38 @@ function journeySections(b, opts = {}) {
   out.push({ heading: 'Booking', rows: pay });
   return out;
 }
+// The booking's own cancellation deadlines, from the terms version it is held
+// to (website terms section 5). Quoted bookings point to their quote instead.
+// Only deadlines still ahead are listed; if a charge already applies, it says so.
+function cancellationSection(b, now) {
+  const at = now || new Date();
+  const version = P.policyVersion(b);
+  const terms = `${SITE()}${P.policyPath(version)}#cancellation`;
+  if (!onPriceList(b) && Number(getPrice(b)) > 300) {
+    return { heading: 'Cancellation', rows: [['Charges', 'As set out in your quote, or our quoted-booking schedule if the quote does not say.'], ['Terms', terms]] };
+  }
+  const pickup = P.pickupInstant(b.travel_date, b.travel_time);
+  if (!pickup) return null;
+  const starts = P.chargeStarts(version, pickup);
+  const rows = [];
+  const due = starts.filter((s) => s.from <= at);
+  if (due.length) rows.push(['If you cancel now', `${due[due.length - 1].pct}% of the fare`]);
+  else rows.push(['Free cancellation until', P.ukStamp(starts[0].from)]);
+  starts.filter((s) => s.from > at).forEach((s) => {
+    const full = s.pct === 100;
+    rows.push([full ? 'Full fare from' : `${s.pct}% of the fare from`, `${P.ukStamp(s.from)}${full && version === '3' ? ', or once your driver sets off' : ''}`]);
+  });
+  if (b.return_journey && b.return_date) rows.push(['Return journey', 'The same charges, counted from its own pickup time']);
+  rows.push(['Terms', `Version ${version}: ${terms}`]);
+  return { heading: 'Cancellation', rows };
+}
 function whenFor(b, now, sub) {
   return { date: longDate(b.travel_date), time: hhmm(b.travel_time), text: when(b.travel_date, b.travel_time), relative: relativeDay(b.travel_date, now), sub: sub === undefined ? `Pickup from ${shortPlace(from(b))}` : sub };
 }
 // Add-to-calendar link for the customer's journey (UK time).
 function calendarLink(b) {
-  const url = calendarUrl({ title: `EV Exec transfer: ${shortRoute(b)}`, date: b.travel_date, time: b.travel_time, location: from(b), details: `Booking ${b.ref}. Pickup ${from(b)}, drop-off ${to(b)}. Questions: 07721 070370.` });
+  const brand = currentBrand();
+  const url = calendarUrl({ title: `${brand.name ? `${brand.name} ` : ''}transfer: ${shortRoute(b)}`, date: b.travel_date, time: b.travel_time, location: from(b), details: [`Booking ${b.ref}. Pickup ${from(b)}, drop-off ${to(b)}.`, brand.phone && `Questions: ${brand.phone}.`].filter(Boolean).join(' ') });
   return url ? { label: 'Add to calendar', url } : null;
 }
 function driverRows(d) {
@@ -107,7 +135,7 @@ function bookingConfirmed(b, { payUrl, now } = {}) {
       : ['We remind you a week before and the day before.', 'On the day, your driver texts you when they are on the way.'],
     button: pay ? { label: 'Pay now or choose cash', url: payUrl || bookingPage(b) } : { label: 'View your booking', url: bookingPage(b) },
     links: [calendarLink(b)],
-    sections: journeySections(b),
+    sections: [...journeySections(b), cancellationSection(b, now)].filter(Boolean),
   });
 }
 
@@ -118,7 +146,7 @@ function bookingUnavailable(b) {
     status: { label: 'Not available', tone: 'red' }, title: "Sorry, we can't do this journey",
     when: whenFor(b),
     intro: [`Hi ${first(b.customer_name)}, unfortunately we cannot take this booking. We are sorry for the inconvenience.`, 'No payment has been taken. If a different time would work, call or WhatsApp us and we will do our best to help.'],
-    button: { label: 'WhatsApp us', url: 'https://wa.me/447721070370' },
+    button: telNumber(currentBrand().phone) ? { label: 'WhatsApp us', url: `https://wa.me/${telNumber(currentBrand().phone).replace(/^\+/, '')}` } : undefined,
     sections: [{ heading: 'The journey you asked for', rows: [...journeyRows(b), ['Reference', b.ref]] }],
   });
 }
@@ -171,8 +199,8 @@ function cancelledByUs(b) {
     audience: 'customer', preheader: 'Your booking has been cancelled. If this is unexpected, please call us.',
     status: { label: 'Cancelled', tone: 'red' }, title: 'Your booking has been cancelled',
     when: { ...whenFor(b), relative: null },
-    intro: [`Hi ${first(b.customer_name)}, this booking has been cancelled. If you did not expect this, please call or WhatsApp us straight away on 07721 070370.`],
-    button: { label: 'Call 07721 070370', url: 'tel:+447721070370' },
+    intro: [`Hi ${first(b.customer_name)}, this booking has been cancelled. If you did not expect this, please ${currentBrand().phone ? `call or WhatsApp us straight away on ${currentBrand().phone}` : 'contact us straight away'}.`],
+    button: currentBrand().phone && telNumber(currentBrand().phone) ? { label: `Call ${currentBrand().phone}`, url: `tel:${telNumber(currentBrand().phone)}` } : undefined,
     sections: [{ heading: 'Cancelled journey', rows: [...journeyRows(b), ['Reference', b.ref]] }],
   });
 }
@@ -221,7 +249,7 @@ function driverArrived(b, { driver } = {}) {
 
 function quoteReceived(q) {
   const rows = [['From', q.pickup_location], ['To', q.destination], ['When', q.pickup_date ? when(q.pickup_date, q.pickup_time) : null], ['Passengers', q.passengers ? String(q.passengers) : null], ['Return', q.return_required ? (q.return_date ? when(q.return_date, q.return_time) : 'Yes') : null]];
-  return build('Your EV Exec quote request', {
+  return build(`Your ${currentBrand().name ? `${currentBrand().name} ` : ''}quote request`, {
     audience: 'customer', preheader: 'We will reply with a fixed price, usually the same day.',
     status: { label: 'Quote request received', tone: 'gold' }, title: `Thanks ${first(q.customer_name)}, we'll send your price soon`,
     intro: ['We will reply with a fixed price, usually the same day. Nothing is booked or charged until you say yes.'],
@@ -243,18 +271,18 @@ function paymentLink(b, { url, amount } = {}) {
 }
 
 function invoice(inv) {
-  return build(`Your EV Exec invoice ${inv.number}${inv.total != null ? ` (${money(inv.total)})` : ''}`, {
+  return build(`Your ${currentBrand().name ? `${currentBrand().name} ` : ''}invoice ${inv.number}${inv.total != null ? ` (${money(inv.total)})` : ''}`, {
     audience: 'customer', preheader: `Invoice ${inv.number}${inv.due ? `, due ${longDate(inv.due)}` : ''}.`,
     status: { label: 'Invoice', tone: 'gold' }, title: `Invoice ${inv.number}`,
     when: inv.due ? { text: `Due ${longDate(inv.due)}`, sub: money(inv.total) } : null,
-    intro: [`Hi ${first(inv.customer_name)}, your invoice is attached as a PDF. Thank you for travelling with EV Exec.`, inv.terms],
+    intro: [`Hi ${first(inv.customer_name)}, your invoice is attached as a PDF. Thank you for travelling with ${currentBrand().name || 'us'}.`, inv.terms],
     sections: [{ rows: [['Invoice', inv.number], ['Journey', inv.journey], ['Amount', money(inv.total)], ['Status', inv.status]] }],
   });
 }
 
 function journeyReceipt(b, { amount, driver } = {}) {
   return build(`Your journey receipt: ${longDate(b.travel_date)} (Ref ${b.ref})`, {
-    audience: 'customer', preheader: `Thank you for travelling with EV Exec${amount ? `. Total ${money(amount)}` : ''}.`,
+    audience: 'customer', preheader: `Thank you for travelling with ${currentBrand().name || 'us'}${amount ? `. Total ${money(amount)}` : ''}.`,
     status: { label: 'Journey complete', tone: 'green' }, title: 'Thank you for travelling with us',
     when: null,
     intro: [`Hi ${first(b.customer_name)}, here is your receipt. If you enjoyed the journey, a Google review would really help us.`],
@@ -444,10 +472,79 @@ function staffDriverNotConfirmed(b, { driver } = {}) {
   });
 }
 
-export {
+const builders = {
   requestReceived, bookingConfirmed, bookingUnavailable, paymentReceived, cashChosen, cancelledByCustomer, cancelledByUs,
   reminder, driverOnTheWay, driverArrived, quoteReceived, paymentLink, invoice, journeyReceipt,
   staffNewBooking, staffPayment, staffCustomerCancelled, staffNewQuote, staffDuplicatePayment,
   driverNewJob, driverReminder, driverJobCancelled, driverJobUpdated, driverCustomerReminderDue, driverConfirmPickup, staffDriverNotConfirmed,
   fareText, route, shortRoute,
 };
+
+// Each email builder is built for the business on its first argument (the
+// booking, quote or invoice row's tenant_id); no tenant_id means EV Exec. The
+// three helpers are not emails and are left as they are.
+const HELPERS = new Set(['fareText', 'route', 'shortRoute']);
+const wrapped = Object.fromEntries(
+  Object.entries(builders).map(([name, fn]) => [name, HELPERS.has(name) ? fn : withBrandOf(fn)])
+);
+const requestReceived__branded = wrapped.requestReceived;
+const bookingConfirmed__branded = wrapped.bookingConfirmed;
+const bookingUnavailable__branded = wrapped.bookingUnavailable;
+const paymentReceived__branded = wrapped.paymentReceived;
+const cashChosen__branded = wrapped.cashChosen;
+const cancelledByCustomer__branded = wrapped.cancelledByCustomer;
+const cancelledByUs__branded = wrapped.cancelledByUs;
+const reminder__branded = wrapped.reminder;
+const driverOnTheWay__branded = wrapped.driverOnTheWay;
+const driverArrived__branded = wrapped.driverArrived;
+const quoteReceived__branded = wrapped.quoteReceived;
+const paymentLink__branded = wrapped.paymentLink;
+const invoice__branded = wrapped.invoice;
+const journeyReceipt__branded = wrapped.journeyReceipt;
+const staffNewBooking__branded = wrapped.staffNewBooking;
+const staffPayment__branded = wrapped.staffPayment;
+const staffCustomerCancelled__branded = wrapped.staffCustomerCancelled;
+const staffNewQuote__branded = wrapped.staffNewQuote;
+const staffDuplicatePayment__branded = wrapped.staffDuplicatePayment;
+const driverNewJob__branded = wrapped.driverNewJob;
+const driverReminder__branded = wrapped.driverReminder;
+const driverJobCancelled__branded = wrapped.driverJobCancelled;
+const driverJobUpdated__branded = wrapped.driverJobUpdated;
+const driverCustomerReminderDue__branded = wrapped.driverCustomerReminderDue;
+const driverConfirmPickup__branded = wrapped.driverConfirmPickup;
+const staffDriverNotConfirmed__branded = wrapped.staffDriverNotConfirmed;
+const fareText__branded = wrapped.fareText;
+const route__branded = wrapped.route;
+const shortRoute__branded = wrapped.shortRoute;
+export {
+  requestReceived__branded as requestReceived,
+  bookingConfirmed__branded as bookingConfirmed,
+  bookingUnavailable__branded as bookingUnavailable,
+  paymentReceived__branded as paymentReceived,
+  cashChosen__branded as cashChosen,
+  cancelledByCustomer__branded as cancelledByCustomer,
+  cancelledByUs__branded as cancelledByUs,
+  reminder__branded as reminder,
+  driverOnTheWay__branded as driverOnTheWay,
+  driverArrived__branded as driverArrived,
+  quoteReceived__branded as quoteReceived,
+  paymentLink__branded as paymentLink,
+  invoice__branded as invoice,
+  journeyReceipt__branded as journeyReceipt,
+  staffNewBooking__branded as staffNewBooking,
+  staffPayment__branded as staffPayment,
+  staffCustomerCancelled__branded as staffCustomerCancelled,
+  staffNewQuote__branded as staffNewQuote,
+  staffDuplicatePayment__branded as staffDuplicatePayment,
+  driverNewJob__branded as driverNewJob,
+  driverReminder__branded as driverReminder,
+  driverJobCancelled__branded as driverJobCancelled,
+  driverJobUpdated__branded as driverJobUpdated,
+  driverCustomerReminderDue__branded as driverCustomerReminderDue,
+  driverConfirmPickup__branded as driverConfirmPickup,
+  staffDriverNotConfirmed__branded as staffDriverNotConfirmed,
+  fareText__branded as fareText,
+  route__branded as route,
+  shortRoute__branded as shortRoute,
+};
+

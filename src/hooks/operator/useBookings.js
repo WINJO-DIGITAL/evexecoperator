@@ -65,9 +65,10 @@ export function shapedBooking(row) {
     contactMethod: row.contact_method ?? null,
     driver: row.drivers?.name ?? "Unassigned",
     driverId: row.driver_id ?? row.assigned_driver_id ?? null,
-    price: row.quoted_price ? `£${Number(row.quoted_price).toFixed(0)}` : "TBC",
+    // Pence kept (£87.50): screens, invoices and the edit form parse this back.
+    price: row.quoted_price ? `£${Number(row.quoted_price).toFixed(Number.isInteger(Number(row.quoted_price)) ? 0 : 2)}` : "TBC",
     // The fare as a number (null when not priced), for totals that must not
-    // lose the pence the display string rounds away (calendar revenue).
+    // lose the pence (calendar revenue).
     priceValue: row.quoted_price == null || row.quoted_price === "" ? null : Number(row.quoted_price),
     status: row.status,
     source: row.source ?? null,
@@ -96,6 +97,35 @@ const ALL_PAGE_SIZE = 2000;
 
 const SELECT = "*, drivers!driver_id(name)";
 
+// The note that marks an automatically created return leg. Its opening words
+// are what the website, the email builders and the invoice trigger look for
+// (/^Return leg created automatically/), so keep them exactly.
+/** Whether `b` (a shaped booking) is the automatically created return leg of booking `outboundRef`. */
+export function isReturnLegOf(b, outboundRef) {
+  const notes = String(b?.notes || "");
+  return /^Return leg created automatically/i.test(notes) && notes.includes(`Outbound ref: ${outboundRef}`);
+}
+
+export function returnLegNote(outboundRef, totalPrice) {
+  return [
+    "Return leg created automatically from return booking.",
+    totalPrice ? `Original return fare: £${totalPrice}.` : null,
+    `Outbound ref: ${outboundRef}`,
+  ].filter(Boolean).join(" ");
+}
+
+const RETURN_LEG_MARKER = /^Return leg created automatically from return booking\.(?: Original return fare: £[\d.]+\.)?(?: Outbound ref: \S+)?/i;
+
+/** New notes for a booking, keeping a return leg's marker sentence at the start
+ *  so the leg stays recognised (and unpayable) everywhere. */
+export function keepReturnLegMarker(oldNotes, newNotes) {
+  const marker = String(oldNotes || "").match(RETURN_LEG_MARKER)?.[0];
+  const next = String(newNotes ?? "").trim();
+  if (!marker || next.startsWith(marker)) return next;
+  const rest = next.replace(RETURN_LEG_MARKER, "").trim();
+  return rest ? `${marker}\n${rest}` : marker;
+}
+
 export function useBookings({ scope = "operational" } = {}) {
   const all = scope === "all";
   const pageSize = all ? ALL_PAGE_SIZE : PAGE_SIZE;
@@ -104,7 +134,8 @@ export function useBookings({ scope = "operational" } = {}) {
   // Whether bookings older than the operational window may still exist:
   // unknown until the first loadEarlier(), false once a page comes back short.
   const [hasEarlier, setHasEarlier] = useState(true);
-  const [loading, setLoading] = useState(false);
+  // Starts true when there is a database to ask: the first load begins on mount.
+  const [loading, setLoading] = useState(isConfigured);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
 
@@ -136,20 +167,23 @@ export function useBookings({ scope = "operational" } = {}) {
       .range(from, to)
   ), []);
 
-  const fetchBookings = useCallback(async () => {
-    if (!isConfigured) return;
-    const myId = ++fetchIdRef.current;
-    setLoading(true);
-    try {
-      const forwardN = Math.max(pageSize, forwardLoadedRef.current);
-      const earlierN = earlierLoadedRef.current;
-      const [fwd, early] = await Promise.all([
-        forwardQuery(0, forwardN - 1, true),
-        earlierN > 0 && !all ? earlierQuery(0, earlierN - 1, false) : Promise.resolve({ data: [] }),
-      ]);
-      if (fetchIdRef.current !== myId) return;
-      const err = fwd.error || early.error;
-      if (err) { setError(err.message); return; }
+  // Reads the whole window currently on screen. Sets no state.
+  const queryBookings = useCallback(() => {
+    const forwardN = Math.max(pageSize, forwardLoadedRef.current);
+    const earlierN = earlierLoadedRef.current;
+    return Promise.all([
+      forwardQuery(0, forwardN - 1, true),
+      earlierN > 0 && !all ? earlierQuery(0, earlierN - 1, false) : Promise.resolve({ data: [] }),
+    ]);
+  }, [all, pageSize, forwardQuery, earlierQuery]);
+
+  // Shows a response, unless a newer fetch (numbered after this one) has started.
+  const applyBookings = useCallback((myId, fwd, early) => {
+    if (fetchIdRef.current !== myId) return;
+    const err = fwd.error || early.error;
+    if (err) {
+      setError(err.message);
+    } else {
       const earlierRows = (early.data || []).slice().reverse();
       forwardLoadedRef.current = fwd.data.length;
       earlierLoadedRef.current = earlierRows.length;
@@ -158,10 +192,22 @@ export function useBookings({ scope = "operational" } = {}) {
       // earlier ones already loaded.
       setTotalCount((fwd.count ?? 0) + earlierRows.length);
       setError(null);
-    } finally {
-      if (fetchIdRef.current === myId) setLoading(false);
     }
-  }, [all, pageSize, forwardQuery, earlierQuery]);
+    setLoading(false);
+  }, []);
+
+  const fetchBookings = useCallback(async () => {
+    if (!isConfigured) return;
+    const myId = ++fetchIdRef.current;
+    setLoading(true);
+    try {
+      const [fwd, early] = await queryBookings();
+      applyBookings(myId, fwd, early);
+    } catch (e) {
+      if (fetchIdRef.current === myId) setLoading(false);
+      throw e;
+    }
+  }, [queryBookings, applyBookings]);
 
   const loadMore = useCallback(async () => {
     if (!isConfigured || loadingMore) return;
@@ -201,9 +247,24 @@ export function useBookings({ scope = "operational" } = {}) {
     }
   }, [all, loadingMore, earlierQuery]);
 
+  // First load (and again if the window changes). `loading` already starts
+  // true, so nothing is set until the answer arrives.
   useEffect(() => {
-    fetchBookings();
-  }, [fetchBookings]);
+    if (!isConfigured) return;
+    let cancelled = false;
+    const myId = ++fetchIdRef.current;
+    queryBookings().then(
+      ([fwd, early]) => {
+        if (!cancelled) applyBookings(myId, fwd, early);
+      },
+      () => {
+        if (!cancelled && fetchIdRef.current === myId) setLoading(false);
+      }
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [queryBookings, applyBookings]);
 
   useRealtimeBookings(fetchBookings);
 
@@ -260,10 +321,14 @@ export function useBookings({ scope = "operational" } = {}) {
     const snapshot = bookingsRef.current;
     const rejecting = decision === "rejected";
 
+    // A website return booking is one request: its £0 return leg (notes
+    // "Return leg created automatically … Outbound ref: <ref>") takes the same
+    // decision, so it never waits for a second reply or sends a second email.
+    const isLegOf = (b) => isReturnLegOf(b, id) && !b.operatorResponse;
     setBookings((prev) =>
       prev.map((b) =>
-        b.id === id
-          ? { ...b, operatorResponse: decision, ...(rejecting ? { status: "Cancelled" } : {}) }
+        b.id === id || isLegOf(b)
+          ? { ...b, operatorResponse: decision, ...(rejecting && !["Cancelled", "Completed"].includes(b.status) ? { status: "Cancelled" } : {}) }
           : b
       )
     );
@@ -281,6 +346,14 @@ export function useBookings({ scope = "operational" } = {}) {
         setBookings(snapshot);
         throw new Error(err.message);
       }
+      const legPatch = { operator_response: decision, operator_responded_at: patch.operator_responded_at };
+      const legs = supabase
+        .from("bookings")
+        .update(rejecting ? { ...legPatch, status: "Cancelled" } : legPatch)
+        .like("notes", `Return leg created automatically%Outbound ref: ${id}%`)
+        .is("operator_response", null);
+      const { error: legErr } = rejecting ? await legs.not("status", "in", "(Cancelled,Completed)") : await legs;
+      if (legErr) console.error("Return leg not updated:", legErr.message);
     }
 
     // Notify the customer. Failures here don't roll back the decision.
@@ -358,18 +431,36 @@ export function useBookings({ scope = "operational" } = {}) {
       // Shared customer/meta for both legs. `source: "operator"` tags the booking
       // so the DB trigger sends the customer the confirmation, 24h reminder and
       // status-update SMS (website bookings get theirs from the public site).
+      // The operator made the booking, so it is accepted from the start: only
+      // website requests wait for Accept/Decline. Without this the customer's
+      // booking page showed "Awaiting Confirmation" and refused payment.
       const shared = {
         customer_name:  sanitizeText(form.customer, 120),
         customer_phone: sanitizeText(form.phone, 30),
         customer_email: form.email?.trim() || null,
-        quoted_price:   form.price ? Number(form.price) : null,
         payment_status: "Unpaid",
         source:         "operator",
+        operator_response:     "accepted",
+        operator_responded_at: new Date().toISOString(),
       };
+      const price = form.price ? Number(form.price) : null;
+      const hasReturn = Boolean(form.returnJourney && form.returnDate && form.returnTime);
 
-      // Outbound leg.
+      // Outbound leg. A return booking is stored the way the website stores
+      // one: the outbound carries the whole fare (both ways) and the return
+      // details, so the customer pays once, for the full amount, on one page.
       const ref = await insertLeg({
         ...shared,
+        quoted_price:       price,
+        return_journey:     hasReturn,
+        ...(hasReturn ? {
+          return_pickup:      dropoff,
+          return_destination: pickup,
+          return_airport:     airportSide,
+          return_flight:      form.returnFlight?.trim() || null,
+          return_date:        form.returnDate,
+          return_time:        form.returnTime,
+        } : {}),
         flight_number:      form.flight?.trim() || null,
         direction,
         airport:            airportSide,
@@ -389,29 +480,41 @@ export function useBookings({ scope = "operational" } = {}) {
 
       // Optional return leg — the reverse trip (pickup/drop-off swapped) on the
       // return date/time, created as its own dispatchable job (left unassigned).
+      // It has no price of its own (£0) and the website's return-leg note, so
+      // emails, the payment page, invoices and the DB trigger treat it as paid
+      // with the outbound booking instead of a second payment.
       let returnRef = null;
-      if (form.returnJourney && form.returnDate && form.returnTime) {
+      if (hasReturn) {
         const returnDirection =
           direction === "Airport → Destination"
             ? "Destination → Airport"
             : direction === "Destination → Airport"
             ? "Airport → Destination"
             : "Point to Point";
-        returnRef = await insertLeg({
-          ...shared,
-          flight_number:      form.returnFlight?.trim() || null,
-          direction:          returnDirection,
-          airport:            airportSide,
-          pickup_location:    dropoff,
-          dropoff_address:    pickup,
-          travel_date:        form.returnDate,
-          travel_time:        form.returnTime,
-          pickup_time:        ukToIso(form.returnDate, form.returnTime),
-          driver_id:          null,
-          assigned_driver_id: null,
-          status:             "Unassigned",
-          notes:              `Return leg of ${ref}`,
-        });
+        try {
+          returnRef = await insertLeg({
+            ...shared,
+            flight_number:      form.returnFlight?.trim() || null,
+            direction:          returnDirection,
+            airport:            airportSide,
+            pickup_location:    dropoff,
+            dropoff_address:    pickup,
+            travel_date:        form.returnDate,
+            travel_time:        form.returnTime,
+            pickup_time:        ukToIso(form.returnDate, form.returnTime),
+            driver_id:          null,
+            assigned_driver_id: null,
+            status:             "Unassigned",
+            quoted_price:       0,
+            return_journey:     false,
+            notes:              returnLegNote(ref, price),
+          });
+        } catch (err) {
+          // Don't leave a whole-fare outbound with no return leg: a retry
+          // would create a second payable booking for the same trip.
+          await supabase.from("bookings").delete().eq("ref", ref);
+          throw err;
+        }
         markBookingCreated(returnRef);
       }
 
@@ -456,8 +559,9 @@ export function useBookings({ scope = "operational" } = {}) {
     }
   }, []);
 
-  const updateNotes = useCallback(async (id, notes) => {
+  const updateNotes = useCallback(async (id, rawNotes) => {
     const snapshot = bookingsRef.current;
+    const notes = keepReturnLegMarker(snapshot.find((b) => b.id === id)?.notes, rawNotes);
     setBookings((prev) => prev.map((b) => (b.id === id ? { ...b, notes: notes ?? "" } : b)));
 
     if (!isConfigured) return;
@@ -603,8 +707,12 @@ export function useBookings({ scope = "operational" } = {}) {
     if (!isConfigured) return true;
 
     try {
-      const { error: err } = await supabase.from("bookings").delete().eq("ref", id);
+      const { data: removed, error: err } = await supabase.from("bookings").delete().eq("ref", id).select("ref");
       if (err) throw new Error(err.message);
+      // RLS hides rows this account may not delete: no error, nothing removed.
+      if (Array.isArray(removed) && removed.length === 0) {
+        throw new Error("This booking could not be deleted. Refresh and try again.");
+      }
       return true;
     } catch (err) {
       setBookings(snapshot);

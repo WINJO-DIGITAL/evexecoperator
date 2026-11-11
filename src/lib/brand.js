@@ -1,3 +1,4 @@
+import { DEPLOYMENT_BRAND } from "@/lib/deploymentBrand";
 // A business's look: logo and two colours, from tenants.brand (Settings →
 // Branding, saved by the update_tenant_branding RPC). Used by the sidebar and
 // invoices; the website's customer invoice PDF reads the same fields.
@@ -23,7 +24,7 @@ export function brandFrom(tenant) {
   const colors = b.colors || {};
   const logoUrl = typeof b.logo_url === "string" && b.logo_url ? b.logo_url : null;
   return {
-    name: tenant?.name || "EV Exec",
+    name: tenant?.name || DEPLOYMENT_BRAND.name,
     logoUrl,
     useBuiltInLogo: !logoUrl && (!tenant || tenant.id === EV_EXEC_TENANT_ID),
     primary: isHexColour(colors.primary) ? colors.primary.toUpperCase() : DEFAULT_PRIMARY,

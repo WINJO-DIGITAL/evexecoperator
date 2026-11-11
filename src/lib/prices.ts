@@ -87,16 +87,17 @@ export function fixedOneWayPrice(location: string | null | undefined, airports: 
 }
 
 /**
- * The fixed price for ONE booking leg. The Operator app books a return as two
- * bookings, each invoiced and paid on its own, so each leg carries half the
- * return fare (Manchester return £160 → £80 + £80), matching the website.
+ * The fixed price the customer pays for a booking: the one-way fare, or the
+ * whole return fare for a return. A return is paid once, on the outbound
+ * booking (Manchester return £160 is one £160 payment); its return leg is a
+ * £0 job, matching how the website stores return bookings.
  */
-export function fixedLegPrice(
+export function fixedTripPrice(
   location: string | null | undefined,
   isReturn: boolean,
   airports: AirportPrice[] = AIRPORT_PRICES,
 ): number | null {
   const a = findAirport(location, airports);
   if (!a) return null;
-  return isReturn ? a.ret / 2 : a.oneWay;
+  return isReturn ? a.ret : a.oneWay;
 }

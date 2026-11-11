@@ -17,6 +17,10 @@ const { mockChain, mockSupabase } = vi.hoisted(() => {
     single: vi.fn(),
     insert: vi.fn(),
     update: vi.fn(),
+    like:   vi.fn(),
+    is:     vi.fn(),
+    not:    vi.fn(),
+    delete: vi.fn(),
   };
   Object.values(chain).forEach((fn) => fn.mockReturnValue(chain));
 
@@ -24,6 +28,11 @@ const { mockChain, mockSupabase } = vi.hoisted(() => {
     from:          vi.fn(() => chain),
     channel:       vi.fn(() => ({ on: vi.fn().mockReturnThis(), subscribe: vi.fn() })),
     removeChannel: vi.fn(),
+    auth:          {
+      getSession:         vi.fn(async () => ({ data: { session: { access_token: "t" } } })),
+      getUser:            vi.fn(async () => ({ data: { user: { email: "office@example.com" } }, error: null })),
+      signInWithPassword: vi.fn(async () => ({ error: null })),
+    },
   };
 
   return { mockChain: chain, mockSupabase: client };
@@ -39,7 +48,7 @@ vi.mock("./useRealtimeBookings", () => ({
   useRealtimeDrivers:  vi.fn(),
 }));
 
-import { useBookings, shapedBooking, ukDateDaysAgo, OPERATIONAL_DAYS_BACK } from "./useBookings";
+import { useBookings, shapedBooking, ukDateDaysAgo, OPERATIONAL_DAYS_BACK, isReturnLegOf, keepReturnLegMarker } from "./useBookings";
 
 // ─── Shared setup ─────────────────────────────────────────────────────────────
 
@@ -197,6 +206,51 @@ describe("useBookings — createBooking", () => {
     expect(out.returnRef).not.toBe(out.ref);
   });
 
+  it("marks an operator-made booking as accepted, so it never waits for approval", async () => {
+    const { result } = renderHook(() => useBookings());
+    await act(async () => {
+      await result.current.createBooking(validForm({ returnJourney: true, returnDate: tomorrow(), returnTime: "18:30" }));
+    });
+    for (const [row] of mockChain.insert.mock.calls) {
+      expect(row).toMatchObject({ source: "operator", operator_response: "accepted" });
+      expect(row.operator_responded_at).toEqual(expect.any(String));
+    }
+  });
+
+  it("charges a return once: the whole fare on the outbound, £0 on the return leg", async () => {
+    const { result } = renderHook(() => useBookings());
+    let out;
+    await act(async () => {
+      out = await result.current.createBooking(
+        validForm({ price: 160, returnJourney: true, returnDate: tomorrow(), returnTime: "18:30", returnFlight: "EK018" })
+      );
+    });
+    const [[outbound], [returnLeg]] = mockChain.insert.mock.calls;
+    // Outbound: £160 and the return details, as the website stores a return.
+    expect(outbound).toMatchObject({
+      quoted_price: 160, return_journey: true,
+      return_pickup: "Blackpool", return_destination: "Manchester Airport (MAN)",
+      return_airport: "Manchester Airport (MAN)", return_time: "18:30", return_flight: "EK018",
+    });
+    // Return leg: no price of its own, flagged with the website's return-leg note.
+    expect(returnLeg).toMatchObject({ quoted_price: 0, return_journey: false });
+    expect(returnLeg.notes).toMatch(/^Return leg created automatically/);
+    expect(returnLeg.notes).toContain(`Outbound ref: ${out.ref}`);
+    expect(returnLeg.notes).toContain("£160");
+    // Never two £80 bookings.
+    const total = mockChain.insert.mock.calls.reduce((sum, [row]) => sum + Number(row.quoted_price || 0), 0);
+    expect(total).toBe(160);
+  });
+
+  it("a single journey has no return details", async () => {
+    const { result } = renderHook(() => useBookings());
+    await act(async () => {
+      await result.current.createBooking(validForm({ price: 90 }));
+    });
+    expect(mockChain.insert).toHaveBeenCalledWith(expect.objectContaining({ quoted_price: 90, return_journey: false }));
+    expect(mockChain.insert.mock.calls[0][0]).not.toHaveProperty("return_date");
+  });
+
   it("throws ValidationError for missing customer name", async () => {
     const { result } = renderHook(() => useBookings());
 
@@ -351,5 +405,179 @@ describe("useBookings — loading window", () => {
     renderHook(() => useBookings({ scope: "all" }));
     await act(async () => {});
     expect(mockChain.or).not.toHaveBeenCalled();
+  });
+});
+
+describe("useBookings — loading the list", () => {
+  // Earlier tests leave queued one-off responses behind; start clean.
+  beforeEach(() => {
+    mockChain.range.mockReset();
+    mockChain.range.mockResolvedValue({ data: [], error: null });
+  });
+
+  const rowOf = (ref) => ({ id: ref, ref, customer_name: "C " + ref, travel_date: "2099-01-01", travel_time: "10:00:00", status: "Unassigned", drivers: null });
+
+  it("shows the bookings and finishes loading", async () => {
+    primeRows([rowOf("EVX-A"), rowOf("EVX-B")], 1);
+    const { result } = renderHook(() => useBookings());
+    await act(async () => {});
+    expect(result.current.bookings.map((b) => b.id)).toEqual(["EVX-A", "EVX-B"]);
+    expect(result.current.loading).toBe(false);
+    expect(result.current.error).toBeNull();
+  });
+
+  it("reports the database error and finishes loading", async () => {
+    mockChain.range.mockResolvedValue({ data: null, error: { message: "boom" } });
+    const { result } = renderHook(() => useBookings());
+    await act(async () => {});
+    expect(result.current.error).toBe("boom");
+    expect(result.current.loading).toBe(false);
+    expect(result.current.bookings).toEqual([]);
+  });
+
+  it("starts in the loading state before the first response arrives", () => {
+    mockChain.range.mockReturnValue(new Promise(() => {})); // never answers
+    const { result } = renderHook(() => useBookings());
+    expect(result.current.loading).toBe(true);
+  });
+
+  it("refetch replaces the list", async () => {
+    primeRows([rowOf("EVX-A")], 1);
+    const { result } = renderHook(() => useBookings());
+    await act(async () => {});
+    primeRows([rowOf("EVX-C")], 1);
+    await act(async () => { await result.current.refetch(); });
+    expect(result.current.bookings.map((b) => b.id)).toEqual(["EVX-C"]);
+  });
+
+  it("ignores a slow, older response that arrives after a newer one", async () => {
+    let releaseSlow;
+    const slow = new Promise((resolve) => { releaseSlow = resolve; });
+    mockChain.range.mockReset();
+    mockChain.range.mockReturnValueOnce(slow);                                   // first load: slow
+    mockChain.range.mockResolvedValue({ data: [rowOf("EVX-NEW")], error: null }); // everything after: fast
+    const { result } = renderHook(() => useBookings());
+    await act(async () => { await result.current.refetch(); });                  // newer fetch finishes first
+    expect(result.current.bookings.map((b) => b.id)).toEqual(["EVX-NEW"]);
+    await act(async () => { releaseSlow({ data: [rowOf("EVX-OLD")], error: null }); await slow; });
+    expect(result.current.bookings.map((b) => b.id)).toEqual(["EVX-NEW"]);
+    expect(result.current.loading).toBe(false);
+  });
+});
+
+// ─── respondToBooking (website requests) ─────────────────────────────────────
+
+describe("useBookings — respondToBooking", () => {
+  const row = (o) => ({ id: o.ref + "-id", ref: o.ref, status: "Unassigned", source: "website", operator_response: null, customer_name: "Web Customer", customer_email: "", customer_phone: "", travel_date: tomorrow(), travel_time: "09:00", quoted_price: 160, ...o });
+  const outbound = row({ ref: "EVX-OUT1", return_journey: true });
+  const leg = row({ ref: "EVX-RET1", quoted_price: 0, notes: "Return leg created automatically from return booking. Original return fare: £160. Outbound ref: EVX-OUT1" });
+  const other = row({ ref: "EVX-OTHER", notes: "Return leg created automatically from return booking. Outbound ref: EVX-ELSE" });
+
+  async function loaded() {
+    // Earlier tests can leave queued one-off responses behind; start clean.
+    mockChain.range.mockReset();
+    mockChain.range.mockResolvedValue({ data: [], error: null });
+    primeRows([outbound, leg, other]);
+    const hook = renderHook(() => useBookings());
+    await act(async () => { await new Promise((r) => setTimeout(r, 0)); });
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ ok: true, channel: "email" }))));
+    return hook;
+  }
+
+  it("matches only the outbound's own return leg", () => {
+    expect(isReturnLegOf(shapedBooking(leg), "EVX-OUT1")).toBe(true);
+    expect(isReturnLegOf(shapedBooking(other), "EVX-OUT1")).toBe(false);
+    expect(isReturnLegOf(shapedBooking(outbound), "EVX-OUT1")).toBe(false);
+  });
+
+  it("accepting a return booking accepts its return leg too, with one customer notice", async () => {
+    const { result } = await loaded();
+    await act(async () => { await result.current.respondToBooking("EVX-OUT1", "accepted"); });
+    expect(mockChain.update).toHaveBeenCalledTimes(2);
+    expect(mockChain.update).toHaveBeenNthCalledWith(2, expect.objectContaining({ operator_response: "accepted" }));
+    expect(mockChain.update.mock.calls[1][0]).not.toHaveProperty("status");
+    expect(mockChain.like).toHaveBeenCalledWith("notes", "Return leg created automatically%Outbound ref: EVX-OUT1%");
+    expect(mockChain.is).toHaveBeenCalledWith("operator_response", null);
+    const byRef = Object.fromEntries(result.current.bookings.map((b) => [b.id, b]));
+    expect(byRef["EVX-RET1"].operatorResponse).toBe("accepted");
+    expect(byRef["EVX-OTHER"].operatorResponse).toBeNull();
+    expect(fetch).toHaveBeenCalledTimes(1); // one confirmation, for the outbound only
+  });
+
+  it("declining a return booking cancels its return leg too", async () => {
+    const { result } = await loaded();
+    await act(async () => { await result.current.respondToBooking("EVX-OUT1", "rejected"); });
+    expect(mockChain.update).toHaveBeenNthCalledWith(2, expect.objectContaining({ operator_response: "rejected", status: "Cancelled" }));
+    expect(mockChain.not).toHaveBeenCalledWith("status", "in", "(Cancelled,Completed)");
+    const byRef = Object.fromEntries(result.current.bookings.map((b) => [b.id, b]));
+    expect(byRef["EVX-RET1"]).toMatchObject({ operatorResponse: "rejected", status: "Cancelled" });
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("useBookings — deleteBooking", () => {
+  const row = { id: 1, ref: "EVX-DEL1", customer_name: "A", travel_date: tomorrow(), travel_time: "10:00", status: "Unassigned" };
+
+  async function loaded() {
+    mockChain.range.mockReset();
+    mockChain.range.mockResolvedValue({ data: [], error: null });
+    primeRows([row]);
+    const hook = renderHook(() => useBookings());
+    await act(async () => { await new Promise((r) => setTimeout(r, 0)); });
+    return hook;
+  }
+
+  it("re-checks the password, deletes the row and drops it from the list", async () => {
+    const { result } = await loaded();
+    mockChain.eq.mockReturnValueOnce(mockChain);
+    mockChain.select.mockResolvedValueOnce({ data: [{ ref: "EVX-DEL1" }], error: null });
+    await act(async () => { await result.current.deleteBooking("EVX-DEL1", "secret"); });
+    expect(mockSupabase.auth.signInWithPassword).toHaveBeenCalledWith({ email: "office@example.com", password: "secret" });
+    expect(mockChain.delete).toHaveBeenCalled();
+    expect(result.current.bookings.find((b) => b.id === "EVX-DEL1")).toBeUndefined();
+  });
+
+  it("puts the job back and reports it when the database removed nothing", async () => {
+    const { result } = await loaded();
+    mockChain.eq.mockReturnValueOnce(mockChain);
+    mockChain.select.mockResolvedValueOnce({ data: [], error: null });
+    let caught;
+    await act(async () => { await result.current.deleteBooking("EVX-DEL1", "secret").catch((e) => { caught = e; }); });
+    expect(caught?.message).toMatch(/could not be deleted/);
+    expect(result.current.bookings.find((b) => b.id === "EVX-DEL1")).toBeDefined();
+  });
+
+  it("refuses a wrong password without touching the booking", async () => {
+    const { result } = await loaded();
+    mockSupabase.auth.signInWithPassword.mockResolvedValueOnce({ error: { message: "Invalid login credentials" } });
+    let caught;
+    await act(async () => { await result.current.deleteBooking("EVX-DEL1", "wrong").catch((e) => { caught = e; }); });
+    expect(caught?.message).toBe("Password verification failed.");
+    expect(mockChain.delete).not.toHaveBeenCalled();
+    expect(result.current.bookings.find((b) => b.id === "EVX-DEL1")).toBeDefined();
+  });
+});
+
+describe("keepReturnLegMarker", () => {
+  const marker = "Return leg created automatically from return booking. Original return fare: £160. Outbound ref: EVX-OUT1";
+
+  it("keeps a return leg's marker when the operator replaces the notes", () => {
+    expect(keepReturnLegMarker(marker, "Meet at arrivals, 3 bags")).toBe(`${marker}\nMeet at arrivals, 3 bags`);
+  });
+  it("keeps the marker when the notes are cleared", () => {
+    expect(keepReturnLegMarker(marker, "")).toBe(marker);
+  });
+  it("leaves notes that already start with the marker alone", () => {
+    expect(keepReturnLegMarker(marker, `${marker}\nGate 4`)).toBe(`${marker}\nGate 4`);
+  });
+  it("doesn't touch ordinary bookings", () => {
+    expect(keepReturnLegMarker("Child seat", "  No child seat  ")).toBe("No child seat");
+  });
+});
+
+describe("shapedBooking — price", () => {
+  it("keeps pence so edits and invoices don't round the fare", () => {
+    expect(shapedBooking({ id: 1, ref: "A", quoted_price: 87.5 }).price).toBe("£87.50");
+    expect(shapedBooking({ id: 2, ref: "B", quoted_price: 90 }).price).toBe("£90");
   });
 });

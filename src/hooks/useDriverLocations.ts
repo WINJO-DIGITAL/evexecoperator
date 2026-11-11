@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import type { DbDriverLocation } from "@/lib/database.types";
+import type { QueryResult } from "@/lib/queryResult";
 
 // A driver is considered "live" if we've had a position fix within this window.
 export const LIVE_LOCATION_FRESH_MS = 60_000;
@@ -20,8 +21,9 @@ export function useDriverLocations() {
   const [locations, setLocations] = useState<DriverLocationMap>({});
   const [loading, setLoading] = useState(true);
 
-  const fetch = useCallback(async () => {
-    const { data } = await supabase.from("driver_locations").select("*");
+  const query = useCallback(() => supabase.from("driver_locations").select("*"), []);
+
+  const apply = useCallback(({ data }: QueryResult) => {
     const map: DriverLocationMap = {};
     for (const row of (data as DbDriverLocation[]) ?? []) {
       map[row.driver_id] = row;
@@ -31,7 +33,10 @@ export function useDriverLocations() {
   }, []);
 
   useEffect(() => {
-    fetch();
+    let cancelled = false;
+    query().then((res) => {
+      if (!cancelled) apply(res);
+    });
 
     const channel = supabase
       .channel("driver-locations")
@@ -55,9 +60,10 @@ export function useDriverLocations() {
       .subscribe();
 
     return () => {
+      cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, [fetch]);
+  }, [query, apply]);
 
   return { locations, loading };
 }

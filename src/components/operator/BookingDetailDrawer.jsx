@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import {
   X, Phone, Mail, Plane, MapPin, Clock, Car, PoundSterling,
-  User, AlertTriangle, FileText, ChevronDown, Check, Edit3, Loader2, RefreshCw,
+  User, AlertTriangle, ChevronDown, Check, Edit3, Loader2, RefreshCw,
   CreditCard, Trash2, ShieldCheck, Send, Users, Briefcase, Calendar, RotateCcw, XCircle,
 } from "lucide-react";
 import { bookingStatusColor } from "@/lib/operator/statusColor";
@@ -12,6 +12,7 @@ import ETACountdown from "./ETACountdown";
 import FlightVerificationCard from "@/components/FlightVerificationCard";
 import { fmtTime, fmtDateTime, fmtDayDate } from "@/lib/dates";
 import { looksLikeAirport } from "@/lib/bookingUtils";
+import { isReturnLeg } from "@/lib/operator/bookingBuckets";
 
 function Row({ icon: Icon, label, value, muted }) {
   if (!value) return null;
@@ -577,52 +578,68 @@ export default function BookingDetailDrawer({
   const [editMode, setEditMode] = useState(false);
   const [linkResult, setLinkResult] = useState(null);
   const drawerRef = useRef(null);
+  const bookingId = booking?.id;
+
+  // Reset the editors when a different booking is opened (and the delete dialog
+  // with it), or when this booking's notes change underneath us. Done while
+  // rendering, as React recommends, so no stale frame is ever painted.
+  const [seen, setSeen] = useState({ id: bookingId, notes: booking?.notes });
+  if (seen.id !== bookingId || seen.notes !== booking?.notes) {
+    const openedAnother = seen.id !== bookingId;
+    setSeen({ id: bookingId, notes: booking?.notes });
+    setNotes(booking?.notes ?? "");
+    setEditingNotes(false);
+    setEditMode(false);
+    if (openedAnother) {
+      setDeleteOpen(false);
+      setDeletePassword("");
+      setDeleteError(null);
+      setDeleteBusy(false);
+    }
+  }
 
   const handleSaveEdit = useCallback(async (fields) => {
-    await onUpdateBooking?.(booking.id, fields);
+    await onUpdateBooking?.(bookingId, fields);
     setEditMode(false);
-  }, [booking?.id, onUpdateBooking]);
+  }, [bookingId, onUpdateBooking]);
 
   const sendPaymentLink = useCallback(async () => {
     if (!onSendPaymentLink) return;
     setLinkBusy(true);
     try {
-      const data = await onSendPaymentLink(booking.id);
-      if (data?.url) setLinkResult({ id: booking.id, ...data });
+      const data = await onSendPaymentLink(bookingId);
+      if (data?.url) setLinkResult({ id: bookingId, ...data });
     } finally {
       setLinkBusy(false);
     }
-  }, [onSendPaymentLink, booking?.id]);
-
-  useEffect(() => {
-    // Reset the delete dialog whenever a different booking is opened.
-    setDeleteOpen(false);
-    setDeletePassword("");
-    setDeleteError(null);
-    setDeleteBusy(false);
-  }, [booking?.id]);
+  }, [onSendPaymentLink, bookingId]);
 
   const confirmDelete = useCallback(async () => {
     setDeleteBusy(true);
     setDeleteError(null);
     try {
-      await onDelete?.(booking.id, deletePassword);
+      await onDelete?.(bookingId, deletePassword);
       // Parent closes the drawer on success.
     } catch (err) {
       setDeleteError(err?.message ?? "Failed to delete booking.");
       setDeleteBusy(false);
     }
-  }, [booking?.id, deletePassword, onDelete]);
+  }, [bookingId, deletePassword, onDelete]);
 
+  // The delete dialog is drawn outside the drawer, so while it is open a tap
+  // in it must not count as an outside click (that closed the drawer and the
+  // dialog with it), and Escape closes only the dialog.
+  const deleteOpenRef = useRef(false);
+  const deleteBusyRef = useRef(false);
   useEffect(() => {
-    setNotes(booking?.notes ?? "");
-    setEditingNotes(false);
-    setEditMode(false);
-  }, [booking?.id, booking?.notes]);
+    deleteOpenRef.current = deleteOpen;
+    deleteBusyRef.current = deleteBusy;
+  });
 
   // Close on outside click (pointerdown fires on touch too)
   useEffect(() => {
     const h = (e) => {
+      if (deleteOpenRef.current) return;
       if (drawerRef.current && !drawerRef.current.contains(e.target)) onClose?.();
     };
     document.addEventListener("pointerdown", h);
@@ -631,7 +648,18 @@ export default function BookingDetailDrawer({
 
   // Close on Escape
   useEffect(() => {
-    const h = (e) => { if (e.key === "Escape") onClose?.(); };
+    const h = (e) => {
+      if (e.key !== "Escape") return;
+      if (deleteOpenRef.current) {
+        if (!deleteBusyRef.current) {
+          setDeleteOpen(false);
+          setDeletePassword("");
+          setDeleteError(null);
+        }
+        return;
+      }
+      onClose?.();
+    };
     document.addEventListener("keydown", h);
     return () => document.removeEventListener("keydown", h);
   }, [onClose]);
@@ -860,7 +888,7 @@ export default function BookingDetailDrawer({
                     ? `${fmtDayDate(booking.pickupTime)} ${fmtTime(booking.pickupTime)}`
                     : booking.time !== "—" ? booking.time : null
                 } />
-                <Row icon={PoundSterling} label="Price" value={booking.price} />
+                <Row icon={PoundSterling} label="Price" value={isReturnLeg(booking) ? "Paid with the outbound booking" : booking.price} />
                 <div className="flex items-start gap-3">
                   <CreditCard className="mt-0.5 h-4 w-4 flex-shrink-0 text-slate-600" />
                   <div>
@@ -888,7 +916,7 @@ export default function BookingDetailDrawer({
                         />
                       </div>
                     )}
-                    {onSendPaymentLink && (booking.paymentStatus ?? "Unpaid") !== "Paid" && (
+                    {onSendPaymentLink && (booking.paymentStatus ?? "Unpaid") !== "Paid" && !isReturnLeg(booking) && (
                       <button
                         type="button"
                         onClick={sendPaymentLink}
@@ -1046,7 +1074,8 @@ export default function BookingDetailDrawer({
               </button>
             )}
             {/* Return journey */}
-            {booking.airport && booking.destination && (
+            {/* Not for a booking that already includes its return, or a return leg itself. */}
+            {booking.airport && booking.destination && !booking.returnJourney && !isReturnLeg(booking) && (
               <button
                 onClick={() => onCreateReturn?.(booking)}
                 className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-2xl border border-amber-400/20 bg-amber-400/5 px-4 py-2.5 text-sm font-medium text-amber-600 transition hover:bg-amber-400/10"
@@ -1089,7 +1118,7 @@ export default function BookingDetailDrawer({
       </div>
 
       {deleteOpen && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm">
+        <div role="alertdialog" aria-modal="true" className="fixed inset-0 z-[120] flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-3xl border border-red-400/20 bg-white p-5 shadow-2xl">
             <div className="flex items-start gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-red-500/10 text-red-600"><ShieldCheck className="h-5 w-5" /></div>

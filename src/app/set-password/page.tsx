@@ -55,7 +55,7 @@ function SetPasswordContent() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (pw.length < 8) return setError("Use at least 8 characters.");
+    if (pw.length < 8 || !/[A-Za-z]/.test(pw) || !/[0-9]/.test(pw)) return setError("Use at least 8 characters, with a letter and a number.");
     if (pw !== pw2) return setError("The passwords don't match.");
     setBusy(true);
     const update: { password: string; data?: Record<string, string> } = { password: pw };
@@ -88,7 +88,7 @@ function SetPasswordContent() {
               </label>
             )}
             <label className="block text-xs font-medium text-slate-600">New password
-              <input type="password" value={pw} onChange={(e) => setPw(e.target.value)} autoComplete="new-password" placeholder="At least 8 characters" className={input} />
+              <input type="password" value={pw} onChange={(e) => setPw(e.target.value)} autoComplete="new-password" placeholder="At least 8 characters, a letter and a number" className={input} />
             </label>
             <label className="block text-xs font-medium text-slate-600">Confirm password
               <input type="password" value={pw2} onChange={(e) => setPw2(e.target.value)} autoComplete="new-password" className={input} />

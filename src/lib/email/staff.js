@@ -2,6 +2,7 @@
 // reset). Operator-app only, so they live outside content.js/template.js,
 // which are kept identical to the website's copies. Same layout via renderEmail.
 import { renderEmail, renderText } from './template.js';
+import { withBrandOf } from './brand.js';
 
 const oneLine = (s) => String(s == null ? '' : s).replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
 function build(subject, spec) { return { subject: oneLine(subject), spec, html: renderEmail(spec), text: renderText(spec) }; }
@@ -9,7 +10,7 @@ function build(subject, spec) { return { subject: oneLine(subject), spec, html: 
 const ROLE = { operator_admin: 'an admin', dispatcher: 'a dispatcher' };
 
 /** Someone was added to the team. `newAccount` = they still need to set a password. */
-export function teamInvite({ businessName, inviterName, role, url, newAccount }) {
+function teamInvite__build({ businessName, inviterName, role, url, newAccount }) {
   const who = inviterName ? `${inviterName} has` : 'You have been';
   return build(`You've been added to ${businessName}`, {
     audience: 'staff', preheader: `${newAccount ? 'Set your password to' : 'Sign in to'} the ${businessName} operator app.`,
@@ -23,7 +24,7 @@ export function teamInvite({ businessName, inviterName, role, url, newAccount })
   });
 }
 
-export function passwordReset({ businessName, url }) {
+function passwordReset__build({ businessName, url }) {
   return build(`Reset your ${businessName} operator password`, {
     audience: 'staff', preheader: 'Choose a new password for the operator app.',
     status: { label: 'Password reset', tone: 'gold' }, title: 'Choose a new password',
@@ -36,7 +37,7 @@ export function passwordReset({ businessName, url }) {
 }
 
 /** A driver was invited to the Driver App. `newAccount` = they still need to set a password. */
-export function driverInvite({ businessName, driverName, inviterName, url, newAccount }) {
+function driverInvite__build({ businessName, driverName, inviterName, url, newAccount }) {
   const first = String(driverName || '').trim().split(/\s+/)[0];
   const who = inviterName ? `${inviterName} has` : `${businessName} has`;
   return build(`Your ${businessName} Driver App login`, {
@@ -50,3 +51,8 @@ export function driverInvite({ businessName, driverName, inviterName, url, newAc
     button: { label: newAccount ? 'Set your password' : 'Choose a new password', url },
   });
 }
+
+// Built for the business named by `tenant_id` in the argument (the caller's own).
+export const teamInvite = withBrandOf(teamInvite__build);
+export const passwordReset = withBrandOf(passwordReset__build);
+export const driverInvite = withBrandOf(driverInvite__build);

@@ -23,8 +23,8 @@ export const calendarTokens = {
     road: "#2E5C88",       // en route / on board
   },
   font: {
-    display: 'ui-serif, "New York", "Iowan Old Style", "Palatino Linotype", Georgia, serif', // headings only
-    ui: "Inter, system-ui, sans-serif",
+    display: "Manrope, system-ui, sans-serif", // headings only
+    ui: "Manrope, system-ui, sans-serif",
   },
   // name: [size, line height] — text-cal-<name>
   type: {

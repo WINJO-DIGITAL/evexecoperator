@@ -3,22 +3,28 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import type { DbDriver } from "@/lib/database.types";
+import type { QueryResult } from "@/lib/queryResult";
 
 export function useDrivers() {
   const [drivers, setDrivers] = useState<DbDriver[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetch = useCallback(async () => {
-    const { data } = await supabase
-      .from("drivers")
-      .select("*")
-      .order("name", { ascending: true });
+  const query = useCallback(
+    () => supabase.from("drivers").select("*").order("name", { ascending: true }),
+    []
+  );
+
+  const apply = useCallback(({ data }: QueryResult) => {
     setDrivers((data as DbDriver[]) ?? []);
     setLoading(false);
   }, []);
 
+
   useEffect(() => {
-    fetch();
+    let cancelled = false;
+    query().then((res) => {
+      if (!cancelled) apply(res);
+    });
 
     // Real-time — driver status/availability changes reflect instantly
     const channel = supabase
@@ -47,9 +53,10 @@ export function useDrivers() {
       .subscribe();
 
     return () => {
+      cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, [fetch]);
+  }, [query, apply]);
 
   const updateDriver = useCallback(
     async (id: string, fields: Partial<Pick<DbDriver, "name" | "phone" | "email" | "vehicle" | "plate">>) => {

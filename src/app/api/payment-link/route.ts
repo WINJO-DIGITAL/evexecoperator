@@ -1,5 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { paymentLink } from "@/lib/email/content.js";
+import { brandFor } from "@/lib/email/brand.js";
+import { loadBrand } from "@/lib/server/brands";
 import { when } from "@/lib/email/template.js";
 
 // Generates a Stripe payment link for a booking and sends it to the customer.
@@ -36,12 +38,72 @@ const FROM = process.env.INVOICE_FROM ?? "EV Exec <book@evexec.co.uk>";
 const REPLY_TO = process.env.INVOICE_REPLY_TO ?? "book@evexec.co.uk";
 
 const isEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+const isReturnLeg = (notes: unknown) => /^Return leg created automatically/i.test(String(notes ?? ""));
+
+type CheckoutSession = {
+  id?: string;
+  url?: string | null;
+  status?: string;
+  payment_status?: string;
+  amount_total?: number | null;
+  client_reference_id?: string | null;
+  metadata?: Record<string, string> | null;
+  error?: { message?: string };
+};
+
+async function stripeSession(id: string, action = ""): Promise<CheckoutSession | null> {
+  try {
+    const res = await fetch(`https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(id)}${action}`, {
+      method: action ? "POST" : "GET",
+      headers: { Authorization: `Bearer ${STRIPE_SECRET_KEY}` },
+    });
+    return res.ok ? ((await res.json()) as CheckoutSession) : null;
+  } catch {
+    return null;
+  }
+}
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
     headers: { "content-type": "application/json" },
   });
+}
+
+// A new Stripe Checkout Session for the booking. Paid sessions are recorded by
+// the website's Stripe webhook via metadata[booking_ref].
+async function createCheckout(
+  booking: { ref: string; tenant_id?: string | null },
+  unitAmount: number,
+  email: string,
+): Promise<CheckoutSession> {
+  const form = new URLSearchParams();
+  form.set("mode", "payment");
+  form.set("line_items[0][quantity]", "1");
+  form.set("line_items[0][price_data][currency]", "gbp");
+  form.set("line_items[0][price_data][unit_amount]", String(unitAmount));
+  form.set(
+    "line_items[0][price_data][product_data][name]",
+    `${brandFor(booking.tenant_id).name ? `${brandFor(booking.tenant_id).name} ` : ""}airport transfer — Ref ${booking.ref}`
+  );
+  form.set("client_reference_id", booking.ref);
+  form.set("metadata[booking_ref]", booking.ref);
+  // Pre-fill the Stripe checkout email; if "Successful payment" receipts are
+  // enabled in the Stripe Dashboard, Stripe also emails its own receipt.
+  if (isEmail(email)) form.set("customer_email", email);
+  form.set("success_url", `${SITE_URL}/payment-complete?ref=${encodeURIComponent(booking.ref)}`);
+  form.set("cancel_url", `${SITE_URL}/payment-cancelled?ref=${encodeURIComponent(booking.ref)}`);
+
+  const stripeRes = await fetch("https://api.stripe.com/v1/checkout/sessions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${STRIPE_SECRET_KEY}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: form.toString(),
+  });
+  const created = (await stripeRes.json().catch(() => ({}))) as CheckoutSession;
+  return stripeRes.ok ? created : { error: created.error ?? {} };
 }
 
 export async function POST(req: Request) {
@@ -99,11 +161,20 @@ export async function POST(req: Request) {
 
   if (bErr || !booking) return json({ error: "Booking not found." }, 404);
   if (!isSuper && !staffTenants.has(booking.tenant_id)) return json({ error: "Booking not found." }, 404);
+  await loadBrand(admin, booking.tenant_id); // this business's name and number for the email and text
+  const brand = brandFor(booking.tenant_id);
 
   const phone = (booking.customer_phone ?? "").trim();
   const email = (booking.customer_email ?? "").trim();
   if (!phone && !isEmail(email)) {
     return json({ error: "This booking has no customer email or phone number." }, 422);
+  }
+
+  if (String(booking.payment_status ?? "").toLowerCase() === "paid") {
+    return json({ error: "This booking is already paid." }, 409);
+  }
+  if (isReturnLeg(booking.notes)) {
+    return json({ error: "This is the return leg of a return booking. It is paid with its outbound booking." }, 422);
   }
 
   const amount = Number(booking.price ?? booking.quoted_price ?? 0);
@@ -112,45 +183,37 @@ export async function POST(req: Request) {
   }
   const unitAmount = Math.round(amount * 100); // pence
 
-  // ── Create a Stripe Checkout Session ───────────────────────────────────────
-  const form = new URLSearchParams();
-  form.set("mode", "payment");
-  form.set("line_items[0][quantity]", "1");
-  form.set("line_items[0][price_data][currency]", "gbp");
-  form.set("line_items[0][price_data][unit_amount]", String(unitAmount));
-  form.set(
-    "line_items[0][price_data][product_data][name]",
-    `EV Exec airport transfer — Ref ${booking.ref}`
-  );
-  form.set("client_reference_id", booking.ref);
-  form.set("metadata[booking_ref]", booking.ref);
-  // Pre-fill the Stripe checkout email; if "Successful payment" receipts are
-  // enabled in the Stripe Dashboard, Stripe also emails its own receipt.
-  if (isEmail(email)) form.set("customer_email", email);
-  form.set("success_url", `${SITE_URL}/payment-complete?ref=${encodeURIComponent(booking.ref)}`);
-  form.set("cancel_url", `${SITE_URL}/payment-cancelled?ref=${encodeURIComponent(booking.ref)}`);
-
-  const stripeRes = await fetch("https://api.stripe.com/v1/checkout/sessions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${STRIPE_SECRET_KEY}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: form.toString(),
-  });
-
-  const session = (await stripeRes.json()) as { id?: string; url?: string; error?: { message?: string } };
-  if (!stripeRes.ok || !session?.url) {
-    return json(
-      { error: session?.error?.message ?? "Stripe could not create the payment link." },
-      502
-    );
+  // ── The booking's checkout so far ──────────────────────────────────────────
+  // One payable checkout per booking. Sending the link again reuses the open
+  // one for the same amount; any other open checkout (an old amount, or one the
+  // customer started on the booking page) is closed first, so the customer can
+  // never pay the same booking twice.
+  let session: CheckoutSession | null = null;
+  if (booking.stripe_session_id) {
+    const prev = await stripeSession(booking.stripe_session_id);
+    if (prev?.payment_status === "paid") {
+      return json({ error: "This booking has already been paid. The payment is being recorded." }, 409);
+    }
+    const ours = prev?.metadata?.booking_ref === booking.ref || prev?.metadata?.bookingId === booking.id;
+    if (prev?.status === "open" && ours && prev.amount_total === unitAmount && prev.url) {
+      session = prev;
+    } else if (prev?.status === "open" && prev.id) {
+      await stripeSession(prev.id, "/expire");
+    }
   }
 
-  await admin
-    .from("bookings")
-    .update({ stripe_session_id: session.id, payment_method: "Payment link" })
-    .eq("id", booking.id);
+  if (!session) {
+    const created = await createCheckout(booking, unitAmount, email);
+    if (!created.url) {
+      return json({ error: created.error?.message ?? "Stripe could not create the payment link." }, 502);
+    }
+    session = created;
+    await admin
+      .from("bookings")
+      .update({ stripe_session_id: created.id, payment_method: "Payment link" })
+      .eq("id", booking.id);
+  }
+
 
   // ── Email (Resend) ──────────────────────────────────────────────────────────
   let emailed = false;
@@ -187,9 +250,9 @@ export async function POST(req: Request) {
     const first = String(booking.customer_name ?? "").trim().split(/\s+/)[0] || "there";
     const whenText = when(booking.travel_date, booking.travel_time);
     const body =
-      `Hi ${first}, here is the secure card payment link (£${amount.toFixed(2)}) for your EV Exec transfer` +
+      `Hi ${first}, here is the secure card payment link (£${amount.toFixed(2)}) for your ${brand.name ? `${brand.name} ` : ""}transfer` +
       `${whenText ? ` on ${whenText}` : ""} (Ref ${booking.ref}): ${session.url} ` +
-      `Any questions, call 07721 070370. Thank you, EV Exec`;
+      `${brand.phone ? `Any questions, call ${brand.phone}. ` : ""}Thank you${brand.name ? `, ${brand.name}` : ""}`;
     smsHref = `sms:${phone.replace(/[^\d+]/g, "")}?&body=${encodeURIComponent(body)}`;
   }
 

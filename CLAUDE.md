@@ -12,14 +12,6 @@ This applies to all three repos in this project (`evexec`, `evexecoperator`, `ev
 
 <!-- BEGIN:nextjs-agent-rules -->
 
-# Date and time format (hard rule, user decision)
-
-**Every date anywhere in EV Exec is DD/MM/YYYY. Every time is 24-hour HH:MM, UK time.** This applies to all three repos (`evexec`, `evexecoperator`, `evexecdriverapp`) and the shared Supabase project: screens, emails, texts (including two-tap `sms:` messages), push notifications, PDFs/invoices, subjects, toasts and database templates. Never show `YYYY-MM-DD`, US order, or a written-out month.
-
-- Plain `YYYY-MM-DD` values are rearranged directly (no `Date` parsing, so no timezone can shift the day). Use the shared helpers: `evexec/lib/format.js` `fmtDate`, `evexecoperator/src/lib/dates.ts` (`fmtDate`, `fmtDateTime`), `evexecdriverapp/lib/format.ts` (`formatDate`, `formatStamp*`). In SQL use `to_char(..., 'DD/MM/YYYY')`.
-- Timestamps are shown in `Europe/London` time.
-- Only exception: native `<input type="date">` / `<input type="time">` pickers, which follow the phone's own settings.
-
 # This is NOT the Next.js you know
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
@@ -36,7 +28,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 - **Settings → Business** saves to the operator's own `tenants` row (name, contact email/phone, and the invoice letterhead in `brand.invoice`) through the `update_tenant_profile` RPC (operator_admin or super_admin only; migration `20261014120000_tenant_profile_settings.sql` in `evexec`). Hook: `src/hooks/operator/useTenantProfile.js`. Nothing in Settings uses localStorage any more (the old `evexec_settings` key is ignored).
 - **Invoices** read the letterhead from the same row (`companyFrom()` in `invoices/page.jsx`), with the old fixed values only as a fallback.
-- **Prices** (superseded 15/10/2026, see below): `src/lib/prices.ts` was a copy of the website's price list. Settings → Prices showed it read-only; the New Booking form suggests the price per leg from it (`fixedLegPrice`: one-way fare, or half the return fare on each leg when "Return journey" is ticked, since each leg is invoiced and paid on its own; it used £160/£145 from browser storage before). The suggestion follows the route and the return tick until the operator types a price. Invoices use the business name (Settings saves it as `brand.invoice.business_name` too; there is no separate invoice-name field).
+- **Prices** (superseded 15/10/2026, see below): `src/lib/prices.ts` was a copy of the website's price list. Settings → Prices showed it read-only; the New Booking form suggests the price from it (superseded 17/10/2026: now `fixedTripPrice`, the whole return fare on the outbound booking; see the 17/10/2026 entry). The suggestion follows the route and the return tick until the operator types a price. Invoices use the business name (Settings saves it as `brand.invoice.business_name` too; there is no separate invoice-name field).
 - **Security**: "Change password" now really changes it (checks the current password first). The two-factor and session-timeout switches were removed (they did nothing).
 - **Removed** because they did nothing: notification "Alert preferences" toggles, "Auto-assign" and "Show prices" switches, waiting/child-seat rates, the WhatsApp channel, the SMS on/off and "SMS only when necessary" switches (Twilio is dormant), the Google Maps "coming soon" item. "Demo mode" status label renamed "Not connected".
 - **Redirect-only pages** (`/`, `/operator`, `/operator/dashboard`, `/operator/bookings`) are now `redirects()` in `next.config.mjs`, same destinations.
@@ -80,7 +72,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 - Each business's fixed prices are in `tenants.pricing` (`{ airports: [{ name, code?, one_way, return_fare }], extra_stop }`), saved only through the `update_tenant_pricing` RPC (operator_admin of that tenant or super_admin; shape and amounts checked; migration `20261015090000_tenant_pricing.sql` in `evexec`, applied; EV Exec seeded with the previous list).
 - **Settings → Prices** is editable for admins (add/remove destinations, optional 3–4 letter code, one-way and return, extra-stop charge); others see it read-only. Saves via `useTenantProfile().savePricing`, then reloads the shell profile.
-- `src/lib/prices.ts`: `pricingFromTenant()` (stored → `{ airports, extraStop }`, falls back to `DEFAULT_PRICING` when missing), `pricingForSave()`, `pricingProblem()` (same rules as the database), and `fixedLegPrice(location, isReturn, airports)`. The shell context exposes `profile.pricing`; the New Booking form suggests a price when either end of the trip names a listed destination (not only airports).
+- `src/lib/prices.ts`: `pricingFromTenant()` (stored → `{ airports, extraStop }`, falls back to `DEFAULT_PRICING` when missing), `pricingForSave()`, `pricingProblem()` (same rules as the database), and `fixedTripPrice(location, isReturn, airports)` (renamed 17/10/2026; a return is the whole fare). The shell context exposes `profile.pricing`; the New Booking form suggests a price when either end of the trip names a listed destination (not only airports).
 - The website reads the same row (`evexec/lib/pricing.js`) for its booking form and booking API. Its generated marketing pages still have the prices built in (`evexec/scripts/site/data.js`) and need a rebuild after a change.
 
 ## Update — 2026-10-15: per-operator logo and colours
@@ -107,10 +99,58 @@ User found the original orange-gold harsh and rejected a navy-and-white theme (b
 - **New calendar** in `src/components/operator/calendar/`: `OperatorCalendar.jsx` (live data: `hooks/operator/useBookings`, `useDrivers`, `useDriverAvailability`, the shared `useBookingDrawer`, the shell's `openNewBooking`) renders `CalendarScreen.jsx` (all UI state, no fetching — also used by the demo preview). Views Month / Week / Day / List, in the URL as `?view=calendar&cv=month|week|day|list&d=YYYY-MM-DD`.
 - **Rules** in `src/lib/operator/calendarModel.js` (tested): UK date keys, periods, booking state (reply / driver / assigned / road / done / cancelled, built on `bookingBuckets`), flags (awaiting reply, no driver, no driver within 24 h, same-driver clash within `CLASH_BUFFER_MINUTES`, driver marked unavailable, no pickup time, completed unpaid), filters, metrics and data coverage (the strip shows "—" and offers "Load earlier/more" when the loaded window doesn't cover the period, rather than a wrong number).
 - **Desktop** side panel: selected day, or a booking (read-only details, quick driver assignment via the drawer's `assign`, "Open booking" for everything else). **Phones**: tapping a booking opens the drawer directly.
-- **Tokens**: `cal-*` colours, `text-cal-*` type scale (label/xs/sm/base/time/lg/xl/2xl), `rounded-cal`/`rounded-cal-lg`, `shadow-cal-pop` and `font-display` (system serif, no web font) in `tailwind.config.ts`, documented in `calendar/tokens.js`. Calendar components use only these.
+- **Tokens**: `cal-*` colours, `text-cal-*` type scale (label/xs/sm/base/time/lg/xl/2xl), `rounded-cal`/`rounded-cal-lg`, `shadow-cal-pop` and `font-display` (Manrope, like everything else; one font app-wide) in `tailwind.config.ts`, documented in `calendar/tokens.js`. Calendar components use only these.
 - **Date style exception (user request, 15/10/2026)**: the calendar's navigation headings write the month out ("October 2026", "Thursday, 15 October 2026", "12–18 October 2026"). Everything else in the calendar (booking dates, side panel, notices) stays DD/MM/YYYY. Helpers: `monthTitle`, `dayTitle`, `periodFor` in `calendarModel.js`.
 - **Indicator system (V2)**: month cells show the transfer count plus at most one exception mark (red "!" = needs a driver / clash / driver unavailable; hollow brass square = awaiting reply or other follow-up). Status marks: hollow = waiting on the office (reply, needs driver), filled = in hand.
 - **Exceptions** (`ExceptionNote` in `BookingRow.jsx`): one style for every warning, each with one real action (Assign driver / Reply / Add time / Open payment open the booking; a clash offers "View <ref>" for the other job).
 - **Clashes are "possible"**: bookings have no journey length or drop-off time, so the calendar flags same-driver pickups under `CLASH_BUFFER_MINUTES` and shows the gap; the side panel's conflict section says it can't confirm an overlap. If a planned duration field is ever added, use it in `findClashes`.
 - `shapedBooking` gained `priceValue` (raw fare, for totals in pence); `ukDateDaysAgo` / `OPERATIONAL_DAYS_BACK` moved to `src/lib/operator/ukDate.js` (still re-exported by `useBookings`).
 - The old `CalendarApp.tsx`, `CalendarView.tsx`, `DailyView.tsx`, `StatsBar.tsx` are no longer used by any screen; delete once the new calendar is signed off.
+
+## Update — 2026-10-16: free-cancellation deadline in booking confirmations
+
+The Booking Confirmed email (`bookingConfirmed` in `src/lib/email/content.js`, sent from `/api/booking-response` on Accept) has a Cancellation section with the booking's own deadlines in UK time (free until, 25%, 50%, full fare, or the charge that already applies), and the no-email confirmation text adds "Free cancellation until HH:MM on DD/MM/YYYY." Rules live in `src/lib/email/cancellation.js`, a copy of the website's `evexec/lib/cancellation.js` (terms version 3, https://www.evexec.co.uk/terms sections 4–5); keep the two in step. Quoted bookings (over £300, not on the price list, `onPriceList` in `format.js`) point to their quote. Tests: `src/lib/email/cancellation.test.js`.
+
+## Update — 2026-10-17: operator-made jobs: accepted on creation, a return is one payment
+
+User report: an operator-made return job (Manchester, £160) produced two £80 payments, and the customer's booking page showed "Awaiting Confirmation" / My Account "Awaiting Approval". Checked on the live rows (EVX-C7C4SZQ3NV8U + EVX-C7C5124GZDU5, 17/10/2026) before changing anything: no Stripe charge had been taken; the "two payments" were two separate £80 bookings, each with its own "is booked" email and payment page.
+
+- **Root causes**: (1) the Operator app booked a return as two bookings at half the return fare each (`fixedLegPrice`), while the website stores a return as one outbound booking with the whole fare plus a £0 return leg; (2) Operator app bookings were inserted with no `operator_response`, and the website only treated `accepted` or `Dispatched` as confirmed, so any operator job without a driver (always the return leg) was "awaiting" and could not be paid; (3) the DB trigger sent a "received" confirmation for every operator-made row, so one per leg.
+- **Now**: the New Booking form suggests the whole fare (`fixedTripPrice`, label "Fixed Price (return, both ways)"). `createBooking()` stores the outbound with `quoted_price` = total, `return_journey` and the `return_*` fields, and a £0 return leg whose notes start "Return leg created automatically from return booking." (the marker every system already uses). Both rows get `operator_response = accepted` and `operator_responded_at`. Website requests are unchanged: they still wait for Accept/Decline.
+- **Website rule**: a booking is confirmed when `operator_response = accepted`, `source = operator` (covers operator jobs made before this fix) or the status is Dispatched/on the road; never when rejected. Same rule in `api/payment/index.js` `isConfirmed`, `lib/cancellation.js` `isAccepted`, `booking.html` and My Account `customerStatus()`. Return legs can never be paid on their own (`readyForPayment`), and the booking page says they are paid with the outbound (`/api/booking/get` returns `return_leg`, `outbound_ref`, `source`).
+- **One payable checkout per booking**: the Operator app payment link refuses Paid bookings and return legs, reuses its own open checkout for the same amount, and expires any other open one (including one the customer opened on the booking page); the website checkout expires an open operator link before making its own and refuses a booking whose link is already paid.
+- **DB**: migration `20261017100000_operator_return_leg_single_confirmation.sql` (applied 17/10/2026) skips the "received" confirmation for return legs. Tested on the live trigger in a rolled-back transaction: outbound queued one confirmation, return leg none.
+- **Operator app display**: return legs show "With outbound" (list) / "Paid with the outbound booking" (drawer), no "Send payment link", and are not counted as unpaid on Today/Needs action.
+- **Not changed**: the earlier test rows (two £80 legs) were left as they are. The drawer's manual "Create Return" (a separate booking from an existing one) still copies the price the operator sees.
+- Tests: website `npm run test:unit`; Operator app `npm test` (`useBookings.test.js`, `staffOnly.test.ts`, `bookingBuckets.test.js`, `prices.test.ts`).
+
+## Update — 2026-10-17: one approval rule for every booking method
+
+Booking creation paths (checked across all three repos and the database; no DB function or edge function creates bookings): **website booking form** (`evexec/api/booking` create, with an automatic £0 return leg for returns) and the **Operator app New Booking form** (`createBooking` in `src/hooks/operator/useBookings.js`, used by every screen: New Booking, Inbox quote, customer page, Create Return). The old `createBooking` in `evexecoperator/src/hooks/useBookings.ts` is unused but now also sets `accepted`.
+
+- **Website requests** wait for Accept/Decline (`operator_response` null). **Operator-made bookings** are `accepted` on creation. The 16 operator bookings made before 17/10/2026 were back-filled to `accepted` (migration `20261017140000_backfill_operator_bookings_accepted.sql`, applied; `operator_responded_at` = `created_at` marks them). After it every booking in the database had a decision.
+- **A return request is one decision**: accepting or declining a website return booking (Operator app `respondToBooking`, or the emailed link `api/operator` `applyToReturnLeg`) applies the same decision to its £0 return leg (notes "… Outbound ref: <ref>"), with one customer email. Before, the leg waited in "Needs reply" and accepting it sent a second Booking Confirmed email. On decline the leg is cancelled too; on accept it stays Unassigned until a driver is given.
+- **Create Return Journey** (booking drawer) is hidden on a booking that already includes its return and on a return leg (it pre-filled a second paid return).
+- **Known difference, left as is**: the emailed Accept link sets the outbound to Dispatched (no driver); the Operator app Accept keeps it Unassigned. Both count as confirmed everywhere.
+- Tests: website `tests/unit/operator-accept.test.cjs`; Operator app `useBookings.test.js` (respondToBooking).
+
+## Update — 2026-10-17: one font, Manrope
+
+User decision: the whole app uses Manrope, like the website. Self-hosted (`public/fonts/manrope-latin*.woff2`, same files as `evexec`, SIL OFL in `OFL-Manrope.txt`), `@font-face` at the top of the global CSS, body font Manrope, and Tailwind `sans`, `serif` and `mono` all map to Manrope, so booking references and other monospace text match. Weights 200–800 (CSS 900 renders as 800); no italic face (browser slants it). Emails keep their email-safe fonts. Checked in a browser: every visible text element renders in Manrope and the font file loads.
+- Operator app: the Google Fonts Inter import in `src/app/globals.css` was removed (no third-party font request any more).
+
+## Update — 2026-10-17: deleting a job no longer closes the drawer
+
+The delete password box is drawn outside the booking drawer, so the drawer's "tap outside closes" handler treated any tap in it (the password field, the buttons) as an outside tap: the drawer closed and the box vanished with it. While the box is open, outside taps are now ignored and Escape closes only the box (`BookingDetailDrawer.jsx`). `deleteBooking` (`useBookings.js`) now asks the database which rows it removed and reports an error (job put back) if none were, instead of the job disappearing and coming back on the next refresh. Tests: `BookingDetailDrawer.test.jsx`, `useBookings.test.js` (deleteBooking).
+
+## Update — 2026-10-17: app icon (dispatch headset)
+
+User chose option A from five (headset, route, job board, signal tower, schedule): a gold dispatch headset (`#D7A23F`) on navy (`#0B132B`), same style as the Driver App's steering wheel. Before, `/favicon.ico` did not exist (404) and the home-screen icons were the EV Exec car logo with text.
+- Files in `public/`: `favicon.ico` (16/32/48), `favicon.svg` (tab; the 64×64 source of the headset), `apple-icon.png` (180), `icon-192.png`, `icon-512.png`, `icon-512-maskable.png` (headset inside the safe zone), `badge-96.png` (white on transparent, Android status bar). Regenerate the PNGs from `favicon.svg` if it changes.
+- Wired in `src/app/layout.tsx` `metadata.icons`, `src/app/manifest.ts` (unchanged paths) and `public/sw.js` (push icon `icon-192.png`, badge `badge-96.png`). The in-app logo (`ev-exec-badge.png`, `brandLogo.js`) is unchanged.
+
+## Update — 2026-10-19: licence number in emails
+
+Private hire operator licence **PHO0079** (user, 19/10/2026) is in every email footer, HTML and plain text: `LICENCE` in `src/lib/email/template.js`, kept identical to the website's `lib/emailTemplate.js`.
+
+- **Password rule (19/10/2026):** Supabase Auth requires 8+ characters with a letter and a number (set by the user). Every password form checks the same rule first and says so.

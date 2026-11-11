@@ -45,41 +45,58 @@ export function validDriverForm(form) {
 
 export function useDrivers() {
   const [drivers, setDrivers] = useState([]);
-  const [loading, setLoading] = useState(false);
+  // Starts true when there is a database to ask: the first load begins on mount.
+  const [loading, setLoading] = useState(isConfigured);
   const [error, setError] = useState(null);
+
+  // Reads the drivers and today's completed jobs. Sets no state.
+  const queryDrivers = useCallback(() => {
+    // Today in UK time, by the booking's own date (not every row has pickup_time).
+    const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/London" }).format(new Date());
+    return Promise.all([
+      supabase.from("drivers").select("*").order("name"),
+      supabase
+        .from("bookings")
+        .select("driver_id")
+        .eq("status", "Completed")
+        .eq("travel_date", today),
+    ]);
+  }, []);
+
+  const applyDrivers = useCallback(([{ data, error: err }, { data: completedData }]) => {
+    if (err) {
+      setError(err.message);
+    } else {
+      const completedByDriver = {};
+      completedData?.forEach((b) => {
+        if (b.driver_id) completedByDriver[b.driver_id] = (completedByDriver[b.driver_id] || 0) + 1;
+      });
+      setDrivers(data.map((row) => ({ ...shapedDriver(row), completedToday: completedByDriver[row.id] || 0 })));
+    }
+    setLoading(false);
+  }, []);
 
   const fetchDrivers = useCallback(async () => {
     if (!isConfigured) return;
     setLoading(true);
     try {
-      // Today in UK time, by the booking's own date (not every row has pickup_time).
-      const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/London" }).format(new Date());
-
-      const [{ data, error: err }, { data: completedData }] = await Promise.all([
-        supabase.from("drivers").select("*").order("name"),
-        supabase
-          .from("bookings")
-          .select("driver_id")
-          .eq("status", "Completed")
-          .eq("travel_date", today),
-      ]);
-
-      if (err) { setError(err.message); return; }
-
-      const completedByDriver = {};
-      completedData?.forEach((b) => {
-        if (b.driver_id) completedByDriver[b.driver_id] = (completedByDriver[b.driver_id] || 0) + 1;
-      });
-
-      setDrivers(data.map((row) => ({ ...shapedDriver(row), completedToday: completedByDriver[row.id] || 0 })));
-    } finally {
+      applyDrivers(await queryDrivers());
+    } catch (e) {
       setLoading(false);
+      throw e;
     }
-  }, []);
+  }, [queryDrivers, applyDrivers]);
 
+  // First load. `loading` already starts true, so nothing is set until the answer arrives.
   useEffect(() => {
-    fetchDrivers();
-  }, [fetchDrivers]);
+    if (!isConfigured) return;
+    let cancelled = false;
+    queryDrivers().then(
+      (res) => { if (!cancelled) applyDrivers(res); },
+      () => { if (!cancelled) setLoading(false); }
+    );
+    return () => { cancelled = true; };
+  }, [queryDrivers, applyDrivers]);
 
   useRealtimeDrivers(fetchDrivers);
 
@@ -95,16 +112,25 @@ export function useDrivers() {
 
   // App access per driver: { [id]: { status: "partner"|"none"|"invited"|"active", lastSignIn } }.
   const [access, setAccess] = useState({});
-  const fetchAccess = useCallback(async () => {
-    if (!isConfigured) return;
+  // Asks the server; null means "leave the badges as they are".
+  const loadAccess = useCallback(async () => {
+    if (!isConfigured) return null;
     try {
       const res = await fetch("/api/drivers", { headers: await authHeaders() });
-      if (!res.ok) return;
+      if (!res.ok) return null;
       const body = await res.json();
-      setAccess(body.access ?? {});
-    } catch { /* status badges just stay hidden */ }
+      return body.access ?? {};
+    } catch { return null; /* status badges just stay hidden */ }
   }, []);
-  useEffect(() => { fetchAccess(); }, [fetchAccess, drivers.length]);
+  const fetchAccess = useCallback(async () => {
+    const next = await loadAccess();
+    if (next) setAccess(next);
+  }, [loadAccess]);
+  useEffect(() => {
+    let cancelled = false;
+    loadAccess().then((next) => { if (!cancelled && next) setAccess(next); });
+    return () => { cancelled = true; };
+  }, [loadAccess, drivers.length]);
 
   /** Email the driver a link to set their Driver App password (creates the login if needed). */
   const inviteDriver = useCallback(async (id) => {

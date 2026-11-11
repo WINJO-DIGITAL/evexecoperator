@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 
-function compute(pickupTime) {
+function compute(pickupTime, now) {
   if (!pickupTime) return null;
-  const diff = new Date(pickupTime) - Date.now();
+  const diff = new Date(pickupTime) - now;
   const mins = Math.round(diff / 60_000);
 
   if (mins > 120) {
@@ -20,14 +20,14 @@ function compute(pickupTime) {
 }
 
 export default function ETACountdown({ pickupTime, className = "" }) {
-  const [state, setState] = useState(() => compute(pickupTime));
-
+  // The clock ticks every 30 s; the label is worked out from it while rendering.
+  const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     if (!pickupTime) return;
-    setState(compute(pickupTime));
-    const id = setInterval(() => setState(compute(pickupTime)), 30_000);
+    const id = setInterval(() => setNow(Date.now()), 30_000);
     return () => clearInterval(id);
   }, [pickupTime]);
+  const state = compute(pickupTime, now);
 
   if (!state) return <span className="text-slate-600">—</span>;
 

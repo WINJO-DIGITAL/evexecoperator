@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AIRPORT_PRICES, DEFAULT_PRICING, fixedLegPrice, fixedOneWayPrice, pricingForSave, pricingFromTenant, pricingProblem } from "./prices";
+import { AIRPORT_PRICES, DEFAULT_PRICING, fixedTripPrice, fixedOneWayPrice, pricingForSave, pricingFromTenant, pricingProblem } from "./prices";
 
 describe("fixedOneWayPrice", () => {
   it("matches the website's one-way prices", () => {
@@ -28,22 +28,20 @@ describe("fixedOneWayPrice", () => {
   });
 });
 
-describe("fixedLegPrice", () => {
+describe("fixedTripPrice", () => {
   it("charges the one-way fare for a single journey", () => {
-    expect(fixedLegPrice("Manchester Airport (MAN)", false)).toBe(90);
+    expect(fixedTripPrice("Manchester Airport (MAN)", false)).toBe(90);
   });
 
-  it("splits the return fare across the two legs", () => {
-    expect(fixedLegPrice("Manchester Airport (MAN)", true)).toBe(80);
+  it("charges the whole return fare once, not half per leg", () => {
+    expect(fixedTripPrice("Manchester Airport (MAN)", true)).toBe(160);
     for (const a of AIRPORT_PRICES) {
-      const leg = fixedLegPrice(a.name, true)!;
-      expect(leg * 2).toBe(a.ret);
-      expect(Number.isInteger(leg)).toBe(true);
+      expect(fixedTripPrice(a.name, true)).toBe(a.ret);
     }
   });
 
   it("has no fixed price off the price list", () => {
-    expect(fixedLegPrice("London Heathrow (LHR)", true)).toBeNull();
+    expect(fixedTripPrice("London Heathrow (LHR)", true)).toBeNull();
   });
 });
 
@@ -70,10 +68,10 @@ describe("per-operator prices", () => {
 
   it("suggests prices from the operator's own list", () => {
     const { airports } = pricingFromTenant(stored);
-    expect(fixedLegPrice("Manchester Airport T2", false, airports)).toBe(99);
-    expect(fixedLegPrice("MAN", true, airports)).toBe(90);
-    expect(fixedLegPrice("Preston Station, Butler St", false, airports)).toBe(40);
-    expect(fixedLegPrice("Liverpool Airport", false, airports)).toBeNull();
+    expect(fixedTripPrice("Manchester Airport T2", false, airports)).toBe(99);
+    expect(fixedTripPrice("MAN", true, airports)).toBe(180);
+    expect(fixedTripPrice("Preston Station, Butler St", false, airports)).toBe(40);
+    expect(fixedTripPrice("Liverpool Airport", false, airports)).toBeNull();
   });
 
   it("round-trips to the save shape", () => {

@@ -1,19 +1,20 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import React, { useEffect, useMemo, useRef, useState, useCallback, useSyncExternalStore } from "react";
 import {
   FileText, Plus, X, Printer, Trash2, Check, Send, CircleDollarSign, Clock,
-  MapPin, Plane, Users, Briefcase, Car, CalendarClock, ImageDown,
+  MapPin, ImageDown,
   Calendar, CreditCard, Gem, Phone, Mail, Globe, Loader2, Search,
 } from "lucide-react";
 import { useInvoices, computeTotals } from "@/hooks/operator/useInvoices";
-import { shapedBooking } from "@/hooks/operator/useBookings";
+import { shapedBooking, ukDateDaysAgo } from "@/hooks/operator/useBookings";
 import { useOperatorToast } from "@/components/operator/Toast";
 import { EV_EXEC_LOGO } from "@/lib/operator/brandLogo";
 import { supabase } from "@/lib/supabase";
 import { fmtDate } from "@/lib/dates";
 import { useTenantProfile } from "@/hooks/operator/useTenantProfile";
 import { brandFrom } from "@/lib/brand";
+import { DEPLOYMENT_BRAND } from "@/lib/deploymentBrand";
 
 const VAT_RATES = [
   { label: "No VAT", value: 0 },
@@ -23,16 +24,17 @@ const VAT_RATES = [
 // Invoice colours come from the business's branding (brandFrom in
 // lib/brand.js), navy #0B132B and gold #D7A23F unless changed.
 
-// Letterhead fallback, used until the business details load (and if a field
-// is blank). The live values come from Settings → Business (tenants.brand.invoice).
+// Letterhead before the business details load, and for a field left blank:
+// nothing, so a business never shows another's address or number. The values
+// come from Settings → Business (tenants.brand.invoice).
 const COMPANY = {
-  name: "EV Exec",
-  addressLines: ["EV Exec", "Wheeler Hub Drive", "Blackpool, FY2 0FD", "United Kingdom"],
-  phone: "07721 070370",
-  email: "book@evexec.co.uk",
-  web: "evexec.co.uk",
-  tagline1: "ELEVATING EXPERIENCES",
-  tagline2: "DRIVING EXCELLENCE.",
+  name: "",
+  addressLines: [],
+  phone: "",
+  email: "",
+  web: "",
+  tagline1: "",
+  tagline2: "",
 };
 const DEFAULT_TERMS = "Payment is due within 15 days of invoice date.\nBank Transfer / BACS Preferred.";
 
@@ -41,7 +43,7 @@ function companyFrom(tenant) {
   const lines = Array.isArray(b.address_lines) && b.address_lines.length ? b.address_lines : COMPANY.addressLines;
   const tag = Array.isArray(b.tagline) ? b.tagline : [];
   return {
-    name: tenant?.name || b.business_name || "EV Exec",
+    name: tenant?.name || b.business_name || DEPLOYMENT_BRAND.name,
     addressLines: lines,
     phone: b.phone || COMPANY.phone,
     email: b.email || COMPANY.email,
@@ -53,7 +55,8 @@ function companyFrom(tenant) {
 }
 
 const money = (n) => `£${(Number(n) || 0).toFixed(2)}`;
-const today = () => new Date().toISOString().slice(0, 10);
+// UK calendar date (the UTC date is yesterday's between 00:00 and 01:00 in summer).
+const today = () => ukDateDaysAgo(0);
 
 function statusChip(status) {
   switch (status) {
@@ -314,14 +317,12 @@ function InvoiceModal({ open, onClose, onCreate, bookings, jobsLoading, invoiceF
   const totals = useMemo(() => computeTotals(items, vatRate), [items, vatRate]);
 
   // Opened for a specific job (invoices?ref=EVX-…): prefill it once loaded.
-  const appliedRef = useRef(null);
-  useEffect(() => {
-    if (!open || !initialRef || appliedRef.current === initialRef) return;
-    if (!bookings.some((b) => b.id === initialRef)) return;
-    appliedRef.current = initialRef;
+  // Done while rendering (once the job has loaded), not in an effect.
+  const [appliedRef, setAppliedRef] = useState(null);
+  if (open && initialRef && appliedRef !== initialRef && bookings.some((b) => b.id === initialRef)) {
+    setAppliedRef(initialRef);
     prefillFromBooking(initialRef);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, initialRef, bookings]);
+  }
 
   const selectedJob = bookingRef ? bookings.find((b) => b.id === bookingRef) : null;
 
@@ -894,21 +895,29 @@ function InvoicePreview({ invoice, onClose, onStatus, onDelete, onEmailed }) {
 
           {/* ── Footer band ── */}
           <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-5 py-4 text-[11px] sm:px-10 sm:py-5" style={{ backgroundColor: NAVY, ...exact }}>
-            <div className="flex items-start gap-2">
-              <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0" style={{ color: GOLD }} />
-              <div className="leading-snug text-slate-300">
-                {company.addressLines.map((l, i) => <p key={i}>{l}</p>)}
+            {company.addressLines.length > 0 && (
+              <div className="flex items-start gap-2">
+                <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0" style={{ color: GOLD }} />
+                <div className="leading-snug text-slate-300">
+                  {company.addressLines.map((l, i) => <p key={i}>{l}</p>)}
+                </div>
               </div>
-            </div>
-            <div className="flex items-center gap-2 text-slate-300">
-              <Phone className="h-4 w-4" style={{ color: GOLD }} /> {company.phone}
-            </div>
-            <div className="flex items-center gap-2 text-slate-300">
-              <Mail className="h-4 w-4" style={{ color: GOLD }} /> {company.email}
-            </div>
-            <div className="flex items-center gap-2 text-slate-300">
-              <Globe className="h-4 w-4" style={{ color: GOLD }} /> {company.web}
-            </div>
+            )}
+            {company.phone && (
+              <div className="flex items-center gap-2 text-slate-300">
+                <Phone className="h-4 w-4" style={{ color: GOLD }} /> {company.phone}
+              </div>
+            )}
+            {company.email && (
+              <div className="flex items-center gap-2 text-slate-300">
+                <Mail className="h-4 w-4" style={{ color: GOLD }} /> {company.email}
+              </div>
+            )}
+            {company.web && (
+              <div className="flex items-center gap-2 text-slate-300">
+                <Globe className="h-4 w-4" style={{ color: GOLD }} /> {company.web}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -925,13 +934,22 @@ export default function InvoicesPage() {
   const [preview, setPreview] = useState(null);
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
-  const [initialRef, setInitialRef] = useState(null);
 
-  // invoices?ref=EVX-… opens the new-invoice form for that job.
-  useEffect(() => {
-    const ref = new URLSearchParams(window.location.search).get("ref");
-    if (ref) { setInitialRef(ref); setModalOpen(true); }
-  }, []);
+  // invoices?ref=EVX-… opens the new-invoice form for that job. The address is
+  // read as an external value (nothing on the server, so no mismatch), and the
+  // form opens once when it first appears.
+  const urlRef = useSyncExternalStore(
+    () => () => {},
+    () => new URLSearchParams(window.location.search).get("ref"),
+    () => null
+  );
+  const [dismissedRef, setDismissedRef] = useState(null); // closed by the operator
+  const [openedForRef, setOpenedForRef] = useState(null);
+  const initialRef = urlRef && urlRef !== dismissedRef ? urlRef : null;
+  if (urlRef && openedForRef !== urlRef) {
+    setOpenedForRef(urlRef);
+    setModalOpen(true);
+  }
 
   // A job's existing invoice, matched by the booking link or its ref.
   const invoiceFor = useMemo(() => {
@@ -1099,12 +1117,12 @@ export default function InvoicesPage() {
 
       <InvoiceModal
         open={modalOpen}
-        onClose={() => { setModalOpen(false); setInitialRef(null); }}
+        onClose={() => { setModalOpen(false); setDismissedRef(urlRef); }}
         onCreate={handleCreate}
         bookings={jobs}
         jobsLoading={jobsLoading}
         invoiceFor={invoiceFor}
-        onOpenInvoice={(inv) => { setModalOpen(false); setInitialRef(null); setPreview(inv); }}
+        onOpenInvoice={(inv) => { setModalOpen(false); setDismissedRef(urlRef); setPreview(inv); }}
         initialRef={initialRef}
       />
       {preview && (

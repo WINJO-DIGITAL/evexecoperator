@@ -50,6 +50,8 @@ export function useBookingDrawer(api, drivers) {
     const verb = decision === "accepted" ? "Accepted" : "Rejected";
     if (out?.warning) {
       toast({ message: `${verb}, but ${out.warning}`, type: "error" });
+    } else if (out?.channel === "text") {
+      toast({ message: `${verb}. No email on file: send the text from Today → Texts to send.`, type: "success" });
     } else {
       toast({
         message: `${verb} — customer notified${out?.channel ? ` by ${out.channel}` : ""}`,

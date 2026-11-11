@@ -73,10 +73,13 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
-        // System serif (New York on iPhone/Mac) for calendar headings: no
-        // web-font download, so nothing extra to load or pay for.
-        display: ["ui-serif", '"New York"', '"Iowan Old Style"', '"Palatino Linotype"', "Georgia", "serif"],
+        // One font everywhere (Manrope, src/app/globals.css), including the
+        // serif and monospace utilities. The calendar's heading font
+        // (font-display) is Manrope too.
+        sans: ["Manrope", "system-ui", "sans-serif"],
+        serif: ["Manrope", "system-ui", "sans-serif"],
+        mono: ["Manrope", "system-ui", "sans-serif"],
+        display: ["Manrope", "system-ui", "sans-serif"],
       },
       // Operator calendar type scale and radii (see calendar/tokens.js).
       fontSize: {

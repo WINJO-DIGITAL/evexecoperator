@@ -15,6 +15,11 @@ export function getStops(b) {
     .map((l) => l.replace(/^Stop \d+:\s*/i, '').trim()).filter(Boolean);
 }
 
+// True when the airport is on the published price list (not a quoted job).
+export function onPriceList(b) {
+  return Boolean(PRICES[b.airport]);
+}
+
 export function getPrice(b) {
   const p = Number(b.price ?? b.quoted_price);
   if (Number.isFinite(p) && p > 0) return p;

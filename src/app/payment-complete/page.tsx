@@ -1,7 +1,8 @@
 import { CheckCircle2 } from "lucide-react";
+import { DEPLOYMENT_BRAND } from "@/lib/deploymentBrand";
 
 export const metadata = {
-  title: "Payment complete | EV Exec",
+  title: `Payment complete | ${DEPLOYMENT_BRAND.name}`,
 };
 
 export default async function PaymentCompletePage({
@@ -17,7 +18,7 @@ export default async function PaymentCompletePage({
       </div>
       <h1 className="mt-6 text-2xl font-semibold text-white">Payment received</h1>
       <p className="mt-2 max-w-sm text-sm text-slate-400">
-        Thank you — your payment for your EV Exec airport transfer has been confirmed.
+        Thank you — your payment for your {DEPLOYMENT_BRAND.name} airport transfer has been confirmed.
         {ref ? <> Your booking reference is <span className="font-medium text-slate-200">{ref}</span>.</> : null}
       </p>
       <p className="mt-8 text-xs text-slate-600">You can close this page.</p>

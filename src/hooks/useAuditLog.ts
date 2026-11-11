@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import type { DbAuditLogEntry } from "@/lib/database.types";
+import type { QueryResult } from "@/lib/queryResult";
 
 const AUDIT_LOG_LIMIT = 100;
 
@@ -11,14 +12,17 @@ export function useAuditLog() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetch = useCallback(async () => {
-    setLoading(true);
-    const { data, error: err } = await supabase
-      .from("booking_audit_log")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(AUDIT_LOG_LIMIT);
+  const query = useCallback(
+    () =>
+      supabase
+        .from("booking_audit_log")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(AUDIT_LOG_LIMIT),
+    []
+  );
 
+  const apply = useCallback(({ data, error: err }: QueryResult) => {
     if (err) {
       setError(err.message);
     } else {
@@ -28,8 +32,16 @@ export function useAuditLog() {
     setLoading(false);
   }, []);
 
+  const fetch = useCallback(async () => {
+    setLoading(true);
+    apply(await query());
+  }, [query, apply]);
+
   useEffect(() => {
-    fetch();
+    let cancelled = false;
+    query().then((res) => {
+      if (!cancelled) apply(res);
+    });
 
     // Real-time — new activity appears instantly as operators make changes
     const channel = supabase
@@ -44,9 +56,10 @@ export function useAuditLog() {
       .subscribe();
 
     return () => {
+      cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, [fetch]);
+  }, [query, apply]);
 
   return { entries, loading, error, refetch: fetch };
 }

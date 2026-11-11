@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { PORTALS } from "@/lib/operator/portals";
 import { initialsOf } from "./OperatorContext";
+import { DEPLOYMENT_BRAND } from "@/lib/deploymentBrand";
 
 // Main sections, in order. `mobile: true` puts it on the phone tab bar; the
 // rest live under "More" there.
@@ -51,15 +52,20 @@ function Badge({ count, className = "" }) {
   );
 }
 
-export default function Sidebar({ inboxCount = 0, businessName = "EV Exec", logoUrl = null, onSignOut }) {
+export default function Sidebar({ inboxCount = 0, businessName = DEPLOYMENT_BRAND.name, logoUrl = null, onSignOut }) {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
   const badgeFor = (item) => (item.badge === "inbox" ? inboxCount : 0);
   const moreItems = navItems.filter((i) => !i.mobile);
   const moreActive = moreItems.some((i) => isActive(pathname, i.href));
 
-  // Close the "More" sheet on navigation and with Escape.
-  useEffect(() => { setMoreOpen(false); }, [pathname]);
+  // Close the "More" sheet on navigation (while rendering, as React recommends
+  // for state that follows a value) and with Escape.
+  const [sheetPath, setSheetPath] = useState(pathname);
+  if (sheetPath !== pathname) {
+    setSheetPath(pathname);
+    setMoreOpen(false);
+  }
   useEffect(() => {
     if (!moreOpen) return;
     const k = (e) => { if (e.key === "Escape") setMoreOpen(false); };

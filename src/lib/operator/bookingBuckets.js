@@ -15,9 +15,12 @@ export const needsDriver = (b) =>
   !awaitingReply(b) &&
   (b.status === "Unassigned" || b.status === "Unassigned / Missed Call Recovery" || !b.driverId);
 
+/** The £0 return leg of a return booking; it is paid with its outbound booking. */
+export const isReturnLeg = (b) => /^Return leg created automatically/i.test(String(b.notes || ""));
+
 /** Finished but not paid (cash jobs are settled with the driver, not here). */
 export const unpaidCompleted = (b) =>
-  b.status === "Completed" && b.paymentStatus !== "Paid" && b.paymentMethod !== "Cash";
+  b.status === "Completed" && b.paymentStatus !== "Paid" && b.paymentMethod !== "Cash" && !isReturnLeg(b);
 
 /** Minutes from `now` until pickup (negative once passed); null if no time. */
 export function minutesUntil(b, now = Date.now()) {

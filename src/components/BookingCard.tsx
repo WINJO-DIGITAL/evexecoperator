@@ -140,7 +140,7 @@ export default function BookingCard({ booking, drivers, notification, unavailabl
           <span className={`text-xs font-medium ${booking.payment_status === "Paid" ? "text-emerald-600" : "text-slate-500"}`}>
             {booking.payment_status ?? "Unpaid"}{booking.payment_method ? ` · ${booking.payment_method}` : " · method not set"}
           </span>
-          <span className="text-sm font-semibold text-amber-600">{booking.quoted_price != null ? `£${Number(booking.quoted_price).toFixed(0)}` : "TBC"}</span>
+          <span className="text-sm font-semibold text-amber-600">{booking.quoted_price != null ? `£${Number(booking.quoted_price).toFixed(Number.isInteger(Number(booking.quoted_price)) ? 0 : 2)}` : "TBC"}</span>
         </div>
 
         <div className="flex items-center gap-2">
