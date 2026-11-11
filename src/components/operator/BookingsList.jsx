@@ -614,10 +614,13 @@ export default function BookingsList() {
 
   const debouncedSearch = useDebounce(search, 200);
 
-  useEffect(() => {
+  // A new ?q= in the address (a search link) fills the search box.
+  const [seenParams, setSeenParams] = useState(searchParams);
+  if (seenParams !== searchParams) {
+    setSeenParams(searchParams);
     const q = searchParams.get("q");
     if (q != null) setSearch(q);
-  }, [searchParams]);
+  }
 
   // Keyboard shortcuts: N = new booking, / or F = focus search
   useEffect(() => {

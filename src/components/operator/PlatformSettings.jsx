@@ -156,9 +156,15 @@ export default function PlatformSettings() {
     }
   }, []);
 
+  // First load. `loading` already starts true, so nothing is set until the answer arrives.
   useEffect(() => {
-    loadTenants();
-  }, [loadTenants]);
+    let cancelled = false;
+    callManageTenants("list_tenants").then(
+      ({ tenants: rows }) => { if (!cancelled) { setTenants(rows); setLoading(false); } },
+      (err) => { if (!cancelled) { setError(err.message); setLoading(false); } }
+    );
+    return () => { cancelled = true; };
+  }, []);
 
   return (
     <div className="space-y-8">

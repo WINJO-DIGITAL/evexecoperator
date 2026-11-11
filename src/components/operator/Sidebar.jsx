@@ -58,8 +58,13 @@ export default function Sidebar({ inboxCount = 0, businessName = "EV Exec", logo
   const moreItems = navItems.filter((i) => !i.mobile);
   const moreActive = moreItems.some((i) => isActive(pathname, i.href));
 
-  // Close the "More" sheet on navigation and with Escape.
-  useEffect(() => { setMoreOpen(false); }, [pathname]);
+  // Close the "More" sheet on navigation (while rendering, as React recommends
+  // for state that follows a value) and with Escape.
+  const [sheetPath, setSheetPath] = useState(pathname);
+  if (sheetPath !== pathname) {
+    setSheetPath(pathname);
+    setMoreOpen(false);
+  }
   useEffect(() => {
     if (!moreOpen) return;
     const k = (e) => { if (e.key === "Escape") setMoreOpen(false); };

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, Suspense } from "react";
+import React, { useState, useEffect, useRef, Suspense, useSyncExternalStore } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Building2,
@@ -155,10 +155,15 @@ function profileForm(tenant) {
 function BusinessSettings({ toast }) {
   const { tenant, canEdit, loading, error, save } = useTenantProfile();
   const { profile } = useOperator();
-  const [form, setForm] = useState(() => profileForm(null));
+  const [form, setForm] = useState(() => profileForm(tenant));
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => { setForm(profileForm(tenant)); }, [tenant]);
+  // Start the form again whenever the saved business changes (while rendering).
+  const [formFor, setFormFor] = useState(tenant);
+  if (formFor !== tenant) {
+    setFormFor(tenant);
+    setForm(profileForm(tenant));
+  }
 
   const set = (field) => (value) => setForm((f) => ({ ...f, [field]: value }));
 
@@ -258,13 +263,13 @@ function notifWhen(x) {
 // Enable/disable Web Push on the current device (operator gets pinged when a
 // website booking comes in, even with the app closed).
 function PushDeviceRow() {
-  const [supported, setSupported] = useState(true);
+  // A property of this browser: read as an external value ("supported" on the server).
+  const supported = useSyncExternalStore(() => () => {}, isPushSupported, () => true);
   const [enabled, setEnabled] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(null);
 
   useEffect(() => {
-    setSupported(isPushSupported());
     getPushEnabled().then(setEnabled).catch(() => {});
   }, []);
 
@@ -450,12 +455,11 @@ function BrandingSettings({ toast }) {
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef(null);
 
-  useEffect(() => {
-    if (tenant && !form) {
-      const b = brandFrom(tenant);
-      setForm({ logoUrl: b.logoUrl, primary: b.primary, accent: b.accent });
-    }
-  }, [tenant, form]);
+  // Fill the form from the saved business as soon as it has loaded (while rendering).
+  if (tenant && !form) {
+    const b = brandFrom(tenant);
+    setForm({ logoUrl: b.logoUrl, primary: b.primary, accent: b.accent });
+  }
 
   if (loading && !form) return <p className="text-sm text-slate-500">Loading branding…</p>;
   if (!tenant || !form) return <p className="text-sm text-red-600">{error || "No business is linked to this account."}</p>;
@@ -630,9 +634,8 @@ function PriceSettings({ toast }) {
   const [busy, setBusy] = useState(false);
   const nextKey = useRef(0);
 
-  useEffect(() => {
-    if (tenant && !form) setForm(toForm(pricingFromTenant(tenant.pricing)));
-  }, [tenant, form]);
+  // Fill the form from the saved prices as soon as they have loaded (while rendering).
+  if (tenant && !form) setForm(toForm(pricingFromTenant(tenant.pricing)));
 
   if (loading && !form) return <p className="text-sm text-slate-500">Loading prices…</p>;
   if (!tenant || !form) return <p className="text-sm text-red-600">{error || "No business is linked to this account."}</p>;
