@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { invoice as invoiceEmail } from "@/lib/email/content.js";
+import { loadBrand } from "@/lib/server/brands";
 
 // Emails an invoice PDF to the customer via Resend.
 //
@@ -71,11 +72,15 @@ export async function POST(req: Request) {
   });
   const { data: roles } = await asCaller
     .from("tenant_users")
-    .select("role")
+    .select("role, tenant_id")
     .eq("user_id", userData.user.id)
     .in("role", ["super_admin", "operator_admin", "dispatcher"])
     .limit(1);
   if (!roles?.length) return json({ error: "Not authorised." }, 403);
+  // The invoice email is for the sender's own business (a platform admin, with
+  // no business of their own, sends as the default one).
+  const senderTenantId = roles[0].tenant_id ?? undefined;
+  await loadBrand(asCaller, senderTenantId);
 
   // ── Parse + validate the payload ───────────────────────────────────────────
   let body: {
@@ -103,6 +108,7 @@ export async function POST(req: Request) {
   // Same email layout as the website (src/lib/email, copied from evexec).
   const amount = Number(total.replace(/[^0-9.]/g, ""));
   const mail = invoiceEmail({
+    tenant_id: senderTenantId,
     number, customer_name: name, total: Number.isFinite(amount) && amount > 0 ? amount : null,
     terms: "Payment is due within 15 days of the invoice date. Bank transfer (BACS) is preferred. Any questions, just reply to this email.",
   });

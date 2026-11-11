@@ -10,6 +10,7 @@
 //   DELETE { userId }                     -> remove from the team
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { teamInvite } from "@/lib/email/staff.js";
+import { loadBrand } from "@/lib/server/brands";
 import {
   adminClient, appOrigin, getCaller, isEmail, json, sendEmail, setPasswordUrl, STAFF_ROLES, type Caller, type StaffRole,
 } from "@/lib/server/staff";
@@ -114,8 +115,9 @@ export async function POST(req: Request) {
       const members = await listMembers(admin, caller.tenantId);
       const m = members.find((x) => x.userId === body.userId);
       if (!m) return json({ error: "That person isn't on your team." }, 404);
+      await loadBrand(admin, caller.tenantId);
       const link = await linkFor(admin, m.email, origin, "recovery");
-      await sendEmail(m.email, teamInvite({ businessName: caller.tenantName, inviterName: caller.name, role: m.role, url: link.url, newAccount: true }));
+      await sendEmail(m.email, teamInvite({ tenant_id: caller.tenantId, businessName: caller.tenantName, inviterName: caller.name, role: m.role, url: link.url, newAccount: true }));
       return json({ ok: true, email: m.email });
     }
 
@@ -124,13 +126,14 @@ export async function POST(req: Request) {
     if (!isEmail(email) || email.length > 254) return json({ error: "Enter a valid email address." }, 422);
     if (!(STAFF_ROLES as readonly string[]).includes(role)) return json({ error: "Choose Admin or Dispatcher." }, 422);
 
+    await loadBrand(admin, caller.tenantId);
     const link = await linkFor(admin, email, origin, "invite");
     if (link.userId === caller.userId) return json({ error: "You're already on the team." }, 422);
     await setRole(admin, caller.tenantId, link.userId, role);
     let emailed = true;
     let emailError: string | null = null;
     try {
-      await sendEmail(email, teamInvite({ businessName: caller.tenantName, inviterName: caller.name, role, url: link.url, newAccount: link.newAccount }));
+      await sendEmail(email, teamInvite({ tenant_id: caller.tenantId, businessName: caller.tenantName, inviterName: caller.name, role, url: link.url, newAccount: link.newAccount }));
     } catch (e) {
       emailed = false;
       emailError = (e as Error).message;

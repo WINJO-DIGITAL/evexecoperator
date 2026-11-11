@@ -2,6 +2,9 @@ import { createClient } from "@supabase/supabase-js";
 import { fmtDate } from "@/lib/dates";
 import { bookingConfirmed, bookingUnavailable } from "@/lib/email/content.js";
 import { freeCancellationLine } from "@/lib/email/cancellation.js";
+import { brandFor } from "@/lib/email/brand.js";
+import { loadBrand } from "@/lib/server/brands";
+import { bookingResponseText } from "@/lib/bookingResponseText";
 import { adminClient, getCaller } from "@/lib/server/staff";
 
 // Notifies a customer that the operator has ACCEPTED or REJECTED their website
@@ -94,9 +97,13 @@ export async function POST(req: Request) {
   const payUrl = `${WEBSITE}/booking?id=${encodeURIComponent(str(b.id))}`;
   const when = `${fmtDate(str(b.travel_date) || null)} ${time5(b.travel_time)}`.trim();
 
-  const smsText = accepted
-    ? `EV Exec: Hi ${first}, your booking ${ref} (${when}) is confirmed.${needsPayment(b) ? ` Pay by card or choose cash: ${payUrl}` : ""} ${freeCancellationLine(b) ? `${freeCancellationLine(b)} ` : ""}Terms: evexec.co.uk/terms#cancellation Questions: 07721 070370`
-    : `EV Exec: Hi ${first}, unfortunately EV Exec cannot accommodate your requested journey (${when}, Ref ${ref}). We apologise for the inconvenience. No payment has been taken. Questions: 07721 070370`;
+  // The business's own name and number go in the texts and the email.
+  await loadBrand(admin, str(b.tenant_id) || null);
+  const brand = brandFor(str(b.tenant_id) || undefined);
+  const smsText = bookingResponseText({
+    accepted, brand, first, ref, when, payUrl,
+    needsPayment: needsPayment(b), freeCancellation: freeCancellationLine(b) || "",
+  });
 
   // ── Email first ────────────────────────────────────────────────────────────
   let emailed = false;
