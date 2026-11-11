@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import type { DbContactMessage } from "@/lib/database.types";
+import type { QueryResult } from "@/lib/queryResult";
 
 export function useContactMessages() {
   const [contactMessages, setContactMessages] = useState<DbContactMessage[]>([]);
@@ -10,13 +11,12 @@ export function useContactMessages() {
   const [error, setError]     = useState<string | null>(null);
   const prevRef               = useRef<DbContactMessage[]>([]);
 
-  const fetch = useCallback(async () => {
-    setLoading(true);
-    const { data, error: err } = await supabase
-      .from("contact_messages")
-      .select("*")
-      .order("created_at", { ascending: false });
+  const query = useCallback(
+    () => supabase.from("contact_messages").select("*").order("created_at", { ascending: false }),
+    []
+  );
 
+  const apply = useCallback(({ data, error: err }: QueryResult) => {
     if (err) {
       setError(err.message);
     } else {
@@ -28,12 +28,20 @@ export function useContactMessages() {
     setLoading(false);
   }, []);
 
+  const fetch = useCallback(async () => {
+    setLoading(true);
+    apply(await query());
+  }, [query, apply]);
+
   useEffect(() => {
     prevRef.current = contactMessages;
   }, [contactMessages]);
 
   useEffect(() => {
-    fetch();
+    let cancelled = false;
+    query().then((res) => {
+      if (!cancelled) apply(res);
+    });
 
     // Real-time — new "Contact us" submissions from the public site appear instantly
     const channel = supabase
@@ -62,9 +70,10 @@ export function useContactMessages() {
       .subscribe();
 
     return () => {
+      cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, [fetch]);
+  }, [query, apply]);
 
   const setStatus = useCallback(async (id: string, status: string) => {
     setContactMessages((prev) =>

@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import type { DbMissedCall } from "@/lib/database.types";
+import type { QueryResult } from "@/lib/queryResult";
 
 export function useMissedCalls() {
   const [missedCalls, setMissedCalls] = useState<DbMissedCall[]>([]);
@@ -10,13 +11,12 @@ export function useMissedCalls() {
   const [error, setError]     = useState<string | null>(null);
   const prevRef               = useRef<DbMissedCall[]>([]);
 
-  const fetch = useCallback(async () => {
-    setLoading(true);
-    const { data, error: err } = await supabase
-      .from("missed_calls")
-      .select("*")
-      .order("created_at", { ascending: false });
+  const query = useCallback(
+    () => supabase.from("missed_calls").select("*").order("created_at", { ascending: false }),
+    []
+  );
 
+  const apply = useCallback(({ data, error: err }: QueryResult) => {
     if (err) {
       setError(err.message);
     } else {
@@ -28,12 +28,20 @@ export function useMissedCalls() {
     setLoading(false);
   }, []);
 
+  const fetch = useCallback(async () => {
+    setLoading(true);
+    apply(await query());
+  }, [query, apply]);
+
   useEffect(() => {
     prevRef.current = missedCalls;
   }, [missedCalls]);
 
   useEffect(() => {
-    fetch();
+    let cancelled = false;
+    query().then((res) => {
+      if (!cancelled) apply(res);
+    });
 
     // Real-time — missed calls logged by the phone system appear instantly
     const channel = supabase
@@ -62,9 +70,10 @@ export function useMissedCalls() {
       .subscribe();
 
     return () => {
+      cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, [fetch]);
+  }, [query, apply]);
 
   const setResolved = useCallback(async (id: string, resolved: boolean) => {
     setMissedCalls((prev) =>

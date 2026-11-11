@@ -41,28 +41,48 @@ export function computeTotals(lineItems, vatRate) {
 
 export function useInvoices() {
   const [invoices, setInvoices] = useState([]);
-  const [loading, setLoading] = useState(false);
+  // Starts true when there is a database to ask: the first load begins on mount.
+  const [loading, setLoading] = useState(isConfigured);
   const [error, setError] = useState(null);
   const invoicesRef = useRef(invoices);
   useEffect(() => { invoicesRef.current = invoices; }, [invoices]);
+
+  const queryInvoices = useCallback(
+    () => supabase.from("invoices").select("*").order("created_at", { ascending: false }),
+    []
+  );
+
+  const applyInvoices = useCallback(({ data, error: err }) => {
+    if (err) {
+      setError(err.message);
+    } else {
+      setInvoices((data || []).map(shapedInvoice));
+      setError(null);
+    }
+    setLoading(false);
+  }, []);
 
   const fetchInvoices = useCallback(async () => {
     if (!isConfigured) return;
     setLoading(true);
     try {
-      const { data, error: err } = await supabase
-        .from("invoices")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (err) { setError(err.message); return; }
-      setInvoices((data || []).map(shapedInvoice));
-      setError(null);
-    } finally {
+      applyInvoices(await queryInvoices());
+    } catch (e) {
       setLoading(false);
+      throw e;
     }
-  }, []);
+  }, [queryInvoices, applyInvoices]);
 
-  useEffect(() => { fetchInvoices(); }, [fetchInvoices]);
+  // First load. `loading` already starts true, so nothing is set until the answer arrives.
+  useEffect(() => {
+    if (!isConfigured) return;
+    let cancelled = false;
+    queryInvoices().then(
+      (res) => { if (!cancelled) applyInvoices(res); },
+      () => { if (!cancelled) setLoading(false); }
+    );
+    return () => { cancelled = true; };
+  }, [queryInvoices, applyInvoices]);
 
   const createInvoice = useCallback(async (form) => {
     const { subtotal, vatAmount, total } = computeTotals(form.lineItems, form.vatRate);

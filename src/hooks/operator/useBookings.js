@@ -135,7 +135,8 @@ export function useBookings({ scope = "operational" } = {}) {
   // Whether bookings older than the operational window may still exist:
   // unknown until the first loadEarlier(), false once a page comes back short.
   const [hasEarlier, setHasEarlier] = useState(true);
-  const [loading, setLoading] = useState(false);
+  // Starts true when there is a database to ask: the first load begins on mount.
+  const [loading, setLoading] = useState(isConfigured);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
 
@@ -167,20 +168,23 @@ export function useBookings({ scope = "operational" } = {}) {
       .range(from, to)
   ), []);
 
-  const fetchBookings = useCallback(async () => {
-    if (!isConfigured) return;
-    const myId = ++fetchIdRef.current;
-    setLoading(true);
-    try {
-      const forwardN = Math.max(pageSize, forwardLoadedRef.current);
-      const earlierN = earlierLoadedRef.current;
-      const [fwd, early] = await Promise.all([
-        forwardQuery(0, forwardN - 1, true),
-        earlierN > 0 && !all ? earlierQuery(0, earlierN - 1, false) : Promise.resolve({ data: [] }),
-      ]);
-      if (fetchIdRef.current !== myId) return;
-      const err = fwd.error || early.error;
-      if (err) { setError(err.message); return; }
+  // Reads the whole window currently on screen. Sets no state.
+  const queryBookings = useCallback(() => {
+    const forwardN = Math.max(pageSize, forwardLoadedRef.current);
+    const earlierN = earlierLoadedRef.current;
+    return Promise.all([
+      forwardQuery(0, forwardN - 1, true),
+      earlierN > 0 && !all ? earlierQuery(0, earlierN - 1, false) : Promise.resolve({ data: [] }),
+    ]);
+  }, [all, pageSize, forwardQuery, earlierQuery]);
+
+  // Shows a response, unless a newer fetch (numbered after this one) has started.
+  const applyBookings = useCallback((myId, fwd, early) => {
+    if (fetchIdRef.current !== myId) return;
+    const err = fwd.error || early.error;
+    if (err) {
+      setError(err.message);
+    } else {
       const earlierRows = (early.data || []).slice().reverse();
       forwardLoadedRef.current = fwd.data.length;
       earlierLoadedRef.current = earlierRows.length;
@@ -189,10 +193,22 @@ export function useBookings({ scope = "operational" } = {}) {
       // earlier ones already loaded.
       setTotalCount((fwd.count ?? 0) + earlierRows.length);
       setError(null);
-    } finally {
-      if (fetchIdRef.current === myId) setLoading(false);
     }
-  }, [all, pageSize, forwardQuery, earlierQuery]);
+    setLoading(false);
+  }, []);
+
+  const fetchBookings = useCallback(async () => {
+    if (!isConfigured) return;
+    const myId = ++fetchIdRef.current;
+    setLoading(true);
+    try {
+      const [fwd, early] = await queryBookings();
+      applyBookings(myId, fwd, early);
+    } catch (e) {
+      if (fetchIdRef.current === myId) setLoading(false);
+      throw e;
+    }
+  }, [queryBookings, applyBookings]);
 
   const loadMore = useCallback(async () => {
     if (!isConfigured || loadingMore) return;
@@ -232,9 +248,24 @@ export function useBookings({ scope = "operational" } = {}) {
     }
   }, [all, loadingMore, earlierQuery]);
 
+  // First load (and again if the window changes). `loading` already starts
+  // true, so nothing is set until the answer arrives.
   useEffect(() => {
-    fetchBookings();
-  }, [fetchBookings]);
+    if (!isConfigured) return;
+    let cancelled = false;
+    const myId = ++fetchIdRef.current;
+    queryBookings().then(
+      ([fwd, early]) => {
+        if (!cancelled) applyBookings(myId, fwd, early);
+      },
+      () => {
+        if (!cancelled && fetchIdRef.current === myId) setLoading(false);
+      }
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [queryBookings, applyBookings]);
 
   useRealtimeBookings(fetchBookings);
 

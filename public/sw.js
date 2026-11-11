@@ -7,7 +7,7 @@ self.addEventListener("activate", (event) => event.waitUntil(self.clients.claim(
 
 self.addEventListener("push", (event) => {
   let data = {};
-  try { data = event.data ? event.data.json() : {}; } catch (e) { data = {}; }
+  try { data = event.data ? event.data.json() : {}; } catch { data = {}; }
   const title = data.title || "EV Exec";
   const options = {
     body: data.body || "New job request",
@@ -27,7 +27,7 @@ self.addEventListener("notificationclick", (event) => {
     const all = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
     for (const client of all) {
       if ("focus" in client) {
-        try { await client.navigate(url); } catch (e) { /* ignore */ }
+        try { await client.navigate(url); } catch { /* ignore */ }
         return client.focus();
       }
     }

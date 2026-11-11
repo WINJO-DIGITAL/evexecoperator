@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import React, { useEffect, useMemo, useRef, useState, useCallback, useSyncExternalStore } from "react";
 import {
   FileText, Plus, X, Printer, Trash2, Check, Send, CircleDollarSign, Clock,
   MapPin, ImageDown,
@@ -315,14 +315,12 @@ function InvoiceModal({ open, onClose, onCreate, bookings, jobsLoading, invoiceF
   const totals = useMemo(() => computeTotals(items, vatRate), [items, vatRate]);
 
   // Opened for a specific job (invoices?ref=EVX-…): prefill it once loaded.
-  const appliedRef = useRef(null);
-  useEffect(() => {
-    if (!open || !initialRef || appliedRef.current === initialRef) return;
-    if (!bookings.some((b) => b.id === initialRef)) return;
-    appliedRef.current = initialRef;
+  // Done while rendering (once the job has loaded), not in an effect.
+  const [appliedRef, setAppliedRef] = useState(null);
+  if (open && initialRef && appliedRef !== initialRef && bookings.some((b) => b.id === initialRef)) {
+    setAppliedRef(initialRef);
     prefillFromBooking(initialRef);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, initialRef, bookings]);
+  }
 
   const selectedJob = bookingRef ? bookings.find((b) => b.id === bookingRef) : null;
 
@@ -926,13 +924,22 @@ export default function InvoicesPage() {
   const [preview, setPreview] = useState(null);
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
-  const [initialRef, setInitialRef] = useState(null);
 
-  // invoices?ref=EVX-… opens the new-invoice form for that job.
-  useEffect(() => {
-    const ref = new URLSearchParams(window.location.search).get("ref");
-    if (ref) { setInitialRef(ref); setModalOpen(true); }
-  }, []);
+  // invoices?ref=EVX-… opens the new-invoice form for that job. The address is
+  // read as an external value (nothing on the server, so no mismatch), and the
+  // form opens once when it first appears.
+  const urlRef = useSyncExternalStore(
+    () => () => {},
+    () => new URLSearchParams(window.location.search).get("ref"),
+    () => null
+  );
+  const [dismissedRef, setDismissedRef] = useState(null); // closed by the operator
+  const [openedForRef, setOpenedForRef] = useState(null);
+  const initialRef = urlRef && urlRef !== dismissedRef ? urlRef : null;
+  if (urlRef && openedForRef !== urlRef) {
+    setOpenedForRef(urlRef);
+    setModalOpen(true);
+  }
 
   // A job's existing invoice, matched by the booking link or its ref.
   const invoiceFor = useMemo(() => {
@@ -1100,12 +1107,12 @@ export default function InvoicesPage() {
 
       <InvoiceModal
         open={modalOpen}
-        onClose={() => { setModalOpen(false); setInitialRef(null); }}
+        onClose={() => { setModalOpen(false); setDismissedRef(urlRef); }}
         onCreate={handleCreate}
         bookings={jobs}
         jobsLoading={jobsLoading}
         invoiceFor={invoiceFor}
-        onOpenInvoice={(inv) => { setModalOpen(false); setInitialRef(null); setPreview(inv); }}
+        onOpenInvoice={(inv) => { setModalOpen(false); setDismissedRef(urlRef); setPreview(inv); }}
         initialRef={initialRef}
       />
       {preview && (

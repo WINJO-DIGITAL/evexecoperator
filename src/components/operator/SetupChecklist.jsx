@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { CheckCircle2, Circle, ChevronRight, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
@@ -13,18 +13,35 @@ import { useOperator } from "@/components/operator/OperatorContext";
 
 const HIDE_KEY = (tenantId) => `evx_setup_hidden_${tenantId}`;
 
+// Whether the checklist was hidden is kept in the browser (per business). It is
+// read as an external store, so it is correct on the first client render and
+// follows other tabs. A hide that storage refuses (private window) lasts for
+// the session.
+const hiddenThisSession = new Set();
+const hideListeners = new Set();
+function subscribeHidden(onChange) {
+  hideListeners.add(onChange);
+  window.addEventListener("storage", onChange);
+  return () => { hideListeners.delete(onChange); window.removeEventListener("storage", onChange); };
+}
+function isHidden(tenantId) {
+  if (!tenantId) return true;
+  if (hiddenThisSession.has(tenantId)) return true;
+  try { return localStorage.getItem(HIDE_KEY(tenantId)) === "1"; } catch { return false; }
+}
+function hideChecklist(tenantId) {
+  hiddenThisSession.add(tenantId);
+  try { localStorage.setItem(HIDE_KEY(tenantId), "1"); } catch { /* fine */ }
+  hideListeners.forEach((f) => f());
+}
+
 export default function SetupChecklist({ drivers, hasBookings }) {
   const { profile } = useOperator();
   const tenant = profile.tenant;
   const isAdmin = ["operator_admin", "super_admin"].includes(profile.user?.role);
-  const [hidden, setHidden] = useState(true);
+  const hidden = useSyncExternalStore(subscribeHidden, () => isHidden(tenant?.id), () => true);
   const [teamSize, setTeamSize] = useState(null);
   const [push, setPush] = useState(null);
-
-  useEffect(() => {
-    if (!tenant?.id) return;
-    try { setHidden(localStorage.getItem(HIDE_KEY(tenant.id)) === "1"); } catch { setHidden(false); }
-  }, [tenant?.id]);
 
   useEffect(() => {
     if (!isAdmin || hidden) return;
@@ -59,10 +76,7 @@ export default function SetupChecklist({ drivers, hasBookings }) {
   const doneCount = steps.filter((s) => s.done).length;
   if (!isAdmin || !tenant || hidden || required.every((s) => s.done)) return null;
 
-  const hide = () => {
-    setHidden(true);
-    try { localStorage.setItem(HIDE_KEY(tenant.id), "1"); } catch { /* fine */ }
-  };
+  const hide = () => hideChecklist(tenant.id);
 
   return (
     <section className="card overflow-hidden" aria-label="Get set up">

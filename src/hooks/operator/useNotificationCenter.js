@@ -17,33 +17,49 @@ const DEFAULTS = {
 export function useNotificationCenter() {
   const [settings, setSettings] = useState(DEFAULTS);
   const [activity, setActivity] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(isConfigured);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+
+  const queryCenter = useCallback(() => Promise.all([
+    supabase.from("notification_channel_settings").select("*").eq("id", true).maybeSingle(),
+    supabase
+      .from("notification_queue_dashboard")
+      .select("id,type,channel,status,delivery_status,has_error,attempts,sent_at,created_at")
+      .order("created_at", { ascending: false })
+      .limit(40),
+  ]), []);
+
+  const applyCenter = useCallback(([{ data: s }, { data: a }]) => {
+    if (s) setSettings({ ...DEFAULTS, ...s });
+    setActivity(Array.isArray(a) ? a : []);
+    setError(null);
+  }, []);
+
+  const failCenter = (e) => setError(e?.message ?? "Failed to load notification settings.");
 
   const load = useCallback(async () => {
     if (!isConfigured) { setLoading(false); return; }
     setLoading(true);
     try {
-      const [{ data: s }, { data: a }] = await Promise.all([
-        supabase.from("notification_channel_settings").select("*").eq("id", true).maybeSingle(),
-        supabase
-          .from("notification_queue_dashboard")
-          .select("id,type,channel,status,delivery_status,has_error,attempts,sent_at,created_at")
-          .order("created_at", { ascending: false })
-          .limit(40),
-      ]);
-      if (s) setSettings({ ...DEFAULTS, ...s });
-      setActivity(Array.isArray(a) ? a : []);
-      setError(null);
+      applyCenter(await queryCenter());
     } catch (e) {
-      setError(e?.message ?? "Failed to load notification settings.");
+      failCenter(e);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [queryCenter, applyCenter]);
 
-  useEffect(() => { load(); }, [load]);
+  // First load. `loading` already starts true, so nothing is set until the answer arrives.
+  useEffect(() => {
+    if (!isConfigured) return;
+    let cancelled = false;
+    queryCenter().then(
+      (res) => { if (!cancelled) { applyCenter(res); setLoading(false); } },
+      (e) => { if (!cancelled) { failCenter(e); setLoading(false); } }
+    );
+    return () => { cancelled = true; };
+  }, [queryCenter, applyCenter]);
 
   const update = useCallback(async (patch) => {
     setSettings((prev) => ({ ...prev, ...patch })); // optimistic

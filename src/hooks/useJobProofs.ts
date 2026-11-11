@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import type { DbJobProof } from "@/lib/database.types";
+import type { QueryResult } from "@/lib/queryResult";
 
 export type JobProofMap = Record<string, DbJobProof[]>;
 
@@ -15,12 +16,17 @@ export function useJobProofs() {
   const [proofs, setProofs] = useState<JobProofMap>({});
   const [loading, setLoading] = useState(true);
 
-  const fetch = useCallback(async () => {
-    const { data } = await supabase
-      .from("job_proofs")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(500);
+  const query = useCallback(
+    () =>
+      supabase
+        .from("job_proofs")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(500),
+    []
+  );
+
+  const apply = useCallback(({ data }: QueryResult) => {
     const map: JobProofMap = {};
     for (const row of (data as DbJobProof[]) ?? []) {
       (map[row.booking_id] ??= []).push(row);
@@ -29,8 +35,15 @@ export function useJobProofs() {
     setLoading(false);
   }, []);
 
+  const fetch = useCallback(async () => {
+    apply(await query());
+  }, [query, apply]);
+
   useEffect(() => {
-    fetch();
+    let cancelled = false;
+    query().then((res) => {
+      if (!cancelled) apply(res);
+    });
 
     const channel = supabase
       .channel("job-proofs")
@@ -42,9 +55,10 @@ export function useJobProofs() {
       .subscribe();
 
     return () => {
+      cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, [fetch]);
+  }, [query, apply, fetch]);
 
   return { proofs, loading };
 }

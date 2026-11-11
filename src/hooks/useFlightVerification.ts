@@ -13,7 +13,7 @@ import {
  * either surface. */
 export function useFlightVerification(bookingId: string | null | undefined) {
   const [verification, setVerification] = useState<FlightVerification | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(Boolean(bookingId));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,10 +30,32 @@ export function useFlightVerification(bookingId: string | null | undefined) {
     }
   }, [bookingId]);
 
-  useEffect(() => {
+  // Showing a different booking: forget the last one's verification straight
+  // away (while rendering, not in an effect) and show the loading state.
+  const [shownFor, setShownFor] = useState(bookingId);
+  if (shownFor !== bookingId) {
+    setShownFor(bookingId);
     setVerification(null);
-    reload();
-  }, [reload]);
+    setLoading(Boolean(bookingId));
+  }
+
+  useEffect(() => {
+    if (!bookingId) return;
+    let cancelled = false;
+    fetchLatestVerification(bookingId)
+      .then((latest) => {
+        if (!cancelled) setVerification(latest);
+      })
+      .catch(() => {
+        // Non-fatal -- the panel just shows "not yet verified".
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [bookingId]);
 
   const verify = useCallback(
     async (opts: VerifyOptions = {}) => {

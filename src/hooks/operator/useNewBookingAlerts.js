@@ -47,7 +47,9 @@ function writeSeenAt(iso) {
 export function useNewBookingAlerts({ onNew } = {}) {
   const [newBookings, setNewBookings] = useState([]);
   const onNewRef = useRef(onNew);
-  onNewRef.current = onNew;
+  useEffect(() => {
+    onNewRef.current = onNew;
+  });
 
   const add = useCallback((item, isLive) => {
     if (wasBookingJustCreated(item.ref)) return;

@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import type { DbNotificationLog, DbNotificationQueueItem } from "@/lib/database.types";
+import type { QueryResult } from "@/lib/queryResult";
 
 export interface BookingNotificationStatus {
   lastSent: { type: string; sent_at: string } | null;
@@ -20,16 +21,19 @@ export function useNotifications() {
   const [notifications, setNotifications] = useState<NotificationsByBooking>({});
   const [loading, setLoading] = useState(true);
 
-  const fetch = useCallback(async () => {
-    setLoading(true);
-    const [{ data: logRows }, { data: queueRows }] = await Promise.all([
-      supabase
-        .from("notification_log_dashboard")
-        .select("*")
-        .order("sent_at", { ascending: false }),
-      supabase.from("notification_queue_dashboard").select("*"),
-    ]);
+  const query = useCallback(
+    () =>
+      Promise.all([
+        supabase
+          .from("notification_log_dashboard")
+          .select("*")
+          .order("sent_at", { ascending: false }),
+        supabase.from("notification_queue_dashboard").select("*"),
+      ]),
+    []
+  );
 
+  const apply = useCallback(([{ data: logRows }, { data: queueRows }]: [QueryResult, QueryResult]) => {
     const map: NotificationsByBooking = {};
 
     // Ordered newest-first, so the first row seen per booking is the latest.
@@ -50,9 +54,20 @@ export function useNotifications() {
     setLoading(false);
   }, []);
 
+  const fetch = useCallback(async () => {
+    setLoading(true);
+    apply(await query());
+  }, [query, apply]);
+
   useEffect(() => {
-    fetch();
-  }, [fetch]);
+    let cancelled = false;
+    query().then((res) => {
+      if (!cancelled) apply(res);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [query, apply]);
 
   return { notifications, loading, refetch: fetch };
 }

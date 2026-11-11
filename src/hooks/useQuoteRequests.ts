@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import type { DbQuoteRequest } from "@/lib/database.types";
+import type { QueryResult } from "@/lib/queryResult";
 
 export function useQuoteRequests() {
   const [quoteRequests, setQuoteRequests] = useState<DbQuoteRequest[]>([]);
@@ -10,13 +11,12 @@ export function useQuoteRequests() {
   const [error, setError]     = useState<string | null>(null);
   const prevRef               = useRef<DbQuoteRequest[]>([]);
 
-  const fetch = useCallback(async () => {
-    setLoading(true);
-    const { data, error: err } = await supabase
-      .from("quote_requests")
-      .select("*")
-      .order("created_at", { ascending: false });
+  const query = useCallback(
+    () => supabase.from("quote_requests").select("*").order("created_at", { ascending: false }),
+    []
+  );
 
+  const apply = useCallback(({ data, error: err }: QueryResult) => {
     if (err) {
       setError(err.message);
     } else {
@@ -28,12 +28,20 @@ export function useQuoteRequests() {
     setLoading(false);
   }, []);
 
+  const fetch = useCallback(async () => {
+    setLoading(true);
+    apply(await query());
+  }, [query, apply]);
+
   useEffect(() => {
     prevRef.current = quoteRequests;
   }, [quoteRequests]);
 
   useEffect(() => {
-    fetch();
+    let cancelled = false;
+    query().then((res) => {
+      if (!cancelled) apply(res);
+    });
 
     // Real-time — new quote requests from the public site appear instantly
     const channel = supabase
@@ -62,9 +70,10 @@ export function useQuoteRequests() {
       .subscribe();
 
     return () => {
+      cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, [fetch]);
+  }, [query, apply]);
 
   const setStatus = useCallback(async (id: string, status: string) => {
     setQuoteRequests((prev) =>

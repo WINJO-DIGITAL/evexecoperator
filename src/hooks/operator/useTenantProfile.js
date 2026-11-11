@@ -17,43 +17,64 @@ export function useTenantProfile() {
   const [tenant, setTenant] = useState(null);
   const [canEdit, setCanEdit] = useState(false);
   const [user, setUser] = useState(null); // { email, name, role }
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(isConfigured);
   const [error, setError] = useState(null);
+
+  // Looks up the signed-in user's business. Sets no state; null means nobody is signed in.
+  const queryTenant = useCallback(async () => {
+    const { data: auth } = await supabase.auth.getUser();
+    const userId = auth?.user?.id;
+    const meta = auth?.user?.user_metadata || {};
+    if (!userId) return null;
+    const { data: roles } = await supabase
+        .from("tenant_users")
+        .select("tenant_id, role")
+        .eq("user_id", userId);
+    const own = (roles || []).find((r) => r.tenant_id);
+    const isSuper = (roles || []).some((r) => r.role === "super_admin");
+    let q = supabase.from("tenants").select("id, name, contact_email, contact_phone, brand, pricing");
+    q = own ? q.eq("id", own.tenant_id) : q.order("created_at", { ascending: true }).limit(1);
+    const { data, error: tErr } = await q.maybeSingle();
+    if (tErr) throw tErr;
+    const roleOrder = ["super_admin", "operator_admin", "dispatcher", "driver"];
+    const role = roleOrder.find((r) => (roles || []).some((x) => x.role === r)) || null;
+    return {
+      tenant: data || null,
+      canEdit: isSuper || (roles || []).some((r) => r.role === "operator_admin" && data && r.tenant_id === data.id),
+      user: { email: auth.user.email || "", name: meta.full_name || meta.name || "", role },
+    };
+  }, []);
+
+  const applyTenant = useCallback((found) => {
+    if (!found) return;
+    setTenant(found.tenant);
+    setCanEdit(found.canEdit);
+    setUser(found.user);
+  }, []);
 
   const load = useCallback(async () => {
     if (!isConfigured) { setLoading(false); return; }
     setLoading(true);
     setError(null);
     try {
-      const { data: auth } = await supabase.auth.getUser();
-      const userId = auth?.user?.id;
-      const meta = auth?.user?.user_metadata || {};
-      if (!userId) { setLoading(false); return; }
-      const { data: roles } = await supabase
-        .from("tenant_users")
-        .select("tenant_id, role")
-        .eq("user_id", userId);
-      const own = (roles || []).find((r) => r.tenant_id);
-      const isSuper = (roles || []).some((r) => r.role === "super_admin");
-      let q = supabase.from("tenants").select("id, name, contact_email, contact_phone, brand, pricing");
-      q = own ? q.eq("id", own.tenant_id) : q.order("created_at", { ascending: true }).limit(1);
-      const { data, error: tErr } = await q.maybeSingle();
-      if (tErr) throw tErr;
-      setTenant(data || null);
-      setCanEdit(
-        isSuper || (roles || []).some((r) => r.role === "operator_admin" && data && r.tenant_id === data.id),
-      );
-      const roleOrder = ["super_admin", "operator_admin", "dispatcher", "driver"];
-      const role = roleOrder.find((r) => (roles || []).some((x) => x.role === r)) || null;
-      setUser({ email: auth.user.email || "", name: meta.full_name || meta.name || "", role });
+      applyTenant(await queryTenant());
     } catch (e) {
       setError(e?.message || "Could not load business details.");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [queryTenant, applyTenant]);
 
-  useEffect(() => { load(); }, [load]);
+  // First load. `loading` already starts true, so nothing is set until the answer arrives.
+  useEffect(() => {
+    if (!isConfigured) return;
+    let cancelled = false;
+    queryTenant().then(
+      (found) => { if (!cancelled) { applyTenant(found); setLoading(false); } },
+      (e) => { if (!cancelled) { setError(e?.message || "Could not load business details."); setLoading(false); } }
+    );
+    return () => { cancelled = true; };
+  }, [queryTenant, applyTenant]);
 
   const save = useCallback(async ({ name, contactEmail, contactPhone, invoice }) => {
     if (!tenant) throw new Error("No business to update.");

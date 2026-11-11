@@ -234,13 +234,17 @@ export default function BookingModal({ open, onClose, onSubmit, initialValues, c
   const dialogRef = useRef(null);
   // True while the price shown is our suggestion (not typed or pre-filled), so
   // it can follow the route and the return-journey tick.
-  const priceAutoRef = useRef(false);
+  const [priceAuto, setPriceAuto] = useState(false);
 
-  useEffect(() => {
+  // Reset (on close) or pre-fill (on open) the form. Done while rendering, as
+  // React recommends for state that follows a prop, so the new values are the
+  // first thing painted. `null` first, so the first render counts as a change.
+  const [wasOpen, setWasOpen] = useState(null);
+  if (wasOpen !== open) {
+    setWasOpen(open);
     if (!open) {
-      clearTimeout(closeTimerRef.current);
       setForm(empty);
-      priceAutoRef.current = false;
+      setPriceAuto(false);
       setErrors({});
       setSubmitted(false);
       setSubmitting(false);
@@ -250,16 +254,23 @@ export default function BookingModal({ open, onClose, onSubmit, initialValues, c
     } else {
       // Pre-fill with initial values when provided (e.g. a return journey, which
       // arrives with pickup/drop-off already swapped).
-      const iv = initialValues ? { ...empty, ...initialValues } : { ...empty };
-      setForm(iv);
-      // Focus first focusable element when modal opens
-      setTimeout(() => {
-        const first = dialogRef.current?.querySelector(
-          'button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
-        );
-        first?.focus();
-      }, 0);
+      setForm(initialValues ? { ...empty, ...initialValues } : { ...empty });
     }
+  }
+
+  useEffect(() => {
+    if (!open) {
+      clearTimeout(closeTimerRef.current);
+      return;
+    }
+    // Focus first focusable element when modal opens
+    const t = setTimeout(() => {
+      const first = dialogRef.current?.querySelector(
+        'button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      first?.focus();
+    }, 0);
+    return () => clearTimeout(t);
   }, [open]);
 
   useEffect(() => {
@@ -305,20 +316,33 @@ export default function BookingModal({ open, onClose, onSubmit, initialValues, c
     });
   }, [lastRouteField]);
 
-  useEffect(() => {
-    if (form.price && !priceAutoRef.current) return; // don't override a typed or pre-filled price
-    // The operator's own price list (Settings → Prices): whichever end of the
-    // trip is a listed place sets the price.
-    const suggested = getSuggestedPrice(form.pickup, form.dropoff, form.returnJourney, pricing.airports);
-    if (suggested !== null) {
-      priceAutoRef.current = true;
-      setForm((f) => ({ ...f, price: String(suggested) }));
-    } else if (priceAutoRef.current) {
-      // The route no longer matches a listed place: drop the old suggestion.
-      priceAutoRef.current = false;
-      setForm((f) => ({ ...f, price: "" }));
+  // Suggest a price whenever the route, the return tick or the price list
+  // changes (again while rendering, not in an effect). Typing in the price box
+  // stops the suggestions.
+  const [priceFor, setPriceFor] = useState(null);
+  if (
+    !priceFor ||
+    priceFor.pickup !== form.pickup ||
+    priceFor.dropoff !== form.dropoff ||
+    priceFor.returnJourney !== form.returnJourney ||
+    priceFor.pricing !== pricing
+  ) {
+    setPriceFor({ pickup: form.pickup, dropoff: form.dropoff, returnJourney: form.returnJourney, pricing });
+    // Never override a typed or pre-filled price.
+    if (!form.price || priceAuto) {
+      // The operator's own price list (Settings → Prices): whichever end of the
+      // trip is a listed place sets the price.
+      const suggested = getSuggestedPrice(form.pickup, form.dropoff, form.returnJourney, pricing.airports);
+      if (suggested !== null) {
+        setPriceAuto(true);
+        setForm((f) => ({ ...f, price: String(suggested) }));
+      } else if (priceAuto) {
+        // The route no longer matches a listed place: drop the old suggestion.
+        setPriceAuto(false);
+        setForm((f) => ({ ...f, price: "" }));
+      }
     }
-  }, [form.pickup, form.dropoff, form.returnJourney, pricing]);
+  }
 
   function validate() {
     const e = {};
@@ -544,7 +568,7 @@ export default function BookingModal({ open, onClose, onSubmit, initialValues, c
                     min="0"
                     step="1"
                     value={form.price}
-                    onChange={(e) => { priceAutoRef.current = false; set("price")(e.target.value); }}
+                    onChange={(e) => { setPriceAuto(false); set("price")(e.target.value); }}
                     placeholder="0"
                     className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-8 pr-4 text-sm text-amber-600 outline-none placeholder:text-slate-400 focus:border-amber-400/40 transition"
                   />

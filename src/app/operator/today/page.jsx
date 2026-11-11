@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   AlertCircle, CheckCircle2, ChevronRight, Clock, CreditCard, Inbox, MessageSquareReply, UserX,
@@ -65,8 +65,13 @@ export default function TodayPage() {
   const { inbox } = useOperator();
 
   const today = ukDateDaysAgo(0);
+  // "Now" moves on every minute so the 48 h window stays right on a screen left open.
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(t);
+  }, []);
   const view = useMemo(() => {
-    const now = Date.now();
     const todays = bookings
       .filter((b) => b.travelDate === today && b.status !== "Cancelled")
       .sort((a, b) => (a.time || "").localeCompare(b.time || ""));
@@ -93,7 +98,7 @@ export default function TodayPage() {
 
     const revenue = todays.reduce((s, b) => s + (Number(String(b.price).replace(/[^0-9.]/g, "")) || 0), 0);
     return { todays, needs, reply, noDriver, unpaid, driverDay, revenue };
-  }, [bookings, drivers, today]);
+  }, [bookings, drivers, today, now]);
 
   const KIND = {
     reply: { label: "Accept or decline", icon: MessageSquareReply, cls: "bg-amber-50 text-amber-700 border-amber-200" },
