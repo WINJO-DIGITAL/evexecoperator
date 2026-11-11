@@ -408,6 +408,63 @@ describe("useBookings — loading window", () => {
   });
 });
 
+describe("useBookings — loading the list", () => {
+  // Earlier tests leave queued one-off responses behind; start clean.
+  beforeEach(() => {
+    mockChain.range.mockReset();
+    mockChain.range.mockResolvedValue({ data: [], error: null });
+  });
+
+  const rowOf = (ref) => ({ id: ref, ref, customer_name: "C " + ref, travel_date: "2099-01-01", travel_time: "10:00:00", status: "Unassigned", drivers: null });
+
+  it("shows the bookings and finishes loading", async () => {
+    primeRows([rowOf("EVX-A"), rowOf("EVX-B")], 1);
+    const { result } = renderHook(() => useBookings());
+    await act(async () => {});
+    expect(result.current.bookings.map((b) => b.id)).toEqual(["EVX-A", "EVX-B"]);
+    expect(result.current.loading).toBe(false);
+    expect(result.current.error).toBeNull();
+  });
+
+  it("reports the database error and finishes loading", async () => {
+    mockChain.range.mockResolvedValue({ data: null, error: { message: "boom" } });
+    const { result } = renderHook(() => useBookings());
+    await act(async () => {});
+    expect(result.current.error).toBe("boom");
+    expect(result.current.loading).toBe(false);
+    expect(result.current.bookings).toEqual([]);
+  });
+
+  it("starts in the loading state before the first response arrives", () => {
+    mockChain.range.mockReturnValue(new Promise(() => {})); // never answers
+    const { result } = renderHook(() => useBookings());
+    expect(result.current.loading).toBe(true);
+  });
+
+  it("refetch replaces the list", async () => {
+    primeRows([rowOf("EVX-A")], 1);
+    const { result } = renderHook(() => useBookings());
+    await act(async () => {});
+    primeRows([rowOf("EVX-C")], 1);
+    await act(async () => { await result.current.refetch(); });
+    expect(result.current.bookings.map((b) => b.id)).toEqual(["EVX-C"]);
+  });
+
+  it("ignores a slow, older response that arrives after a newer one", async () => {
+    let releaseSlow;
+    const slow = new Promise((resolve) => { releaseSlow = resolve; });
+    mockChain.range.mockReset();
+    mockChain.range.mockReturnValueOnce(slow);                                   // first load: slow
+    mockChain.range.mockResolvedValue({ data: [rowOf("EVX-NEW")], error: null }); // everything after: fast
+    const { result } = renderHook(() => useBookings());
+    await act(async () => { await result.current.refetch(); });                  // newer fetch finishes first
+    expect(result.current.bookings.map((b) => b.id)).toEqual(["EVX-NEW"]);
+    await act(async () => { releaseSlow({ data: [rowOf("EVX-OLD")], error: null }); await slow; });
+    expect(result.current.bookings.map((b) => b.id)).toEqual(["EVX-NEW"]);
+    expect(result.current.loading).toBe(false);
+  });
+});
+
 // ─── respondToBooking (website requests) ─────────────────────────────────────
 
 describe("useBookings — respondToBooking", () => {

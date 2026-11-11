@@ -12,9 +12,7 @@ export function useTextTasks() {
   const [tasks, setTasks] = useState([]);
   const [error, setError] = useState(null);
 
-  const refresh = useCallback(async () => {
-    if (!isConfigured) return;
-    const [ops, partner] = await Promise.all([
+  const queryTasks = useCallback(() => Promise.all([
       supabase.from("operator_sms_tasks")
         .select(`id, kind, customer_name, customer_phone, message, status, created_at, booking_id, ${BOOKING}`)
         .in("status", ["pending", "opened"]),
@@ -22,20 +20,30 @@ export function useTextTasks() {
         .select(`id, reminder_type, customer_name, customer_phone, message, status, created_at, booking_id, travel_date, travel_time, drivers!inner(name, kind), ${BOOKING}`)
         .in("status", ["pending", "opened"])
         .eq("drivers.kind", "partner"),
-    ]);
+  ]), []);
+
+  const applyTasks = useCallback(([ops, partner]) => {
     const err = ops.error || partner.error;
     if (err) { setError(err.message); return; }
     setError(null);
     setTasks(textTasksFrom(ops.data, partner.data, ukDateDaysAgo(0)));
   }, []);
 
+  const refresh = useCallback(async () => {
+    if (!isConfigured) return;
+    applyTasks(await queryTasks());
+  }, [queryTasks, applyTasks]);
+
+  // Loads now, every minute, and when the tab is focused again.
   useEffect(() => {
-    refresh();
-    const t = setInterval(refresh, 60_000);
-    const onFocus = () => refresh();
-    window.addEventListener("focus", onFocus);
-    return () => { clearInterval(t); window.removeEventListener("focus", onFocus); };
-  }, [refresh]);
+    if (!isConfigured) return;
+    let cancelled = false;
+    const run = () => { queryTasks().then((res) => { if (!cancelled) applyTasks(res); }); };
+    run();
+    const t = setInterval(run, 60_000);
+    window.addEventListener("focus", run);
+    return () => { cancelled = true; clearInterval(t); window.removeEventListener("focus", run); };
+  }, [queryTasks, applyTasks]);
 
   const mark = useCallback(async (task, status) => {
     const stamp = status === "sent" ? { sent_at: new Date().toISOString() } : { opened_at: new Date().toISOString() };

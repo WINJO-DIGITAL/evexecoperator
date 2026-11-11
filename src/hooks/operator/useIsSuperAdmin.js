@@ -11,14 +11,12 @@ import { supabase, isConfigured } from "@/lib/supabase";
  */
 export function useIsSuperAdmin() {
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
+  // Nothing to look up without a database.
+  const [loading, setLoading] = useState(isConfigured);
 
   useEffect(() => {
+    if (!isConfigured) return;
     let cancelled = false;
-    if (!isConfigured) {
-      setLoading(false);
-      return;
-    }
     (async () => {
       const { data: auth } = await supabase.auth.getUser();
       const userId = auth?.user?.id;
