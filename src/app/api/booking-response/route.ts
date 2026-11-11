@@ -6,6 +6,7 @@ import { brandFor } from "@/lib/email/brand.js";
 import { loadBrand } from "@/lib/server/brands";
 import { bookingResponseText } from "@/lib/bookingResponseText";
 import { adminClient, getCaller } from "@/lib/server/staff";
+import { DEPLOYMENT_BRAND } from "@/lib/deploymentBrand";
 
 // Notifies a customer that the operator has ACCEPTED or REJECTED their website
 // booking. Email first (via Resend). If the email can't be sent or there's no
@@ -36,7 +37,7 @@ const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const FROM = process.env.INVOICE_FROM ?? "EV Exec <book@evexec.co.uk>";
 const REPLY_TO = process.env.INVOICE_REPLY_TO ?? "book@evexec.co.uk";
-const WEBSITE = (process.env.EVEXEC_SITE_URL ?? "https://www.evexec.co.uk").replace(/\/$/, "");
+const WEBSITE = (process.env.EVEXEC_SITE_URL ?? DEPLOYMENT_BRAND.site).replace(/\/$/, "");
 
 type Booking = Record<string, unknown>;
 

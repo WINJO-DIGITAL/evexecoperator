@@ -14,6 +14,7 @@ import { supabase } from "@/lib/supabase";
 import { fmtDate } from "@/lib/dates";
 import { useTenantProfile } from "@/hooks/operator/useTenantProfile";
 import { brandFrom } from "@/lib/brand";
+import { DEPLOYMENT_BRAND } from "@/lib/deploymentBrand";
 
 const VAT_RATES = [
   { label: "No VAT", value: 0 },
@@ -23,16 +24,17 @@ const VAT_RATES = [
 // Invoice colours come from the business's branding (brandFrom in
 // lib/brand.js), navy #0B132B and gold #D7A23F unless changed.
 
-// Letterhead fallback, used until the business details load (and if a field
-// is blank). The live values come from Settings → Business (tenants.brand.invoice).
+// Letterhead before the business details load, and for a field left blank:
+// nothing, so a business never shows another's address or number. The values
+// come from Settings → Business (tenants.brand.invoice).
 const COMPANY = {
-  name: "EV Exec",
-  addressLines: ["EV Exec", "Wheeler Hub Drive", "Blackpool, FY2 0FD", "United Kingdom"],
-  phone: "07721 070370",
-  email: "book@evexec.co.uk",
-  web: "evexec.co.uk",
-  tagline1: "ELEVATING EXPERIENCES",
-  tagline2: "DRIVING EXCELLENCE.",
+  name: "",
+  addressLines: [],
+  phone: "",
+  email: "",
+  web: "",
+  tagline1: "",
+  tagline2: "",
 };
 const DEFAULT_TERMS = "Payment is due within 15 days of invoice date.\nBank Transfer / BACS Preferred.";
 
@@ -41,7 +43,7 @@ function companyFrom(tenant) {
   const lines = Array.isArray(b.address_lines) && b.address_lines.length ? b.address_lines : COMPANY.addressLines;
   const tag = Array.isArray(b.tagline) ? b.tagline : [];
   return {
-    name: tenant?.name || b.business_name || "EV Exec",
+    name: tenant?.name || b.business_name || DEPLOYMENT_BRAND.name,
     addressLines: lines,
     phone: b.phone || COMPANY.phone,
     email: b.email || COMPANY.email,
@@ -893,21 +895,29 @@ function InvoicePreview({ invoice, onClose, onStatus, onDelete, onEmailed }) {
 
           {/* ── Footer band ── */}
           <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-5 py-4 text-[11px] sm:px-10 sm:py-5" style={{ backgroundColor: NAVY, ...exact }}>
-            <div className="flex items-start gap-2">
-              <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0" style={{ color: GOLD }} />
-              <div className="leading-snug text-slate-300">
-                {company.addressLines.map((l, i) => <p key={i}>{l}</p>)}
+            {company.addressLines.length > 0 && (
+              <div className="flex items-start gap-2">
+                <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0" style={{ color: GOLD }} />
+                <div className="leading-snug text-slate-300">
+                  {company.addressLines.map((l, i) => <p key={i}>{l}</p>)}
+                </div>
               </div>
-            </div>
-            <div className="flex items-center gap-2 text-slate-300">
-              <Phone className="h-4 w-4" style={{ color: GOLD }} /> {company.phone}
-            </div>
-            <div className="flex items-center gap-2 text-slate-300">
-              <Mail className="h-4 w-4" style={{ color: GOLD }} /> {company.email}
-            </div>
-            <div className="flex items-center gap-2 text-slate-300">
-              <Globe className="h-4 w-4" style={{ color: GOLD }} /> {company.web}
-            </div>
+            )}
+            {company.phone && (
+              <div className="flex items-center gap-2 text-slate-300">
+                <Phone className="h-4 w-4" style={{ color: GOLD }} /> {company.phone}
+              </div>
+            )}
+            {company.email && (
+              <div className="flex items-center gap-2 text-slate-300">
+                <Mail className="h-4 w-4" style={{ color: GOLD }} /> {company.email}
+              </div>
+            )}
+            {company.web && (
+              <div className="flex items-center gap-2 text-slate-300">
+                <Globe className="h-4 w-4" style={{ color: GOLD }} /> {company.web}
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -1,15 +1,16 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ToastProvider } from "@/hooks/useToast";
+import { DEPLOYMENT_BRAND } from "@/lib/deploymentBrand";
 
 export const metadata: Metadata = {
-  title: "EV Exec | Airport Transfer Calendar",
-  description: "Premium airport transfer management for EV Exec operators.",
-  applicationName: "EV Exec Operator",
+  title: `${DEPLOYMENT_BRAND.name} | Airport Transfer Calendar`,
+  description: `Premium airport transfer management for ${DEPLOYMENT_BRAND.name} operators.`,
+  applicationName: `${DEPLOYMENT_BRAND.name} Operator`,
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    title: "EV Exec",
+    title: DEPLOYMENT_BRAND.name,
     statusBarStyle: "black",
   },
   icons: {

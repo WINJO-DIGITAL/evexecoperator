@@ -11,7 +11,7 @@ import { getStops, getPrice, onPriceList, paymentLine, needsPayment } from './fo
 import * as P from './cancellation.js';
 import { withBrandOf, currentBrand, telNumber } from './brand.js';
 
-const SITE = () => (process.env.EVEXEC_SITE_URL || 'https://www.evexec.co.uk').replace(/\/$/, '');
+const SITE = () => (process.env.EVEXEC_SITE_URL || currentBrand().site).replace(/\/$/, '');
 const first = (n) => String(n || '').trim().split(/\s+/)[0] || 'there';
 const oneLine = (s) => String(s == null ? '' : s).replace(/[\r\n]+/g, ', ').replace(/\s+/g, ' ').trim();
 const money = (n) => (n == null || n === '' || isNaN(Number(n)) ? null : `£${Number(n).toFixed(2)}`);

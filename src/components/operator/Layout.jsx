@@ -20,6 +20,7 @@ import { useQuoteRequests } from "@/hooks/useQuoteRequests";
 import { useMissedCalls as useInboxMissedCalls } from "@/hooks/useMissedCalls";
 import { useContactMessages } from "@/hooks/useContactMessages";
 import { OperatorProvider, ROLE_LABELS, initialsOf } from "./OperatorContext";
+import { DEPLOYMENT_BRAND } from "@/lib/deploymentBrand";
 
 const pageMeta = {
   "/operator/today": { label: "Overview", title: "Today" },
@@ -276,7 +277,7 @@ export default function Layout({ children, onSignOut }) {
     messages.contactMessages, messages.loading, messages.setStatus,
   ]);
 
-  const businessName = profile.tenant?.name || "EV Exec";
+  const businessName = profile.tenant?.name || DEPLOYMENT_BRAND.name;
 
   // Keep browser tab title in sync with the active page
   useEffect(() => {

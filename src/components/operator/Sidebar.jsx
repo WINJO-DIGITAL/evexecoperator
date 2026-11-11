@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { PORTALS } from "@/lib/operator/portals";
 import { initialsOf } from "./OperatorContext";
+import { DEPLOYMENT_BRAND } from "@/lib/deploymentBrand";
 
 // Main sections, in order. `mobile: true` puts it on the phone tab bar; the
 // rest live under "More" there.
@@ -51,7 +52,7 @@ function Badge({ count, className = "" }) {
   );
 }
 
-export default function Sidebar({ inboxCount = 0, businessName = "EV Exec", logoUrl = null, onSignOut }) {
+export default function Sidebar({ inboxCount = 0, businessName = DEPLOYMENT_BRAND.name, logoUrl = null, onSignOut }) {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
   const badgeFor = (item) => (item.badge === "inbox" ? inboxCount : 0);
