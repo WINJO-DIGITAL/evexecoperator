@@ -2,9 +2,14 @@ import { createClient } from "@supabase/supabase-js";
 import webpush from "web-push";
 
 // Called by the database trigger when a new website booking arrives. Verifies a
-// shared secret, then sends a Web Push notification to every operator device.
-// The website also calls it with { notification: { title, body, url, tag } }
-// for other staff notices (e.g. "EV Exec Payment Received").
+// shared secret, then sends a Web Push notification to the office devices of
+// the business the alert is for. The website also calls it with
+// { tenant_id, notification: { title, body, url, tag } } for other staff
+// notices (e.g. "EV Exec Payment Received").
+//
+// The business comes from body.tenant_id or the booking record's tenant_id.
+// Without one (an older caller) it falls back to the all-business list, so no
+// alert is lost during the move; every caller sends it now.
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -33,23 +38,40 @@ export async function POST(req: Request) {
   if (!SUPABASE_URL || !ANON_KEY) return json({ error: "not configured" }, 503);
   const db = createClient(SUPABASE_URL, ANON_KEY, { auth: { autoRefreshToken: false, persistSession: false } });
 
-  // The webhook secret (sent by the DB trigger) gates a SECURITY DEFINER
-  // function that returns the VAPID keys + every subscription — so no
-  // service-role key is required on the server.
-  const secret = req.headers.get("x-webhook-secret") ?? "";
-  const { data: bundle } = await db.rpc("get_push_dispatch_bundle", { p_secret: secret });
-  if (!bundle) return json({ error: "unauthorised or not set up" }, 401);
-  const cfg = bundle as {
-    vapid_public: string; vapid_private: string; vapid_subject: string;
-    subscriptions: { endpoint: string; p256dh: string; auth: string }[];
-  };
-
   let payloadBody: {
+    tenant_id?: string;
     record?: Record<string, unknown>;
     notification?: { title?: string; body?: string; url?: string; tag?: string };
   };
   try { payloadBody = await req.json(); } catch { payloadBody = {}; }
   const r = (payloadBody?.record ?? {}) as Record<string, unknown>;
+  const tenantId = String(payloadBody?.tenant_id || r.tenant_id || "") || null;
+
+  // The webhook secret (sent by the DB trigger) gates a SECURITY DEFINER
+  // function that returns the VAPID keys + the subscriptions — so no
+  // service-role key is required on the server.
+  const secret = req.headers.get("x-webhook-secret") ?? "";
+  let bundle: unknown = null;
+  if (tenantId) {
+    const res = await db.rpc("get_push_dispatch_bundle_for_tenant", { p_secret: secret, p_tenant_id: tenantId });
+    if (res.error) {
+      // The database has not been updated yet: keep working as before.
+      console.warn("push: per-business list unavailable, using the all-business list:", res.error.message);
+    } else {
+      bundle = res.data;
+      if (!bundle) return json({ error: "unauthorised or not set up" }, 401);
+    }
+  } else {
+    console.warn("push: no tenant_id on the alert, using the all-business list");
+  }
+  if (!bundle) {
+    ({ data: bundle } = await db.rpc("get_push_dispatch_bundle", { p_secret: secret }));
+    if (!bundle) return json({ error: "unauthorised or not set up" }, 401);
+  }
+  const cfg = bundle as {
+    vapid_public: string; vapid_private: string; vapid_subject: string;
+    subscriptions: { endpoint: string; p256dh: string; auth: string }[];
+  };
 
   const customer = (r.customer_name as string) || "New customer";
   const pickup = compact(r.pickup_location || r.airport || r.direction);

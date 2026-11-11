@@ -11,6 +11,7 @@
 // (drivers.kind = 'partner') never get a login or an invite.
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { driverInvite } from "@/lib/email/staff.js";
+import { loadBrand } from "@/lib/server/brands";
 import { adminClient, getCaller, isEmail, json, sendEmail } from "@/lib/server/staff";
 
 export const runtime = "nodejs";
@@ -110,11 +111,12 @@ export async function POST(req: Request) {
     if (link.error || !hashed) throw new Error(link.error?.message || "Couldn't create the sign-in link.");
     const url = driverSetPasswordUrl(driverAppOrigin(), hashed);
 
+    await loadBrand(admin, caller.tenantId);
     let emailed = true;
     let emailError: string | null = null;
     try {
       await sendEmail(email, driverInvite({
-        businessName: caller.tenantName, driverName: name, inviterName: caller.name, url, newAccount: !user.last_sign_in_at,
+        tenant_id: caller.tenantId, businessName: caller.tenantName, driverName: name, inviterName: caller.name, url, newAccount: !user.last_sign_in_at,
       }));
     } catch (e) {
       emailed = false;

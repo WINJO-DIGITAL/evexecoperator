@@ -3,6 +3,7 @@
 // (unknown email, customers, drivers) gets the same reply and no email, so
 // the form can't be used to find out who has an account.
 import { passwordReset } from "@/lib/email/staff.js";
+import { loadBrand } from "@/lib/server/brands";
 import { adminClient, appOrigin, isEmail, json, sendEmail, setPasswordUrl, STAFF_ROLES } from "@/lib/server/staff";
 
 export const runtime = "nodejs";
@@ -28,7 +29,8 @@ export async function POST(req: Request) {
     const { data: tenant } = staff.tenant_id
       ? await admin.from("tenants").select("name").eq("id", staff.tenant_id).maybeSingle()
       : { data: null };
-    await sendEmail(email, passwordReset({ businessName: tenant?.name || "your", url: setPasswordUrl(appOrigin(req), token, "recovery") }));
+    await loadBrand(admin, staff.tenant_id);
+    await sendEmail(email, passwordReset({ tenant_id: staff.tenant_id, businessName: tenant?.name || "your", url: setPasswordUrl(appOrigin(req), token, "recovery") }));
   } catch (e) {
     console.error("[forgot-password]", (e as Error).message);
   }

@@ -1,9 +1,11 @@
 // @vitest-environment node
 // Fix 1 (audit C-1): after the database change, office staff still get the
-// new-booking alert. The database (get_push_dispatch_bundle) decides WHICH
-// devices are returned (only current office staff; tested in
-// evexec/supabase/tests/fix1_office_push.test.sql); this checks the route
-// sends to every device it is given and refuses a wrong secret.
+// new-booking alert. The database (get_push_dispatch_bundle_for_tenant)
+// decides WHICH devices are returned (only that business's current office
+// staff; tested in evexec/supabase/tests/database/tenant_scoping.test.sql);
+// this checks the route asks for the right business, sends to every device it
+// is given, refuses a wrong secret and keeps working before the database
+// change is applied.
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const state: {
@@ -11,12 +13,17 @@ const state: {
   rpcCalls: Array<[string, Record<string, unknown>]>;
   sent: Array<{ endpoint: string; payload: string }>;
   failWith: Record<string, number>;
-} = { bundle: null, rpcCalls: [], sent: [], failWith: {} };
+  tenantFnMissing: boolean;
+} = { bundle: null, rpcCalls: [], sent: [], failWith: {}, tenantFnMissing: false };
 
 vi.mock("@supabase/supabase-js", () => ({
   createClient: () => ({
     rpc: async (fn: string, args: Record<string, unknown>) => {
       state.rpcCalls.push([fn, args]);
+      if (fn === "get_push_dispatch_bundle_for_tenant") {
+        if (state.tenantFnMissing) return { data: null, error: { message: "function not found" } };
+        return { data: args.p_secret === "right-secret" && args.p_tenant_id ? state.bundle : null, error: null };
+      }
       if (fn === "get_push_dispatch_bundle") {
         return { data: args.p_secret === "right-secret" ? state.bundle : null, error: null };
       }
@@ -56,7 +63,56 @@ function call(secret: string, body: unknown) {
 
 beforeEach(() => {
   state.bundle = { vapid_public: "pub", vapid_private: "priv", vapid_subject: "mailto:x@example.com", subscriptions: staffDevices };
-  state.rpcCalls = []; state.sent = []; state.failWith = {};
+  state.rpcCalls = []; state.sent = []; state.failWith = {}; state.tenantFnMissing = false;
+});
+
+const T1 = "11111111-1111-4111-8111-111111111111";
+const T2 = "22222222-2222-4222-8222-222222222222";
+const rpcNames = () => state.rpcCalls.map(([fn]) => fn);
+
+describe("POST /api/push/dispatch — which business", () => {
+  it("asks for the booking's own business devices", async () => {
+    await call("right-secret", { record: { customer_name: "Jo", ref: "EVX-1", tenant_id: T2 } });
+    expect(state.rpcCalls[0]).toEqual(["get_push_dispatch_bundle_for_tenant", { p_secret: "right-secret", p_tenant_id: T2 }]);
+    expect(rpcNames()).not.toContain("get_push_dispatch_bundle");
+  });
+
+  it("asks for the business named on a staff notice", async () => {
+    await call("right-secret", { tenant_id: T1, notification: { title: "Payment received" } });
+    expect(state.rpcCalls[0]).toEqual(["get_push_dispatch_bundle_for_tenant", { p_secret: "right-secret", p_tenant_id: T1 }]);
+  });
+
+  it("an explicit tenant_id wins over the one in the record", async () => {
+    await call("right-secret", { tenant_id: T1, record: { tenant_id: T2 } });
+    expect(state.rpcCalls[0][1]).toMatchObject({ p_tenant_id: T1 });
+  });
+
+  it("a wrong secret for a named business is refused without trying the old list", async () => {
+    const res = await call("wrong", { record: { tenant_id: T1 } });
+    expect(res.status).toBe(401);
+    expect(rpcNames()).toEqual(["get_push_dispatch_bundle_for_tenant"]);
+    expect(state.sent).toEqual([]);
+  });
+
+  it("falls back to the all-business list when the alert names no business", async () => {
+    const res = await call("right-secret", { notification: { title: "Old caller" } });
+    expect(await res.json()).toMatchObject({ sent: 2 });
+    expect(rpcNames()).toEqual(["get_push_dispatch_bundle"]);
+  });
+
+  it("keeps working before the database change is applied", async () => {
+    state.tenantFnMissing = true;
+    const res = await call("right-secret", { record: { customer_name: "Jo", tenant_id: T1 } });
+    expect(await res.json()).toMatchObject({ sent: 2 });
+    expect(rpcNames()).toEqual(["get_push_dispatch_bundle_for_tenant", "get_push_dispatch_bundle"]);
+  });
+
+  it("still refuses a wrong secret when the database change is not applied yet", async () => {
+    state.tenantFnMissing = true;
+    const res = await call("wrong", { record: { tenant_id: T1 } });
+    expect(res.status).toBe(401);
+    expect(state.sent).toEqual([]);
+  });
 });
 
 describe("POST /api/push/dispatch", () => {
@@ -71,7 +127,7 @@ describe("POST /api/push/dispatch", () => {
   });
 
   it("sends website staff notices (e.g. payment received)", async () => {
-    const res = await call("right-secret", { notification: { title: "EV Exec Payment Received", body: "EVX-1 £90.00", url: "/operator/bookings?q=EVX-1" } });
+    const res = await call("right-secret", { tenant_id: T1, notification: { title: "EV Exec Payment Received", body: "EVX-1 £90.00", url: "/operator/bookings?q=EVX-1" } });
     expect(await res.json()).toMatchObject({ sent: 2 });
     expect(JSON.parse(state.sent[1].payload).title).toBe("EV Exec Payment Received");
   });

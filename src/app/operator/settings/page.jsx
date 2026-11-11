@@ -317,7 +317,8 @@ function PushDeviceRow() {
 // Central notification control — channel priority, the "SMS only when necessary"
 // switch, and a live delivery log (channel used + whether delivered).
 function NotificationCenter() {
-  const { settings, activity, loading, saving, error, update } = useNotificationCenter();
+  const { profile } = useOperator();
+  const { settings, activity, loading, saving, error, update } = useNotificationCenter(profile.tenant?.id);
 
   // Push is set up per device (row above). Automated SMS is dormant: texts to
   // customers are sent from the driver's or operator's own phone instead.

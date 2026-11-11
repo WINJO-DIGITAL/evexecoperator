@@ -1,5 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { paymentLink } from "@/lib/email/content.js";
+import { brandFor } from "@/lib/email/brand.js";
+import { loadBrand } from "@/lib/server/brands";
 import { when } from "@/lib/email/template.js";
 
 // Generates a Stripe payment link for a booking and sends it to the customer.
@@ -71,7 +73,7 @@ function json(body: unknown, status = 200) {
 // A new Stripe Checkout Session for the booking. Paid sessions are recorded by
 // the website's Stripe webhook via metadata[booking_ref].
 async function createCheckout(
-  booking: { ref: string },
+  booking: { ref: string; tenant_id?: string | null },
   unitAmount: number,
   email: string,
 ): Promise<CheckoutSession> {
@@ -82,7 +84,7 @@ async function createCheckout(
   form.set("line_items[0][price_data][unit_amount]", String(unitAmount));
   form.set(
     "line_items[0][price_data][product_data][name]",
-    `EV Exec airport transfer — Ref ${booking.ref}`
+    `${brandFor(booking.tenant_id).name ? `${brandFor(booking.tenant_id).name} ` : ""}airport transfer — Ref ${booking.ref}`
   );
   form.set("client_reference_id", booking.ref);
   form.set("metadata[booking_ref]", booking.ref);
@@ -159,6 +161,8 @@ export async function POST(req: Request) {
 
   if (bErr || !booking) return json({ error: "Booking not found." }, 404);
   if (!isSuper && !staffTenants.has(booking.tenant_id)) return json({ error: "Booking not found." }, 404);
+  await loadBrand(admin, booking.tenant_id); // this business's name and number for the email and text
+  const brand = brandFor(booking.tenant_id);
 
   const phone = (booking.customer_phone ?? "").trim();
   const email = (booking.customer_email ?? "").trim();
@@ -246,9 +250,9 @@ export async function POST(req: Request) {
     const first = String(booking.customer_name ?? "").trim().split(/\s+/)[0] || "there";
     const whenText = when(booking.travel_date, booking.travel_time);
     const body =
-      `Hi ${first}, here is the secure card payment link (£${amount.toFixed(2)}) for your EV Exec transfer` +
+      `Hi ${first}, here is the secure card payment link (£${amount.toFixed(2)}) for your ${brand.name ? `${brand.name} ` : ""}transfer` +
       `${whenText ? ` on ${whenText}` : ""} (Ref ${booking.ref}): ${session.url} ` +
-      `Any questions, call 07721 070370. Thank you, EV Exec`;
+      `${brand.phone ? `Any questions, call ${brand.phone}. ` : ""}Thank you${brand.name ? `, ${brand.name}` : ""}`;
     smsHref = `sms:${phone.replace(/[^\d+]/g, "")}?&body=${encodeURIComponent(body)}`;
   }
 

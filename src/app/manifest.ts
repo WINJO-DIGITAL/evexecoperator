@@ -1,12 +1,13 @@
 import type { MetadataRoute } from "next";
+import { DEPLOYMENT_BRAND } from "@/lib/deploymentBrand";
 
 // Web App Manifest — lets the operator app be added to the home screen and
 // launch full-screen (no browser chrome), like a native app.
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "EV Exec Operator",
-    short_name: "EV Exec",
-    description: "Premium airport transfer management for EV Exec operators.",
+    name: `${DEPLOYMENT_BRAND.name} Operator`,
+    short_name: DEPLOYMENT_BRAND.name,
+    description: `Premium airport transfer management for ${DEPLOYMENT_BRAND.name} operators.`,
     start_url: "/operator/today",
     scope: "/",
     display: "standalone",
