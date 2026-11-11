@@ -578,56 +578,63 @@ export default function BookingDetailDrawer({
   const [editMode, setEditMode] = useState(false);
   const [linkResult, setLinkResult] = useState(null);
   const drawerRef = useRef(null);
+  const bookingId = booking?.id;
+
+  // Reset the editors when a different booking is opened (and the delete dialog
+  // with it), or when this booking's notes change underneath us. Done while
+  // rendering, as React recommends, so no stale frame is ever painted.
+  const [seen, setSeen] = useState({ id: bookingId, notes: booking?.notes });
+  if (seen.id !== bookingId || seen.notes !== booking?.notes) {
+    const openedAnother = seen.id !== bookingId;
+    setSeen({ id: bookingId, notes: booking?.notes });
+    setNotes(booking?.notes ?? "");
+    setEditingNotes(false);
+    setEditMode(false);
+    if (openedAnother) {
+      setDeleteOpen(false);
+      setDeletePassword("");
+      setDeleteError(null);
+      setDeleteBusy(false);
+    }
+  }
 
   const handleSaveEdit = useCallback(async (fields) => {
-    await onUpdateBooking?.(booking.id, fields);
+    await onUpdateBooking?.(bookingId, fields);
     setEditMode(false);
-  }, [booking?.id, onUpdateBooking]);
+  }, [bookingId, onUpdateBooking]);
 
   const sendPaymentLink = useCallback(async () => {
     if (!onSendPaymentLink) return;
     setLinkBusy(true);
     try {
-      const data = await onSendPaymentLink(booking.id);
-      if (data?.url) setLinkResult({ id: booking.id, ...data });
+      const data = await onSendPaymentLink(bookingId);
+      if (data?.url) setLinkResult({ id: bookingId, ...data });
     } finally {
       setLinkBusy(false);
     }
-  }, [onSendPaymentLink, booking?.id]);
-
-  useEffect(() => {
-    // Reset the delete dialog whenever a different booking is opened.
-    setDeleteOpen(false);
-    setDeletePassword("");
-    setDeleteError(null);
-    setDeleteBusy(false);
-  }, [booking?.id]);
+  }, [onSendPaymentLink, bookingId]);
 
   const confirmDelete = useCallback(async () => {
     setDeleteBusy(true);
     setDeleteError(null);
     try {
-      await onDelete?.(booking.id, deletePassword);
+      await onDelete?.(bookingId, deletePassword);
       // Parent closes the drawer on success.
     } catch (err) {
       setDeleteError(err?.message ?? "Failed to delete booking.");
       setDeleteBusy(false);
     }
-  }, [booking?.id, deletePassword, onDelete]);
-
-  useEffect(() => {
-    setNotes(booking?.notes ?? "");
-    setEditingNotes(false);
-    setEditMode(false);
-  }, [booking?.id, booking?.notes]);
+  }, [bookingId, deletePassword, onDelete]);
 
   // The delete dialog is drawn outside the drawer, so while it is open a tap
   // in it must not count as an outside click (that closed the drawer and the
   // dialog with it), and Escape closes only the dialog.
   const deleteOpenRef = useRef(false);
-  deleteOpenRef.current = deleteOpen;
   const deleteBusyRef = useRef(false);
-  deleteBusyRef.current = deleteBusy;
+  useEffect(() => {
+    deleteOpenRef.current = deleteOpen;
+    deleteBusyRef.current = deleteBusy;
+  });
 
   // Close on outside click (pointerdown fires on touch too)
   useEffect(() => {

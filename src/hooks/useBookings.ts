@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import type { DbBooking, BookingStatus } from "@/lib/database.types";
 import { generateBookingRef } from "@/lib/operator/validation";
+import type { QueryResult } from "@/lib/queryResult";
 
 export function useBookings() {
   const [bookings, setBookings] = useState<DbBooking[]>([]);
@@ -11,14 +12,17 @@ export function useBookings() {
   const [error, setError]       = useState<string | null>(null);
   const prevRef                 = useRef<DbBooking[]>([]);
 
-  const fetch = useCallback(async () => {
-    setLoading(true);
-    const { data, error: err } = await supabase
-      .from("bookings")
-      .select("*, drivers!driver_id(name)")
-      .order("travel_date", { ascending: true })
-      .order("travel_time", { ascending: true });
+  const query = useCallback(
+    () =>
+      supabase
+        .from("bookings")
+        .select("*, drivers!driver_id(name)")
+        .order("travel_date", { ascending: true })
+        .order("travel_time", { ascending: true }),
+    []
+  );
 
+  const apply = useCallback(({ data, error: err }: QueryResult) => {
     if (err) {
       setError(err.message);
     } else {
@@ -30,6 +34,11 @@ export function useBookings() {
     setLoading(false);
   }, []);
 
+  const fetch = useCallback(async () => {
+    setLoading(true);
+    apply(await query());
+  }, [query, apply]);
+
   // Keep the revert snapshot in sync with the latest known-good state,
   // so a failed update doesn't roll back past an earlier successful one.
   useEffect(() => {
@@ -37,7 +46,10 @@ export function useBookings() {
   }, [bookings]);
 
   useEffect(() => {
-    fetch();
+    let cancelled = false;
+    query().then((res) => {
+      if (!cancelled) apply(res);
+    });
 
     // Real-time subscription — mirrors operator/driver apps
     const channel = supabase
@@ -66,9 +78,10 @@ export function useBookings() {
       .subscribe();
 
     return () => {
+      cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, [fetch]);
+  }, [query, apply]);
 
   const updateStatus = useCallback(
     async (ref: string, status: BookingStatus) => {

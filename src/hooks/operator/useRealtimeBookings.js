@@ -5,7 +5,9 @@ import { supabase, isConfigured } from "@/lib/supabase";
 
 function useRealtimeTable(table, onUpdate) {
   const onUpdateRef = useRef(onUpdate);
-  onUpdateRef.current = onUpdate;
+  useEffect(() => {
+    onUpdateRef.current = onUpdate;
+  });
 
   // Incrementing this value causes the effect to re-run, recreating the channel.
   // Used for exponential-backoff reconnect on CHANNEL_ERROR / TIMED_OUT.

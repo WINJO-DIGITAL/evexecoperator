@@ -3,21 +3,24 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import type { DbDriverUnavailableDate } from "@/lib/database.types";
+import type { QueryResult } from "@/lib/queryResult";
 
 export function useDriverAvailability() {
   const [unavailableDates, setUnavailableDates] = useState<DbDriverUnavailableDate[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetch = useCallback(async () => {
-    const { data } = await supabase
-      .from("driver_unavailable_dates")
-      .select("*");
+  const query = useCallback(() => supabase.from("driver_unavailable_dates").select("*"), []);
+
+  const apply = useCallback(({ data }: QueryResult) => {
     setUnavailableDates((data as DbDriverUnavailableDate[]) ?? []);
     setLoading(false);
   }, []);
 
   useEffect(() => {
-    fetch();
+    let cancelled = false;
+    query().then((res) => {
+      if (!cancelled) apply(res);
+    });
 
     // Real-time — drivers marking days off in the driver app reflect instantly
     const channel = supabase
@@ -38,9 +41,10 @@ export function useDriverAvailability() {
       .subscribe();
 
     return () => {
+      cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, [fetch]);
+  }, [query, apply]);
 
   // Returns the set of driver IDs who have marked themselves unavailable on the given date.
   const unavailableDriverIds = useCallback(
