@@ -6,8 +6,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 export const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const FROM = process.env.INVOICE_FROM ?? "EV Exec <book@evexec.co.uk>";
-const REPLY_TO = process.env.INVOICE_REPLY_TO ?? "book@evexec.co.uk";
+import { senderFor } from "@/lib/server/sender";
 
 export const STAFF_ROLES = ["operator_admin", "dispatcher"] as const;
 export type StaffRole = (typeof STAFF_ROLES)[number];
@@ -83,12 +82,12 @@ export function setPasswordUrl(origin: string, hashedToken: string, type: "invit
   return `${origin}/set-password?token_hash=${encodeURIComponent(hashedToken)}&type=${type}`;
 }
 
-export async function sendEmail(to: string, mail: { subject: string; html: string; text: string }) {
+export async function sendEmail(to: string, mail: { subject: string; html: string; text: string }, tenantId?: string | null) {
   if (!RESEND_API_KEY) throw new Error("Email isn't set up (RESEND_API_KEY is missing in Vercel).");
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: FROM, to: [to], reply_to: REPLY_TO, subject: mail.subject, html: mail.html, text: mail.text }),
+    body: JSON.stringify({ ...senderFor(tenantId), to: [to], subject: mail.subject, html: mail.html, text: mail.text }),
   });
   if (!res.ok) {
     let detail = "";

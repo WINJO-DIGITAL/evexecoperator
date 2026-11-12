@@ -117,7 +117,7 @@ export async function POST(req: Request) {
     try {
       await sendEmail(email, driverInvite({
         tenant_id: caller.tenantId, businessName: caller.tenantName, driverName: name, inviterName: caller.name, url, newAccount: !user.last_sign_in_at,
-      }));
+      }), caller.tenantId);
     } catch (e) {
       emailed = false;
       emailError = (e as Error).message;

@@ -86,7 +86,7 @@ export async function POST(req: Request) {
       if (!m) return json({ error: "That person isn't on your team." }, 404);
       await loadBrand(admin, caller.tenantId);
       const link = await linkFor(admin, m.email, origin, "recovery");
-      await sendEmail(m.email, teamInvite({ tenant_id: caller.tenantId, businessName: caller.tenantName, inviterName: caller.name, role: m.role, url: link.url, newAccount: true }));
+      await sendEmail(m.email, teamInvite({ tenant_id: caller.tenantId, businessName: caller.tenantName, inviterName: caller.name, role: m.role, url: link.url, newAccount: true }), caller.tenantId);
       return json({ ok: true, email: m.email });
     }
 
@@ -102,7 +102,7 @@ export async function POST(req: Request) {
     let emailed = true;
     let emailError: string | null = null;
     try {
-      await sendEmail(email, teamInvite({ tenant_id: caller.tenantId, businessName: caller.tenantName, inviterName: caller.name, role, url: link.url, newAccount: link.newAccount }));
+      await sendEmail(email, teamInvite({ tenant_id: caller.tenantId, businessName: caller.tenantName, inviterName: caller.name, role, url: link.url, newAccount: link.newAccount }), caller.tenantId);
     } catch (e) {
       emailed = false;
       emailError = (e as Error).message;
