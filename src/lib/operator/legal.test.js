@@ -133,3 +133,16 @@ describe("licence number", () => {
     expect(licenceProblem("<b>1</b>")).toMatch(/3 to 20/);
   });
 });
+
+import { publicLegalLinks } from "./legal";
+describe("public legal links", () => {
+  it("builds the two page addresses from the business's short name", () => {
+    expect(publicLegalLinks({ slug: "coastal-cars" })).toEqual({
+      terms: "https://www.evexec.co.uk/t/coastal-cars/terms",
+      privacy: "https://www.evexec.co.uk/t/coastal-cars/privacy",
+    });
+  });
+  it("gives nothing for a missing or odd short name", () => {
+    for (const slug of [undefined, "", "../x", "a b"]) expect(publicLegalLinks({ slug })).toBeNull();
+  });
+});

@@ -172,3 +172,7 @@ Private hire operator licence **PHO0079** (user, 19/10/2026) is in every email f
 
 Settings → Legal has a "Who is responsible" section: the platform is software only (not a private hire operator, not a party to bookings, checks nothing the operator enters), and the operator alone is responsible for licences, insurance, vehicles, driver checks, records, its terms and prices, data protection, payments and tax, and the truth of what it publishes. The operator ticks one confirmation, saved as `brand.legal.responsibilities_confirmed` (with `_at` and `_version`) through `update_tenant_legal` (migration `20261112270000` in `evexec`, applied) and listed as a gap until given. The wording is `RESPONSIBILITIES` in `src/lib/operator/legal.js`, mirroring `evexec/docs/legal/operator-responsibilities.md` (version 1): keep the two in step, and never add a requirement that makes the platform responsible for, or implies it checks, any of these.
 
+
+## Update — 2026-11-12: public terms and privacy pages for each business
+
+Settings → Legal shows the business's public pages, `https://www.evexec.co.uk/t/<short name>/terms` and `/privacy`, built on the website from the business's own details (`evexec/lib/legalPage.js`) and shown only once its legal details are complete and it has confirmed the responsibilities statement. The supplier of the software is Winjo Digital, not EV Exec; the contract is `evexec/docs/legal/operator-contract.md` (£999 set-up, £49 a month). Keep the claim that the platform is software only and the operator is responsible in every document.

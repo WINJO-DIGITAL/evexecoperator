@@ -121,6 +121,15 @@ export const RESPONSIBILITIES = [
   "Everything you publish or send through the platform being true.",
 ];
 
+// Where a business's public terms and privacy pages live (built from its details
+// on the website; shown only once its legal details are complete).
+export const PUBLIC_LEGAL_BASE = "https://www.evexec.co.uk/t";
+export function publicLegalLinks(tenant) {
+  const slug = typeof tenant?.slug === "string" ? tenant.slug.trim().toLowerCase() : "";
+  if (!/^[a-z0-9][a-z0-9-]{0,39}$/.test(slug)) return null;
+  return { terms: `${PUBLIC_LEGAL_BASE}/${slug}/terms`, privacy: `${PUBLIC_LEGAL_BASE}/${slug}/privacy` };
+}
+
 export const CUSTOM_TERMS_MIN = 100;
 export const CUSTOM_TERMS_MAX = 30000;
 export const PRIVACY_EXTRA_MAX = 4000;
