@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useTenantProfile } from "@/hooks/operator/useTenantProfile";
 import {
+  bandsProblem,
   LEGAL_JURISDICTIONS,
   LEGAL_STATUSES,
   legalFormFromTenant,
@@ -45,8 +46,11 @@ export default function LegalSettings({ toast }) {
   const set = (field) => (value) => setForm((f) => ({ ...f, [field]: value }));
   const off = !canEdit;
   const gaps = legalGaps(form);
+  const bandsWrong = bandsProblem(form.bands);
+  const setBand = (i, field, value) => setForm((f) => ({ ...f, bands: f.bands.map((b, j) => (j === i ? { ...b, [field]: value } : b)) }));
 
   async function handleSave() {
+    if (bandsWrong) { toast({ message: bandsWrong, type: "error" }); return; }
     setBusy(true);
     try {
       await saveLegal(legalPayload(form));
@@ -133,6 +137,24 @@ export default function LegalSettings({ toast }) {
         </Field>
         <Field label="Loyalty points name" hint="Leave blank if you have no points scheme.">{input("pointsName")}</Field>
         <Field label="ICO registration number" hint="Your data protection fee registration, or “exempt” if the ICO says so.">{input("icoRegistration")}</Field>
+      </div>
+
+      <div className="space-y-5">
+        <p className="text-xs uppercase tracking-[0.28em] text-amber-600">Cancellation charges</p>
+        <p className="text-xs text-slate-500">
+          Free cancellation until the first notice below. Each band charges its percentage of the fare once it starts. After the last band, cancelling costs the full fare. Standard EV Exec charges are shown until you change them.
+        </p>
+        {form.bands.map((b, i) => (
+          <div key={i} className="grid gap-5 sm:grid-cols-2">
+            <Field label={`Band ${i + 1}: hours before pickup`}>
+              <input className={INPUT} type="number" min="1" max="336" value={b.hours} onChange={(e) => setBand(i, "hours", e.target.value)} disabled={off} />
+            </Field>
+            <Field label={`Band ${i + 1}: charge (% of fare)`}>
+              <input className={INPUT} type="number" min="0" max="100" value={b.pct} onChange={(e) => setBand(i, "pct", e.target.value)} disabled={off} />
+            </Field>
+          </div>
+        ))}
+        {bandsWrong && <p className="text-xs text-red-600">{bandsWrong}</p>}
       </div>
 
       <div className="space-y-3">

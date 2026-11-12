@@ -30,6 +30,7 @@ export function legalFormFromTenant(tenant) {
     pointsName: str(l.points_name),
     icoRegistration: str(l.ico_registration),
     insuranceConfirmed: l.insurance_confirmed === true,
+    bands: bandsFromTenant(tenant),
     // Read-only here: set on the business record, not in this screen.
     licence: str(brand.licence),
     name: str(tenant?.name),
@@ -38,7 +39,37 @@ export function legalFormFromTenant(tenant) {
   };
 }
 
+// The business's own standard cancellation bands (three), as the screen edits them.
+export const DEFAULT_BANDS = [
+  { hours: "48", pct: "0" },
+  { hours: "24", pct: "25" },
+  { hours: "2", pct: "50" },
+];
+
+export function bandsFromTenant(tenant) {
+  const s = tenant?.brand?.legal?.policy?.standard;
+  if (!Array.isArray(s) || s.length !== 3) return DEFAULT_BANDS.map((b) => ({ ...b }));
+  return s.map((b) => ({ hours: String(b.hours ?? ""), pct: String(b.pct ?? "") }));
+}
+
+// Why the bands can't be saved, or null. Same rules as the database.
+export function bandsProblem(bands) {
+  const nums = bands.map((b) => ({ hours: Number(b.hours), pct: Number(b.pct), raw: [b.hours, b.pct] }));
+  if (nums.some((b) => b.raw.some((v) => String(v).trim() === "") || !Number.isFinite(b.hours) || !Number.isFinite(b.pct))) {
+    return "Fill in all three bands: the hours before pickup and the percentage.";
+  }
+  if (nums.some((b) => b.hours < 1 || b.hours > 336)) return "Notice hours must be between 1 and 336.";
+  if (nums.some((b) => b.pct < 0 || b.pct > 100)) return "A percentage must be between 0 and 100.";
+  if (nums[0].pct !== 0) return "The first band must be 0% (free cancellation).";
+  for (let i = 1; i < 3; i++) {
+    if (nums[i].hours >= nums[i - 1].hours) return "Each band must be closer to pickup: fewer hours than the one before.";
+    if (nums[i].pct <= nums[i - 1].pct) return "Each band must charge more than the one before.";
+  }
+  return null;
+}
+
 // What the database saves: only the fields this screen owns.
+
 export function legalPayload(form) {
   return {
     legal_name: form.legalName.trim(),
@@ -54,6 +85,7 @@ export function legalPayload(form) {
     points_name: form.pointsName.trim(),
     ico_registration: form.icoRegistration.trim(),
     insurance_confirmed: form.insuranceConfirmed,
+    policy: { standard: form.bands.map((b) => ({ hours: Number(b.hours), pct: Number(b.pct) })) },
   };
 }
 
