@@ -177,12 +177,14 @@ export function sanitizeText(str, maxLen) {
 // ─── Booking reference generation ────────────────────────────────────────────
 
 /**
- * Generates a short unique booking reference of the form EVX-XXXXXNN.
+ * Generates a short unique booking reference of the form PREFIX-XXXXXXXXXXXX
+ * (PREFIX is the business's own, 2 to 5 capital letters; EV Exec's is EVX).
  * Uses timestamp + random suffix to minimise collision probability.
  * The caller should still handle the rare unique-constraint DB error by retrying.
  */
-export function generateBookingRef() {
+export function generateBookingRef(prefix = "EVX") {
+  const p = /^[A-Z]{2,5}$/.test(prefix) ? prefix : "EVX";
   const ts  = Date.now().toString(36).toUpperCase().slice(-6);
   const rnd = Math.random().toString(36).toUpperCase().slice(2, 8);
-  return `EVX-${ts}${rnd}`;
+  return `${p}-${ts}${rnd}`;
 }
