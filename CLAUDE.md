@@ -12,6 +12,10 @@ This applies to all three repos in this project (`evexec`, `evexecoperator`, `ev
 
 <!-- BEGIN:nextjs-agent-rules -->
 
+# Legal wording (hard rule, user decision 12/11/2026)
+
+**No solicitor or lawyer is used, and none can be afforded.** Terms, privacy policies and any other legal or compliance wording are drafted from, and checked against, official UK sources (legislation.gov.uk, the CMA, the ICO, gov.uk), with the sources, the changes made and the residual risks recorded in `evexec/docs/legal/audit-2026-11-12.md`. Never suggest "have a solicitor review this". Say what was checked, what could not be verified, and what the owner must do. Not legal advice and not a guarantee: be honest about that.
+
 # This is NOT the Next.js you know
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
