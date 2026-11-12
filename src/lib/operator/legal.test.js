@@ -46,8 +46,8 @@ describe("legal form", () => {
     expect(p).not.toHaveProperty("licence");
     expect(p).not.toHaveProperty("email");
     expect(Object.keys(p).sort()).toEqual([
-      "area", "base", "company_number", "fleet", "ico_registration", "insurance_confirmed", "jurisdiction",
-      "legal_name", "luggage", "points_name", "policy", "registered_address", "service", "status",
+      "area", "base", "company_number", "custom_terms", "fleet", "ico_registration", "insurance_confirmed", "jurisdiction",
+      "legal_name", "luggage", "numbers_confirmed", "points_name", "policy", "privacy_extra", "registered_address", "service", "status", "terms_mode",
     ]);
   });
 });
@@ -99,5 +99,19 @@ describe("cancellation bands on the Legal screen", () => {
     expect(bandsProblem([base[0], base[1], { hours: "4", pct: "40" }])).toMatch(/charge more/);
     expect(bandsProblem([base[0], base[1], { hours: "4", pct: "150" }])).toMatch(/between 0 and 100/);
     expect(bandsProblem([base[0], base[1], { hours: "0", pct: "75" }])).toMatch(/between 1 and 336/);
+  });
+});
+
+import { termsProblem, legalPayload as _lp, legalFormFromTenant as _lf } from "./legal";
+describe("custom terms", () => {
+  const base = { customTerms: "", privacyExtra: "", termsMode: "standard", numbersConfirmed: false };
+  it("standard needs nothing", () => expect(termsProblem(base)).toBeNull());
+  it("custom needs text", () => expect(termsProblem({ ...base, termsMode: "custom", numbersConfirmed: true })).toMatch(/Write your terms/));
+  it("custom needs the tick", () => expect(termsProblem({ ...base, termsMode: "custom", customTerms: "x".repeat(120) })).toMatch(/Tick the box/));
+  it("custom with both is fine", () => expect(termsProblem({ ...base, termsMode: "custom", customTerms: "x".repeat(120), numbersConfirmed: true })).toBeNull());
+  it("round-trips through the tenant row", () => {
+    const form = _lf({ brand: { legal: { terms_mode: "custom", custom_terms: "abc", privacy_extra: "p", numbers_confirmed: true } } });
+    expect(form.termsMode).toBe("custom");
+    expect(_lp(form)).toMatchObject({ terms_mode: "custom", custom_terms: "abc", privacy_extra: "p", numbers_confirmed: true });
   });
 });
