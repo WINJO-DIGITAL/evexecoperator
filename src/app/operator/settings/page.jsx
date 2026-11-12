@@ -26,6 +26,7 @@ import {
   Trash2,
   Palette,
   ImageUp,
+  FileText,
 } from "lucide-react";
 import { useOperatorToast } from "@/components/operator/Toast";
 import { isConfigured, supabase } from "@/lib/supabase";
@@ -41,6 +42,7 @@ import { BUILT_IN_LOGO_SRC, DEFAULT_ACCENT, DEFAULT_PRIMARY, EV_EXEC_TENANT_ID, 
 import { useOperator } from "@/components/operator/OperatorContext";
 import AuditLogTab from "@/components/AuditLogTab";
 import TeamSettings from "@/components/operator/TeamSettings";
+import LegalSettings from "@/components/operator/LegalSettings";
 import { useAuditLog } from "@/hooks/useAuditLog";
 
 const SECTIONS = [
@@ -49,6 +51,7 @@ const SECTIONS = [
   { key: "team", label: "Team", icon: UsersRound },
   { key: "notifications", label: "Notifications", icon: Bell },
   { key: "prices", label: "Prices", icon: Car },
+  { key: "legal", label: "Legal", icon: FileText },
   { key: "integrations", label: "Integrations", icon: Plug },
   { key: "security", label: "Security", icon: Shield },
   { key: "activity", label: "Activity log", icon: History },
@@ -1012,6 +1015,7 @@ export default function Settings() {
     team: <TeamSettings toast={toast} />,
     notifications: <NotificationCenter />,
     prices: <PriceSettings toast={toast} />,
+    legal: <LegalSettings toast={toast} />,
     integrations: <IntegrationSettings toast={toast} />,
     security: <SecuritySettings toast={toast} />,
     activity: <ActivitySettings />,

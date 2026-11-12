@@ -139,5 +139,18 @@ export function useTenantProfile() {
     return data;
   }, [tenant]);
 
-  return { tenant, canEdit, user, loading, error, save, savePricing, uploadLogo, saveBranding, reload: load };
+  // Legal details (brand.legal) through update_tenant_legal: admins only, checked
+  // again in the database. Only the fields in lib/operator/legal.js are sent.
+  const saveLegal = useCallback(async (payload) => {
+    if (!tenant) throw new Error("No business to update.");
+    const { data, error: rpcErr } = await supabase.rpc("update_tenant_legal", {
+      p_tenant_id: tenant.id,
+      p_legal: payload,
+    });
+    if (rpcErr) throw new Error(rpcErr.message);
+    setTenant(data);
+    return data;
+  }, [tenant]);
+
+  return { tenant, canEdit, user, loading, error, save, savePricing, uploadLogo, saveBranding, saveLegal, reload: load };
 }
