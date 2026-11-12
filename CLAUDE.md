@@ -167,3 +167,8 @@ Private hire operator licence **PHO0079** (user, 19/10/2026) is in every email f
 - A new business has no prices, no logo and no driver yet: it sets them in Settings (Prices, Branding) and Drivers. Its customers see no EV Exec details (the website's built-in price list is EV Exec's only).
 - Invite emails are sent from the platform sender (`INVOICE_FROM`, EV Exec's address today); per-business sending domains are a separate, parked decision (may cost money).
 - Tests: `src/app/api/platform/tenants/tenants.test.ts` (14).
+
+## Update — 2026-11-12: the platform is software only; the operator confirms its responsibilities
+
+Settings → Legal has a "Who is responsible" section: the platform is software only (not a private hire operator, not a party to bookings, checks nothing the operator enters), and the operator alone is responsible for licences, insurance, vehicles, driver checks, records, its terms and prices, data protection, payments and tax, and the truth of what it publishes. The operator ticks one confirmation, saved as `brand.legal.responsibilities_confirmed` (with `_at` and `_version`) through `update_tenant_legal` (migration `20261112270000` in `evexec`, applied) and listed as a gap until given. The wording is `RESPONSIBILITIES` in `src/lib/operator/legal.js`, mirroring `evexec/docs/legal/operator-responsibilities.md` (version 1): keep the two in step, and never add a requirement that makes the platform responsible for, or implies it checks, any of these.
+

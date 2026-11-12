@@ -11,6 +11,7 @@ import {
   legalPayload,
   termsProblem,
   licenceProblem,
+  RESPONSIBILITIES,
   CUSTOM_TERMS_MAX,
   PRIVACY_EXTRA_MAX,
 } from "@/lib/operator/legal";
@@ -227,6 +228,28 @@ export default function LegalSettings({ toast }) {
       </div>
 
       <div className="space-y-3">
+        <p className="text-xs uppercase tracking-[0.28em] text-amber-600">Who is responsible</p>
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-[#0F1B33]">
+          <p>
+            This platform is software only: a booking website, an Operator app and a Driver App. It is not a private hire operator, is not a party to your bookings, and does not provide, check or supervise your licences, insurance, vehicles or drivers. It checks none of what you enter here. You alone are responsible for:
+          </p>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-slate-700">
+            {RESPONSIBILITIES.map((r) => <li key={r}>{r}</li>)}
+          </ul>
+        </div>
+        <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-[#0F1B33]">
+          <input
+            type="checkbox"
+            className="mt-1 h-4 w-4"
+            checked={form.responsibilitiesConfirmed}
+            onChange={(e) => set("responsibilitiesConfirmed")(e.target.checked)}
+            disabled={off}
+          />
+          <span>I confirm that I have read this, that I am solely responsible for everything listed, and that the platform provider is not.</span>
+        </label>
+      </div>
+
+      <div className="space-y-3">
         <p className="text-xs uppercase tracking-[0.28em] text-amber-600">Insurance and DBS</p>
         <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-[#0F1B33]">
           <input
@@ -237,7 +260,7 @@ export default function LegalSettings({ toast }) {
             disabled={off}
           />
           <span>
-            I confirm that my business holds hire &amp; reward and public liability insurance covering passengers during transit, and that my drivers are DBS checked. I am responsible for keeping this true.
+            I confirm that my business holds hire &amp; reward and public liability insurance covering passengers during transit, and that my drivers have the criminal-record checks my licensing authority requires. I am responsible for keeping this true. Customer-facing statements about this appear in my terms only once I tick this.
           </span>
         </label>
       </div>
