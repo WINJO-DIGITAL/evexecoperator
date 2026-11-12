@@ -14,6 +14,7 @@ import {
 import { markBookingCreated } from "@/lib/operator/recentBookingRefs";
 import { looksLikeAirport } from "@/lib/bookingUtils";
 import { ukToIso } from "@/lib/dates";
+import { fetchRefPrefix } from "@/lib/operator/refPrefix";
 import { ukDateDaysAgo, OPERATIONAL_DAYS_BACK } from "@/lib/operator/ukDate";
 
 // Re-exported: screens import these from here.
@@ -414,12 +415,14 @@ export function useBookings({ scope = "operational" } = {}) {
             .single()
         : { data: null };
 
+      const refPrefix = await fetchRefPrefix(supabase);
+
       // Insert one booking row, retrying on a ref collision (23505). Returns the ref.
       const insertLeg = async (fields) => {
         let ref;
         let succeeded = false;
         for (let attempt = 0; attempt < 3; attempt++) {
-          ref = generateBookingRef();
+          ref = generateBookingRef(refPrefix);
           const { error: insertErr } = await supabase.from("bookings").insert({ ref, ...fields });
           if (!insertErr) { succeeded = true; break; }
           if (insertErr.code !== "23505") throw new Error(insertErr.message);
