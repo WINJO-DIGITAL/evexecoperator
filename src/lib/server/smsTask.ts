@@ -38,3 +38,14 @@ export async function queueCustomerText(
   });
   return !error;
 }
+
+/**
+ * Whether the customer's text goes to the office list. A confirmed booking always
+ * gets one when a phone number is on file, alongside the email (the office sends
+ * it from their own phone). A "journey unavailable" text is only needed when the
+ * email could not be sent.
+ */
+export function wantsCustomerText(p: { accepted: boolean; emailed: boolean; phone: string }): boolean {
+  if (!p.phone) return false;
+  return p.accepted ? true : !p.emailed;
+}

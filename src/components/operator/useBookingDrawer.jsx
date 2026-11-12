@@ -52,6 +52,8 @@ export function useBookingDrawer(api, drivers) {
       toast({ message: `${verb}, but ${out.warning}`, type: "error" });
     } else if (out?.channel === "text") {
       toast({ message: `${verb}. No email on file: send the text from Today → Texts to send.`, type: "success" });
+    } else if (out?.channel === "email" && out?.textQueued) {
+      toast({ message: `${verb}. Customer emailed. Their text is waiting in Today → Texts to send.`, type: "success" });
     } else {
       toast({
         message: `${verb} — customer notified${out?.channel ? ` by ${out.channel}` : ""}`,

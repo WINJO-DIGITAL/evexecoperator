@@ -180,3 +180,6 @@ Settings → Legal shows the business's public pages, `https://www.evexec.co.uk/
 ## Update — 2026-11-12: the "booking accepted" text now replaces the "request received" text
 
 For customers with no email, the "we've received your request" text and the "booking confirmed" text are both `operator_sms_tasks` kind `confirmation`, and a booking has one task per kind, so the confirmed text was silently dropped whenever the received text already existed. Accepting now replaces the earlier text with the confirmed one and puts it back to pending in Today → Texts to send (`queueCustomerText` in `src/lib/server/smsTask.ts`; the website's accept link does the same through `handOffSmsToOperator(..., { supersede: true })`). An identical text is left alone, so a retry never duplicates or re-pushes. No database change.
+
+**Update (same day, owner request):** a confirmed booking now gets the two-tap text for everyone with a phone number, alongside the email (`wantsCustomerText` in `smsTask.ts`; the website's accept link does the same in `sendBookingConfirmed`). The office sees one more text per accepted booking. A "journey unavailable" text is still only queued when the email could not be sent.
+

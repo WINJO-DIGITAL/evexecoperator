@@ -6,7 +6,7 @@ import { brandFor } from "@/lib/email/brand.js";
 import { loadBrand } from "@/lib/server/brands";
 import { bookingResponseText } from "@/lib/bookingResponseText";
 import { adminClient, getCaller } from "@/lib/server/staff";
-import { queueCustomerText } from "@/lib/server/smsTask";
+import { queueCustomerText, wantsCustomerText } from "@/lib/server/smsTask";
 import { DEPLOYMENT_BRAND } from "@/lib/deploymentBrand";
 
 // Notifies a customer that the operator has ACCEPTED or REJECTED their website
@@ -133,9 +133,11 @@ export async function POST(req: Request) {
     }
   }
 
-  // ── Text fallback: two-tap, sent from the operator's own phone ─────────────
+  // ── Text: two-tap, sent from the operator's own phone. A confirmed booking always
+  // gets one when there is a phone number (alongside the email); a "journey
+  // unavailable" text only when the email could not be sent. ──────────────────
   let smsQueued = false;
-  if (!emailed && phone) {
+  if (wantsCustomerText({ accepted, emailed, phone })) {
     // Replaces an earlier "we've received your request" text for this booking, so the
     // customer is sent the confirmation (see src/lib/server/smsTask.ts).
     smsQueued = await queueCustomerText(admin, {

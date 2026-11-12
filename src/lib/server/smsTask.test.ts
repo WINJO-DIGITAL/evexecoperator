@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { queueCustomerText } from "./smsTask";
+import { queueCustomerText, wantsCustomerText } from "./smsTask";
 
 // A tiny fake of the table: select().eq().eq().maybeSingle(), update().eq(), insert().
 function fakeAdmin(rows: any[]) {
@@ -44,5 +44,19 @@ describe("queueCustomerText", () => {
     const { admin, log } = fakeAdmin(rows);
     expect(await queueCustomerText(admin, t("Confirmed"))).toBe(true);
     expect(log).toEqual([]);
+  });
+});
+
+describe("wantsCustomerText", () => {
+  it("a confirmed booking gets a text whenever there is a phone, even if the email went", () => {
+    expect(wantsCustomerText({ accepted: true, emailed: true, phone: "07123456789" })).toBe(true);
+    expect(wantsCustomerText({ accepted: true, emailed: false, phone: "07123456789" })).toBe(true);
+  });
+  it("no phone, no text", () => {
+    expect(wantsCustomerText({ accepted: true, emailed: false, phone: "" })).toBe(false);
+  });
+  it("a 'journey unavailable' text is only for when the email could not be sent", () => {
+    expect(wantsCustomerText({ accepted: false, emailed: true, phone: "07123456789" })).toBe(false);
+    expect(wantsCustomerText({ accepted: false, emailed: false, phone: "07123456789" })).toBe(true);
   });
 });
