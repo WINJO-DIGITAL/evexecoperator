@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { legalFormFromTenant, legalPayload, legalGaps } from "./legal";
+import { legalFormFromTenant, legalPayload, legalGaps, bandsProblem } from "./legal";
 
 const tenant = {
   name: "Coastal Cars",
@@ -47,7 +47,7 @@ describe("legal form", () => {
     expect(p).not.toHaveProperty("email");
     expect(Object.keys(p).sort()).toEqual([
       "area", "base", "company_number", "fleet", "ico_registration", "insurance_confirmed", "jurisdiction",
-      "legal_name", "luggage", "points_name", "registered_address", "service", "status",
+      "legal_name", "luggage", "points_name", "policy", "registered_address", "service", "status",
     ]);
   });
 });
@@ -69,5 +69,35 @@ describe("legal gaps", () => {
 
   it("asks for insurance until it is confirmed", () => {
     expect(legalGaps({ ...legalFormFromTenant(tenant), insuranceConfirmed: false }).map((g) => g.key)).toContain("insurance");
+  });
+});
+
+describe("cancellation bands on the Legal screen", () => {
+  it("start from the standard bands, or from the operator's own", () => {
+    expect(legalFormFromTenant({ brand: {} }).bands).toEqual([
+      { hours: "48", pct: "0" }, { hours: "24", pct: "25" }, { hours: "2", pct: "50" },
+    ]);
+    const own = legalFormFromTenant({ brand: { legal: { policy: { standard: [
+      { hours: 72, pct: 0 }, { hours: 24, pct: 50 }, { hours: 4, pct: 75 },
+    ] } } } });
+    expect(own.bands[1]).toEqual({ hours: "24", pct: "50" });
+  });
+
+  it("accept a sensible set of bands, and save them as numbers", () => {
+    const bands = [{ hours: "72", pct: "0" }, { hours: "24", pct: "50" }, { hours: "4", pct: "75" }];
+    expect(bandsProblem(bands)).toBeNull();
+    expect(legalPayload({ ...legalFormFromTenant({ brand: {} }), bands }).policy).toEqual({ standard: [
+      { hours: 72, pct: 0 }, { hours: 24, pct: 50 }, { hours: 4, pct: 75 },
+    ] });
+  });
+
+  it("refuse anything the database would refuse", () => {
+    const base = [{ hours: "72", pct: "0" }, { hours: "24", pct: "50" }, { hours: "4", pct: "75" }];
+    expect(bandsProblem([{ hours: "", pct: "0" }, base[1], base[2]])).toMatch(/Fill in all three/);
+    expect(bandsProblem([{ hours: "72", pct: "5" }, base[1], base[2]])).toMatch(/first band must be 0%/);
+    expect(bandsProblem([base[0], { hours: "96", pct: "50" }, base[2]])).toMatch(/closer to pickup/);
+    expect(bandsProblem([base[0], base[1], { hours: "4", pct: "40" }])).toMatch(/charge more/);
+    expect(bandsProblem([base[0], base[1], { hours: "4", pct: "150" }])).toMatch(/between 0 and 100/);
+    expect(bandsProblem([base[0], base[1], { hours: "0", pct: "75" }])).toMatch(/between 1 and 336/);
   });
 });

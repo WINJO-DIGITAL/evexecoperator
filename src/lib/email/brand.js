@@ -32,7 +32,7 @@ const EV_EXEC = Object.freeze({
   accent: null,
 });
 
-const NONE = Object.freeze({ name: '', wordmark: '', phone: '', email: '', licence: '', site: '', tagline: '', primary: null, accent: null });
+const NONE = Object.freeze({ name: '', wordmark: '', phone: '', email: '', licence: '', site: '', tagline: '', primary: null, accent: null, policy: null });
 
 const HEX = /^#[0-9a-f]{6}$/i;
 const clean = (v) => (typeof v === 'string' ? v.trim() : '');
@@ -57,6 +57,18 @@ function telNumber(raw) {
   return '';
 }
 
+// An operator's own standard cancellation bands (brand.legal.policy.standard):
+// three bands, stricter each time, first 0 percent. Anything else is ignored.
+// Same rule as the website (evexec lib/brand.js); the database checks it on save.
+function standardPolicy(policy) {
+  const s = policy && Array.isArray(policy.standard) ? policy.standard : null;
+  if (!s || s.length !== 3) return null;
+  const ok = s.every((b) => b && Number.isFinite(b.hours) && Number.isFinite(b.pct) && b.hours >= 1 && b.hours <= 336 && b.pct >= 0 && b.pct <= 100);
+  if (!ok || s[0].pct !== 0) return null;
+  const stricter = s[1].hours < s[0].hours && s[2].hours < s[1].hours && s[1].pct > s[0].pct && s[2].pct > s[1].pct;
+  return stricter ? s.map((b) => ({ hours: b.hours, pct: b.pct })) : null;
+}
+
 function fromRow(row) {
   const isDefault = row && row.id === DEFAULT_TENANT_ID();
   const base = isDefault ? EV_EXEC : NONE;
@@ -74,6 +86,7 @@ function fromRow(row) {
     tagline: clean(b.tagline) || base.tagline,
     primary: HEX.test(clean(colors.primary)) ? clean(colors.primary) : null,
     accent: HEX.test(clean(colors.accent)) ? clean(colors.accent) : null,
+    policy: standardPolicy(b.legal && typeof b.legal === 'object' ? b.legal.policy : null),
   });
 }
 

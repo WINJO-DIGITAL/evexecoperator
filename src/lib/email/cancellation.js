@@ -2,6 +2,8 @@
 // evexec/lib/cancellation.js (the website's source of truth, wording on
 // https://www.evexec.co.uk/terms sections 4 and 5); keep the two in step.
 
+import { brandFor } from './brand.js';
+
 export const TERMS_VERSION = '4';
 // When version 2 went live. Bookings made after it without a recorded
 // acceptance (phone, WhatsApp) are held to the current version.
@@ -15,6 +17,23 @@ const BANDS = {
   // Version 4 (12/11/2026): same charges as version 3, wording clarified (website lib/cancellation.js).
   '4': [{ minHours: 48, pct: 0 }, { minHours: 24, pct: 25 }, { minHours: 2, pct: 50 }, { minHours: -Infinity, pct: 100 }],
 };
+
+// The bands a booking is charged by. A booking on the current terms version uses
+// its operator's own standard bands when it has set them (brand.legal.policy);
+// older versions keep their fixed bands, and so does anyone without their own.
+// The 100% band after the last notice is always implied.
+function policyBands(standard) {
+  return [
+    { minHours: standard[0].hours, pct: standard[0].pct },
+    { minHours: standard[1].hours, pct: standard[1].pct },
+    { minHours: standard[2].hours, pct: standard[2].pct },
+    { minHours: -Infinity, pct: 100 },
+  ];
+}
+export function bandsFor(b, version) {
+  const own = version === TERMS_VERSION && b && brandFor(b.tenant_id).policy;
+  return own ? policyBands(own) : (BANDS[version] || BANDS[TERMS_VERSION]);
+}
 
 export function policyPath(version) {
   return version === '1' ? '/terms-v1' : version === '2' ? '/terms-v2' : version === '3' ? '/terms-v3' : '/terms';
@@ -59,8 +78,8 @@ export function ukStamp(date) {
 
 // When each charge starts for a journey picked up at `pickup` (a Date):
 // [{ from: Date, pct }], earliest first, the free period excluded.
-export function chargeStarts(version, pickup) {
-  const bands = BANDS[version] || BANDS[TERMS_VERSION];
+export function chargeStarts(version, pickup, bandsOverride) {
+  const bands = bandsOverride || BANDS[version] || BANDS[TERMS_VERSION];
   return bands.slice(1).map((band, i) => ({ from: new Date(pickup.getTime() - bands[i].minHours * 3600000), pct: band.pct }));
 }
 
@@ -69,6 +88,6 @@ export function chargeStarts(version, pickup) {
 export function freeCancellationLine(b, now = new Date()) {
   const pickup = pickupInstant(b.travel_date, b.travel_time);
   if (!pickup) return '';
-  const end = chargeStarts(policyVersion(b), pickup)[0].from;
+  const end = chargeStarts(policyVersion(b), pickup, bandsFor(b, policyVersion(b)))[0].from;
   return end > now ? `Free cancellation until ${ukStamp(end)}.` : 'Cancellation charges now apply.';
 }
