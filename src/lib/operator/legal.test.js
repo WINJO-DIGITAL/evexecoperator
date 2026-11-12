@@ -115,3 +115,17 @@ describe("custom terms", () => {
     expect(_lp(form)).toMatchObject({ terms_mode: "custom", custom_terms: "abc", privacy_extra: "p", numbers_confirmed: true });
   });
 });
+
+import { licenceProblem } from "./legal";
+describe("licence number", () => {
+  it("accepts a normal licence and empty", () => {
+    expect(licenceProblem("PHO0079")).toBeNull();
+    expect(licenceProblem(" pho 0079 ")).toBeNull();
+    expect(licenceProblem("")).toBeNull();
+  });
+  it("refuses too short, too long or symbols", () => {
+    expect(licenceProblem("AB")).toMatch(/3 to 20/);
+    expect(licenceProblem("A".repeat(21))).toMatch(/3 to 20/);
+    expect(licenceProblem("<b>1</b>")).toMatch(/3 to 20/);
+  });
+});

@@ -10,6 +10,7 @@ import {
   legalGaps,
   legalPayload,
   termsProblem,
+  licenceProblem,
   CUSTOM_TERMS_MAX,
   PRIVACY_EXTRA_MAX,
 } from "@/lib/operator/legal";
@@ -35,7 +36,7 @@ function Field({ label, hint, children }) {
 }
 
 export default function LegalSettings({ toast }) {
-  const { tenant, canEdit, loading, error, saveLegal } = useTenantProfile();
+  const { tenant, canEdit, loading, error, saveLegal, saveLicence } = useTenantProfile();
   const [form, setForm] = useState(() => legalFormFromTenant(tenant));
   const [formFor, setFormFor] = useState(tenant);
   const [busy, setBusy] = useState(false);
@@ -52,6 +53,20 @@ export default function LegalSettings({ toast }) {
   const bandsWrong = bandsProblem(form.bands);
   const termsWrong = termsProblem(form);
   const setBand = (i, field, value) => setForm((f) => ({ ...f, bands: f.bands.map((b, j) => (j === i ? { ...b, [field]: value } : b)) }));
+
+  async function handleSaveLicence() {
+    const wrong = licenceProblem(form.licence);
+    if (wrong) { toast({ message: wrong, type: "error" }); return; }
+    setBusy(true);
+    try {
+      await saveLicence(form.licence);
+      toast({ message: "Licence number saved", type: "success" });
+    } catch (e) {
+      toast({ message: e?.message || "Could not save the licence number", type: "error" });
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function handleSave() {
     if (bandsWrong) { toast({ message: bandsWrong, type: "error" }); return; }
@@ -137,9 +152,16 @@ export default function LegalSettings({ toast }) {
 
       <div className="space-y-5">
         <p className="text-xs uppercase tracking-[0.28em] text-amber-600">Licence and data protection</p>
-        <Field label="Private hire operator licence" hint="Set by the platform owner for now. Change it there if it's wrong.">
-          <input className={INPUT} value={form.licence} readOnly disabled />
+        <Field label="Private hire operator licence" hint="Your licence number, e.g. PHO0079. It appears on your terms and emails.">
+          <input className={INPUT} value={form.licence} onChange={(e) => set("licence")(e.target.value)} disabled={off} />
         </Field>
+        {canEdit && (
+          <div className="flex justify-end">
+            <button onClick={handleSaveLicence} disabled={busy} className="rounded-2xl border border-amber-500 px-5 py-2 text-sm font-semibold text-[#0F1B33] transition hover:bg-amber-50 disabled:opacity-50">
+              {busy ? "Saving…" : "Save licence number"}
+            </button>
+          </div>
+        )}
         <Field label="Loyalty points name" hint="Leave blank if you have no points scheme.">{input("pointsName")}</Field>
         <Field label="ICO registration number" hint="Your data protection fee registration, or “exempt” if the ICO says so.">{input("icoRegistration")}</Field>
       </div>

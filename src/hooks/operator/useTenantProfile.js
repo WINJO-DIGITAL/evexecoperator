@@ -152,5 +152,17 @@ export function useTenantProfile() {
     return data;
   }, [tenant]);
 
-  return { tenant, canEdit, user, loading, error, save, savePricing, uploadLogo, saveBranding, saveLegal, reload: load };
+  // Private hire operator licence number (brand.licence) through update_tenant_licence.
+  const saveLicence = useCallback(async (licence) => {
+    if (!tenant) throw new Error("No business to update.");
+    const { data, error: rpcErr } = await supabase.rpc("update_tenant_licence", {
+      p_tenant_id: tenant.id,
+      p_licence: licence,
+    });
+    if (rpcErr) throw new Error(rpcErr.message);
+    setTenant(data);
+    return data;
+  }, [tenant]);
+
+  return { tenant, canEdit, user, loading, error, save, savePricing, uploadLogo, saveBranding, saveLegal, saveLicence, reload: load };
 }
