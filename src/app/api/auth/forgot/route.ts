@@ -30,7 +30,7 @@ export async function POST(req: Request) {
       ? await admin.from("tenants").select("name").eq("id", staff.tenant_id).maybeSingle()
       : { data: null };
     await loadBrand(admin, staff.tenant_id);
-    await sendEmail(email, passwordReset({ tenant_id: staff.tenant_id, businessName: tenant?.name || "your", url: setPasswordUrl(appOrigin(req), token, "recovery") }));
+    await sendEmail(email, passwordReset({ tenant_id: staff.tenant_id, businessName: tenant?.name || "your", url: setPasswordUrl(appOrigin(req), token, "recovery") }), staff.tenant_id);
   } catch (e) {
     console.error("[forgot-password]", (e as Error).message);
   }

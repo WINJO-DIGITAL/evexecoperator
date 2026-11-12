@@ -24,8 +24,7 @@ export const dynamic = "force-dynamic";
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const FROM = process.env.INVOICE_FROM ?? "EV Exec <book@evexec.co.uk>";
-const REPLY_TO = process.env.INVOICE_REPLY_TO ?? "book@evexec.co.uk";
+import { senderFor } from "@/lib/server/sender";
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -120,9 +119,8 @@ export async function POST(req: Request) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: FROM,
+      ...senderFor(senderTenantId),
       to: [to],
-      reply_to: REPLY_TO,
       subject: mail.subject,
       html: mail.html,
       text: mail.text,

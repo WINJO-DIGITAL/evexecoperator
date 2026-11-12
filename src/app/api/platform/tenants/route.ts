@@ -94,7 +94,7 @@ export async function POST(req: Request) {
         await sendEmail(email, teamInvite({
           tenant_id: tenant.id, businessName: tenant.name, inviterName: caller.name,
           role: "operator_admin", url: link.url, newAccount: link.newAccount,
-        }));
+        }), tenant.id);
       } catch (e) {
         emailed = false;
         emailError = (e as Error).message;

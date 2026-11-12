@@ -35,8 +35,7 @@ export const dynamic = "force-dynamic";
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const FROM = process.env.INVOICE_FROM ?? "EV Exec <book@evexec.co.uk>";
-const REPLY_TO = process.env.INVOICE_REPLY_TO ?? "book@evexec.co.uk";
+import { senderFor } from "@/lib/server/sender";
 const WEBSITE = (process.env.EVEXEC_SITE_URL ?? DEPLOYMENT_BRAND.site).replace(/\/$/, "");
 
 type Booking = Record<string, unknown>;
@@ -117,9 +116,8 @@ export async function POST(req: Request) {
         method: "POST",
         headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          from: FROM,
+          ...senderFor(str(b.tenant_id) || undefined),
           to: [email],
-          reply_to: REPLY_TO,
           subject: mail.subject,
           html: mail.html,
           text: mail.text,
