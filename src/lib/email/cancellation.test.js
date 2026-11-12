@@ -18,7 +18,7 @@ describe('cancellation deadlines', () => {
 
   it('holds old unaccepted bookings to version 1 and new ones to the current version', () => {
     expect(policyVersion(booking({ created_at: '2026-10-01T09:00:00Z' }))).toBe('1');
-    expect(policyVersion(booking())).toBe('3');
+    expect(policyVersion(booking())).toBe('4');
     expect(policyVersion(booking({ notes: 'Accepted cancellation policy v2 at 16:00 on 16/10/2026.' }))).toBe('2');
   });
 
@@ -36,5 +36,15 @@ describe('cancellation deadlines', () => {
     expect(late).toContain('If you cancel now: 50% of the fare');
     const quoted = bookingConfirmed(booking({ airport: null, quoted_price: 650 })).text;
     expect(quoted).toContain('As set out in your quote');
+  });
+
+  it('keeps each version\'s own terms page and the same charges in version 4', async () => {
+    const { policyPath, chargeStarts } = await import('./cancellation');
+    expect(policyPath('4')).toBe('/terms');
+    expect(policyPath('3')).toBe('/terms-v3');
+    expect(policyPath('2')).toBe('/terms-v2');
+    expect(policyPath('1')).toBe('/terms-v1');
+    const pickup = new Date('2026-12-01T12:00:00Z');
+    expect(chargeStarts('4', pickup)).toEqual(chargeStarts('3', pickup));
   });
 });

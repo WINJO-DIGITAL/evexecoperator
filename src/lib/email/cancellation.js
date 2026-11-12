@@ -2,7 +2,7 @@
 // evexec/lib/cancellation.js (the website's source of truth, wording on
 // https://www.evexec.co.uk/terms sections 4 and 5); keep the two in step.
 
-export const TERMS_VERSION = '3';
+export const TERMS_VERSION = '4';
 // When version 2 went live. Bookings made after it without a recorded
 // acceptance (phone, WhatsApp) are held to the current version.
 const TERMS_CUTOVER = '2026-10-16T15:00:00Z';
@@ -12,10 +12,12 @@ const BANDS = {
   '1': [{ minHours: 24, pct: 0 }, { minHours: 2, pct: 50 }, { minHours: -Infinity, pct: 100 }],
   '2': [{ minHours: 48, pct: 0 }, { minHours: 24, pct: 25 }, { minHours: 2, pct: 50 }, { minHours: -Infinity, pct: 100 }],
   '3': [{ minHours: 48, pct: 0 }, { minHours: 24, pct: 25 }, { minHours: 2, pct: 50 }, { minHours: -Infinity, pct: 100 }],
+  // Version 4 (12/11/2026): same charges as version 3, wording clarified (website lib/cancellation.js).
+  '4': [{ minHours: 48, pct: 0 }, { minHours: 24, pct: 25 }, { minHours: 2, pct: 50 }, { minHours: -Infinity, pct: 100 }],
 };
 
 export function policyPath(version) {
-  return version === '1' ? '/terms-v1' : version === '2' ? '/terms-v2' : '/terms';
+  return version === '1' ? '/terms-v1' : version === '2' ? '/terms-v2' : version === '3' ? '/terms-v3' : '/terms';
 }
 
 function acceptedVersion(b) {
