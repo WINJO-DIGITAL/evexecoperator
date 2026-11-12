@@ -97,6 +97,14 @@ export function legalPayload(form) {
   };
 }
 
+// The licence number as the database stores it: spaces and hyphens removed, capitals.
+// Empty clears it. Same rule as update_tenant_licence.
+export function licenceProblem(raw) {
+  const clean = String(raw ?? "").replace(/[\s-]/g, "").toUpperCase();
+  if (clean === "") return null;
+  return /^[A-Z0-9]{3,20}$/.test(clean) ? null : "The licence number must be 3 to 20 letters and numbers.";
+}
+
 export const CUSTOM_TERMS_MIN = 100;
 export const CUSTOM_TERMS_MAX = 30000;
 export const PRIVACY_EXTRA_MAX = 4000;
@@ -124,7 +132,7 @@ export function legalGaps(form) {
     need("company_number", "Company number", form.companyNumber);
     need("registered_address", "Registered office address", form.registeredAddress);
   }
-  need("licence", "Private hire operator licence number (set by the platform owner)", form.licence);
+  need("licence", "Private hire operator licence number (set in Legal)", form.licence);
   need("email", "Contact email (set in Business details)", form.email);
   need("phone", "Contact phone (set in Business details)", form.phone);
   need("base", "Where you are based (town and county)", form.base);
