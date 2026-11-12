@@ -11,7 +11,14 @@ import { getStops, getPrice, onPriceList, paymentLine, needsPayment } from './fo
 import * as P from './cancellation.js';
 import { withBrandOf, currentBrand, telNumber } from './brand.js';
 
-const SITE = () => (process.env.EVEXEC_SITE_URL || currentBrand().site).replace(/\/$/, '');
+// The business's own website. EV Exec's EVEXEC_SITE_URL override applies to EV Exec only;
+// a business with no website gets '' so no link to another business's site is ever written.
+const SITE = () => {
+  const s = currentBrand().site || '';
+  if (!s) return '';
+  const override = s === 'https://www.evexec.co.uk' ? process.env.EVEXEC_SITE_URL : '';
+  return (override || s).replace(/\/$/, '');
+};
 const first = (n) => String(n || '').trim().split(/\s+/)[0] || 'there';
 const oneLine = (s) => String(s == null ? '' : s).replace(/[\r\n]+/g, ', ').replace(/\s+/g, ' ').trim();
 const money = (n) => (n == null || n === '' || isNaN(Number(n)) ? null : `£${Number(n).toFixed(2)}`);
@@ -101,7 +108,7 @@ function driverRows(d) {
   const vehicle = [d.vehicle_model, d.vehicle_registration ? String(d.vehicle_registration).toUpperCase() : null].filter(Boolean).join(', ');
   return [['Driver', first(d.full_name)], ['Car', vehicle || null]];
 }
-const bookingPage = (b) => `${SITE()}/booking?id=${encodeURIComponent(b.id)}`;
+const bookingPage = (b) => (SITE() ? `${SITE()}/booking?id=${encodeURIComponent(b.id)}` : '');
 const flightLine = (b) => (b.flight_number && /from/i.test(String(b.journey_type || '')) ? `We track flight ${String(b.flight_number).toUpperCase()} and adjust the pickup if it lands early or late.` : null);
 
 function build(subject, spec) { return { subject: oneLine(subject), spec, html: renderEmail(spec), text: renderText(spec) }; }
@@ -124,7 +131,8 @@ function requestReceived(b, { cancelUrl } = {}) {
 
 function bookingConfirmed(b, { payUrl, now } = {}) {
   const w = when(b.travel_date, b.travel_time);
-  const pay = needsPayment(b);
+  // No Pay button without a website of the business's own to pay on.
+  const pay = needsPayment(b) && !!(payUrl || SITE());
   return build(`Booking confirmed: ${w} (Ref ${b.ref})`, {
     audience: 'customer', preheader: pay ? `Your ${w} transfer is confirmed. Pay by card or choose cash.` : `Your ${w} transfer is confirmed.`,
     status: { label: 'Booking confirmed', tone: 'green' }, title: 'Your transfer is booked',
