@@ -183,3 +183,11 @@ For customers with no email, the "we've received your request" text and the "boo
 
 **Update (same day, owner request):** a confirmed booking now gets the two-tap text for everyone with a phone number, alongside the email (`wantsCustomerText` in `smsTask.ts`; the website's accept link does the same in `sendBookingConfirmed`). The office sees one more text per accepted booking. A "journey unavailable" text is still only queued when the email could not be sent.
 
+
+## Update — 2026-11-13: Stripe Connect, phase 1 (operators connect their own Stripe account)
+
+Design and decisions: `evexec/docs/payments/stripe-connect-design.md` (owner, 12/11/2026: the platform takes **no percentage** of card payments; the platform Stripe account is a **new Winjo Digital account**, not EV Exec's). Each operator connects its own Stripe account through Stripe-hosted onboarding; payments will be taken directly on that account (phase 2), the operator pays Stripe's fees, the platform never holds the money.
+- **Settings → Payments** (`PaymentsSettings.jsx`) shows the state and a Connect / Continue button (admins only) via `/api/stripe-connect` (`connectFlow.ts`, `stripeConnect.ts`). Switched off until `STRIPE_PLATFORM_SECRET_KEY` (the Winjo Digital account's key, set in Vercel, never in chat or the database) is present; without it the screen says card payments are not available yet and nothing calls Stripe.
+- Accounts are created like Standard accounts (v1 Accounts API controller properties: full Dashboard, `fees.payer=account`, `losses.payments=stripe`, `requirement_collection=stripe`; `card_payments` and `transfers` requested), no application fee.
+- State is saved on `tenants` (`stripe_connect_account_id`, `stripe_connect_charges_enabled`, `stripe_connect_details_submitted`, `stripe_connect_checked_at`; migration `20261113100000` in `evexec`, applied).
+- **Not done yet (phases 2 to 4):** taking card payments on the operator's account (Checkout with the `Stripe-Account` header; `cardPaymentsAllowed` still refuses every business but EV Exec), the Connect webhook, and testing in Stripe test mode. Do not enable live mode without the owner's go-ahead.
