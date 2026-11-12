@@ -7,7 +7,6 @@ import { loadBrand } from "@/lib/server/brands";
 import { bookingResponseText } from "@/lib/bookingResponseText";
 import { adminClient, getCaller } from "@/lib/server/staff";
 import { queueCustomerText, wantsCustomerText } from "@/lib/server/smsTask";
-import { DEPLOYMENT_BRAND } from "@/lib/deploymentBrand";
 
 // Notifies a customer that the operator has ACCEPTED or REJECTED their website
 // booking. Email first (via Resend). If the email can't be sent or there's no
@@ -37,7 +36,6 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 import { senderFor } from "@/lib/server/sender";
-const WEBSITE = (process.env.EVEXEC_SITE_URL ?? DEPLOYMENT_BRAND.site).replace(/\/$/, "");
 
 type Booking = Record<string, unknown>;
 
@@ -95,15 +93,17 @@ export async function POST(req: Request) {
   const first = str(b.customer_name).split(/\s+/)[0] || "there";
   const email = str(b.customer_email);
   const phone = str(b.customer_phone);
-  const payUrl = `${WEBSITE}/booking?id=${encodeURIComponent(str(b.id))}`;
   const when = `${fmtDate(str(b.travel_date) || null)} ${time5(b.travel_time)}`.trim();
 
   // The business's own name and number go in the texts and the email.
   await loadBrand(admin, str(b.tenant_id) || null);
   const brand = brandFor(str(b.tenant_id) || undefined);
+  // The business's own website. A business with no website gets no pay link (its customers are told to contact it instead).
+  const siteOwn = (brand.site || "").replace(/\/$/, "");
+  const payUrl = siteOwn ? `${siteOwn}/booking?id=${encodeURIComponent(str(b.id))}` : "";
   const smsText = bookingResponseText({
     accepted, brand, first, ref, when, payUrl,
-    needsPayment: needsPayment(b), freeCancellation: freeCancellationLine(b) || "",
+    needsPayment: needsPayment(b) && !!payUrl, freeCancellation: freeCancellationLine(b) || "",
   });
 
   // ── Email first ────────────────────────────────────────────────────────────
