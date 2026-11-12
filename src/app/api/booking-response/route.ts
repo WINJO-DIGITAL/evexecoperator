@@ -6,6 +6,7 @@ import { brandFor } from "@/lib/email/brand.js";
 import { loadBrand } from "@/lib/server/brands";
 import { bookingResponseText } from "@/lib/bookingResponseText";
 import { adminClient, getCaller } from "@/lib/server/staff";
+import { queueCustomerText } from "@/lib/server/smsTask";
 import { DEPLOYMENT_BRAND } from "@/lib/deploymentBrand";
 
 // Notifies a customer that the operator has ACCEPTED or REJECTED their website
@@ -135,11 +136,12 @@ export async function POST(req: Request) {
   // ── Text fallback: two-tap, sent from the operator's own phone ─────────────
   let smsQueued = false;
   if (!emailed && phone) {
-    const { error: taskErr } = await admin.from("operator_sms_tasks").upsert({
-      tenant_id: b.tenant_id, booking_id: b.id, kind: accepted ? "confirmation" : "rejection",
-      customer_name: str(b.customer_name) || null, customer_phone: phone, message: smsText, status: "pending",
-    }, { onConflict: "booking_id,kind", ignoreDuplicates: true });
-    smsQueued = !taskErr;
+    // Replaces an earlier "we've received your request" text for this booking, so the
+    // customer is sent the confirmation (see src/lib/server/smsTask.ts).
+    smsQueued = await queueCustomerText(admin, {
+      tenantId: b.tenant_id, bookingId: b.id, kind: accepted ? "confirmation" : "rejection",
+      name: str(b.customer_name) || null, phone, message: smsText,
+    });
   }
   const smsHref = smsQueued ? `sms:${phone.replace(/[^\d+]/g, "")}?&body=${encodeURIComponent(smsText)}` : null;
 

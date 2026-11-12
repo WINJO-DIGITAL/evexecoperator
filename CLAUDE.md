@@ -176,3 +176,7 @@ Settings → Legal has a "Who is responsible" section: the platform is software 
 ## Update — 2026-11-12: public terms and privacy pages for each business
 
 Settings → Legal shows the business's public pages, `https://www.evexec.co.uk/t/<short name>/terms` and `/privacy`, built on the website from the business's own details (`evexec/lib/legalPage.js`) and shown only once its legal details are complete and it has confirmed the responsibilities statement. The supplier of the software is Winjo Digital, not EV Exec; the contract is `evexec/docs/legal/operator-contract.md` (£999 set-up, £49 a month). Keep the claim that the platform is software only and the operator is responsible in every document.
+
+## Update — 2026-11-12: the "booking accepted" text now replaces the "request received" text
+
+For customers with no email, the "we've received your request" text and the "booking confirmed" text are both `operator_sms_tasks` kind `confirmation`, and a booking has one task per kind, so the confirmed text was silently dropped whenever the received text already existed. Accepting now replaces the earlier text with the confirmed one and puts it back to pending in Today → Texts to send (`queueCustomerText` in `src/lib/server/smsTask.ts`; the website's accept link does the same through `handOffSmsToOperator(..., { supersede: true })`). An identical text is left alone, so a retry never duplicates or re-pushes. No database change.
