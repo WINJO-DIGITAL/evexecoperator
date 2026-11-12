@@ -31,6 +31,10 @@ export function legalFormFromTenant(tenant) {
     icoRegistration: str(l.ico_registration),
     insuranceConfirmed: l.insurance_confirmed === true,
     bands: bandsFromTenant(tenant),
+    termsMode: l.terms_mode === "custom" ? "custom" : "standard",
+    customTerms: str(l.custom_terms),
+    privacyExtra: str(l.privacy_extra),
+    numbersConfirmed: l.numbers_confirmed === true,
     // Read-only here: set on the business record, not in this screen.
     licence: str(brand.licence),
     name: str(tenant?.name),
@@ -86,7 +90,26 @@ export function legalPayload(form) {
     ico_registration: form.icoRegistration.trim(),
     insurance_confirmed: form.insuranceConfirmed,
     policy: { standard: form.bands.map((b) => ({ hours: Number(b.hours), pct: Number(b.pct) })) },
+    terms_mode: form.termsMode,
+    custom_terms: form.customTerms,
+    privacy_extra: form.privacyExtra,
+    numbers_confirmed: form.numbersConfirmed,
   };
+}
+
+export const CUSTOM_TERMS_MIN = 100;
+export const CUSTOM_TERMS_MAX = 30000;
+export const PRIVACY_EXTRA_MAX = 4000;
+
+// Why the terms choices can't be saved, or null. Same rules as the database.
+export function termsProblem(form) {
+  if (form.customTerms.length > CUSTOM_TERMS_MAX) return `Your terms are too long (up to ${CUSTOM_TERMS_MAX} characters).`;
+  if (form.privacyExtra.length > PRIVACY_EXTRA_MAX) return `The extra privacy section is too long (up to ${PRIVACY_EXTRA_MAX} characters).`;
+  if (form.termsMode === "custom") {
+    if (form.customTerms.trim().length < CUSTOM_TERMS_MIN) return `Write your terms first (at least ${CUSTOM_TERMS_MIN} characters), or switch back to the standard terms.`;
+    if (!form.numbersConfirmed) return "Tick the box to confirm your terms match the cancellation charges you set.";
+  }
+  return null;
 }
 
 // The details still missing before the terms and privacy policy can be published.

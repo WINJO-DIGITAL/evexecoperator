@@ -9,12 +9,15 @@ import {
   legalFormFromTenant,
   legalGaps,
   legalPayload,
+  termsProblem,
+  CUSTOM_TERMS_MAX,
+  PRIVACY_EXTRA_MAX,
 } from "@/lib/operator/legal";
 
 // Settings → Legal. The details the business's terms and privacy policy are
 // built from. Insurance and DBS checks are the operator's own responsibility,
 // so the operator confirms them here. Only an operator admin can save.
-// Cancellation charges and custom terms are not on this screen yet.
+// The operator chooses the standard terms or writes its own.
 
 const LABEL = "mb-2 block text-xs uppercase tracking-[0.2em] text-slate-500";
 const INPUT = "mt-2 block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm normal-case tracking-normal text-[#0F1B33] outline-none placeholder:text-slate-400 transition focus:border-amber-400/40 disabled:opacity-60";
@@ -47,10 +50,12 @@ export default function LegalSettings({ toast }) {
   const off = !canEdit;
   const gaps = legalGaps(form);
   const bandsWrong = bandsProblem(form.bands);
+  const termsWrong = termsProblem(form);
   const setBand = (i, field, value) => setForm((f) => ({ ...f, bands: f.bands.map((b, j) => (j === i ? { ...b, [field]: value } : b)) }));
 
   async function handleSave() {
     if (bandsWrong) { toast({ message: bandsWrong, type: "error" }); return; }
+    if (termsWrong) { toast({ message: termsWrong, type: "error" }); return; }
     setBusy(true);
     try {
       await saveLegal(legalPayload(form));
@@ -155,6 +160,48 @@ export default function LegalSettings({ toast }) {
           </div>
         ))}
         {bandsWrong && <p className="text-xs text-red-600">{bandsWrong}</p>}
+      </div>
+
+      <div className="space-y-5">
+        <p className="text-xs uppercase tracking-[0.28em] text-amber-600">Terms and conditions</p>
+        <Field label="Which terms do your customers accept?">
+          <select className={INPUT} value={form.termsMode} onChange={(e) => set("termsMode")(e.target.value)} disabled={off}>
+            <option value="standard">Standard terms (built from the details above)</option>
+            <option value="custom">My own terms</option>
+          </select>
+        </Field>
+        {form.termsMode === "custom" ? (
+          <>
+            <p className="text-xs text-slate-500">
+              Your own words replace the standard terms on your terms page. Start a numbered section with a line beginning <code>## </code>, and make lists with lines beginning <code>- </code>. Plain text only. Make sure it says the same cancellation charges as the bands above. Changing the text creates a new version; bookings already made keep the version their customer accepted.
+            </p>
+            <Field label="Your terms">
+              <textarea
+                className={`${INPUT} min-h-[320px] font-mono`}
+                value={form.customTerms}
+                maxLength={CUSTOM_TERMS_MAX}
+                onChange={(e) => set("customTerms")(e.target.value)}
+                disabled={off}
+              />
+            </Field>
+            <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-[#0F1B33]">
+              <input type="checkbox" className="mt-1 h-4 w-4" checked={form.numbersConfirmed} onChange={(e) => set("numbersConfirmed")(e.target.checked)} disabled={off} />
+              <span>I confirm these terms are my own, that I am responsible for them, and that they say the same cancellation charges as the bands above.</span>
+            </label>
+          </>
+        ) : (
+          <p className="text-xs text-slate-500">The standard terms use your details and your cancellation charges. Nothing else to do.</p>
+        )}
+        <Field label="Extra information for your privacy policy (optional)" hint="Your privacy policy stays the standard one. Anything you write here is added as a final section, for things only you do, such as cameras in cars.">
+          <textarea
+            className={`${INPUT} min-h-[120px]`}
+            value={form.privacyExtra}
+            maxLength={PRIVACY_EXTRA_MAX}
+            onChange={(e) => set("privacyExtra")(e.target.value)}
+            disabled={off}
+          />
+        </Field>
+        {termsWrong && <p className="text-xs text-red-600">{termsWrong}</p>}
       </div>
 
       <div className="space-y-3">
