@@ -11,6 +11,7 @@ import {
   legalPayload,
   termsProblem,
   licenceProblem,
+  publicLegalLinks,
   RESPONSIBILITIES,
   CUSTOM_TERMS_MAX,
   PRIVACY_EXTRA_MAX,
@@ -51,6 +52,7 @@ export default function LegalSettings({ toast }) {
   const set = (field) => (value) => setForm((f) => ({ ...f, [field]: value }));
   const off = !canEdit;
   const gaps = legalGaps(form);
+  const links = publicLegalLinks(tenant);
   const bandsWrong = bandsProblem(form.bands);
   const termsWrong = termsProblem(form);
   const setBand = (i, field, value) => setForm((f) => ({ ...f, bands: f.bands.map((b, j) => (j === i ? { ...b, [field]: value } : b)) }));
@@ -118,6 +120,17 @@ export default function LegalSettings({ toast }) {
         <p className="rounded-2xl border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
           Your legal details are complete.
         </p>
+      )}
+
+      {links && (
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-700">
+          <p className="font-semibold text-[#0F1B33]">Your public pages</p>
+          <p className="mt-1">Once the details below are complete and you have confirmed the responsibilities statement, your customers can read your terms and privacy policy here:</p>
+          <ul className="mt-2 space-y-1">
+            <li><a className="text-amber-700 underline" href={links.terms} target="_blank" rel="noopener noreferrer">{links.terms}</a></li>
+            <li><a className="text-amber-700 underline" href={links.privacy} target="_blank" rel="noopener noreferrer">{links.privacy}</a></li>
+          </ul>
+        </div>
       )}
 
       <div className="space-y-5">
