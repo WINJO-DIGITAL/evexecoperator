@@ -24,6 +24,8 @@ process.env.NEXT_PUBLIC_SUPABASE_URL = "https://x.supabase.co";
 process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "anon";
 process.env.SUPABASE_SERVICE_ROLE_KEY = "service";
 process.env.STRIPE_SECRET_KEY = "sk_test_x";
+// The tests' business "t1" stands in for the owner of the Stripe account (card payments allowed).
+process.env.STRIPE_PLATFORM_TENANT_ID = "t1";
 process.env.RESEND_API_KEY = "re_x";
 
 const req = (body: unknown) => new Request("http://localhost/api", {
@@ -68,6 +70,17 @@ describe("staff-only API routes", () => {
 });
 
 // Payment links: one payable checkout per booking, never a second payment.
+describe("payment-link: another business cannot take card payments into the platform's Stripe account", () => {
+  it("refuses a booking of a business that has no Stripe account of its own", async () => {
+    state.roles = [{ tenant_id: "t2", role: "operator_admin" }];
+    state.booking = { id: "b9", ref: "EVX-9", tenant_id: "t2", customer_email: "c@example.com", quoted_price: 90, payment_status: "Unpaid" };
+    const { POST } = await import("./payment-link/route");
+    const res = await POST(new Request("http://x/api/payment-link", { method: "POST", headers: { authorization: "Bearer tok", "content-type": "application/json" }, body: JSON.stringify({ ref: "EVX-9" }) }));
+    expect(res.status).toBe(422);
+    expect((await res.json()).error).toMatch(/cannot take card payments online yet/);
+  });
+});
+
 describe("payment-link: no duplicate or split payments", () => {
   const stripeCalls = () => (fetch as unknown as ReturnType<typeof vi.fn>).mock.calls
     .filter(([u]) => String(u).startsWith("https://api.stripe.com"))

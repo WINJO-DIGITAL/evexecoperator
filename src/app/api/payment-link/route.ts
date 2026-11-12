@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { paymentLink } from "@/lib/email/content.js";
 import { brandFor } from "@/lib/email/brand.js";
 import { loadBrand } from "@/lib/server/brands";
+import { cardPaymentsAllowed } from "@/lib/server/stripeOwner";
 import { when } from "@/lib/email/template.js";
 
 // Generates a Stripe payment link for a booking and sends it to the customer.
@@ -162,6 +163,9 @@ export async function POST(req: Request) {
   if (!isSuper && !staffTenants.has(booking.tenant_id)) return json({ error: "Booking not found." }, 404);
   await loadBrand(admin, booking.tenant_id); // this business's name and number for the email and text
   const brand = brandFor(booking.tenant_id);
+  if (!cardPaymentsAllowed(booking.tenant_id)) {
+    return json({ error: `${brand.name || "This business"} cannot take card payments online yet. Ask the customer to pay by cash or bank transfer.` }, 422);
+  }
 
   const phone = (booking.customer_phone ?? "").trim();
   const email = (booking.customer_email ?? "").trim();
