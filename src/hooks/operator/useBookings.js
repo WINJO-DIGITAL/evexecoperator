@@ -359,6 +359,7 @@ export function useBookings({ scope = "operational" } = {}) {
 
     // Notify the customer. Failures here don't roll back the decision.
     let channel = null;
+    let textQueued = false;
     try {
       const { data } = await supabase.auth.getSession();
       const token = data?.session?.access_token ?? "";
@@ -379,13 +380,14 @@ export function useBookings({ scope = "operational" } = {}) {
       });
       const out = await res.json().catch(() => ({}));
       channel = out?.channel ?? null;
+      textQueued = out?.smsQueued === true;
       if (!res.ok || out?.ok === false) {
-        return { decision, channel, warning: out?.error ?? "Customer could not be notified." };
+        return { decision, channel, textQueued, warning: out?.error ?? "Customer could not be notified." };
       }
     } catch {
       return { decision, channel: null, warning: "Decision saved, but the customer notification failed to send." };
     }
-    return { decision, channel };
+    return { decision, channel, textQueued };
   }, []);
 
   const createBooking = useCallback(
