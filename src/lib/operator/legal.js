@@ -30,6 +30,7 @@ export function legalFormFromTenant(tenant) {
     pointsName: str(l.points_name),
     icoRegistration: str(l.ico_registration),
     insuranceConfirmed: l.insurance_confirmed === true,
+    responsibilitiesConfirmed: l.responsibilities_confirmed === true,
     bands: bandsFromTenant(tenant),
     termsMode: l.terms_mode === "custom" ? "custom" : "standard",
     customTerms: str(l.custom_terms),
@@ -89,6 +90,7 @@ export function legalPayload(form) {
     points_name: form.pointsName.trim(),
     ico_registration: form.icoRegistration.trim(),
     insurance_confirmed: form.insuranceConfirmed,
+    responsibilities_confirmed: form.responsibilitiesConfirmed,
     policy: { standard: form.bands.map((b) => ({ hours: Number(b.hours), pct: Number(b.pct) })) },
     terms_mode: form.termsMode,
     custom_terms: form.customTerms,
@@ -104,6 +106,20 @@ export function licenceProblem(raw) {
   if (clean === "") return null;
   return /^[A-Z0-9]{3,20}$/.test(clean) ? null : "The licence number must be 3 to 20 letters and numbers.";
 }
+
+// What the operator confirms (docs/legal/operator-responsibilities.md, version 1 in the evexec repo).
+export const RESPONSIBILITIES = [
+  "Holding every operator, driver and vehicle licence the law where you operate requires, and following your licensing authority's conditions.",
+  "Dispatching bookings only to drivers and vehicles licensed by the authority the law requires.",
+  "Insurance for every vehicle you use, including hire or reward cover, plus public liability and any employer's liability cover you need.",
+  "Choosing, checking and supervising your drivers: identity, right to work, driving licence, and the criminal-record checks your licensing authority requires.",
+  "The safety, testing, plates and condition of your vehicles.",
+  "Keeping the booking and staff records your licensing authority requires.",
+  "Your terms, prices, cancellation charges, refunds, complaints and claims, and consumer, equality and accessibility law.",
+  "Data protection as the controller of your customers' and drivers' data, including the ICO fee if it applies.",
+  "Your own payments account, VAT and tax.",
+  "Everything you publish or send through the platform being true.",
+];
 
 export const CUSTOM_TERMS_MIN = 100;
 export const CUSTOM_TERMS_MAX = 30000;
@@ -138,7 +154,10 @@ export function legalGaps(form) {
   need("base", "Where you are based (town and county)", form.base);
   need("area", "The area you serve", form.area);
   if (!form.insuranceConfirmed) {
-    gaps.push({ key: "insurance", label: "Confirm you hold hire & reward and public liability insurance, and that your drivers are DBS checked" });
+    gaps.push({ key: "insurance", label: "Confirm you hold hire & reward and public liability insurance, and that your drivers have the criminal-record checks your licensing authority requires" });
+  }
+  if (!form.responsibilitiesConfirmed) {
+    gaps.push({ key: "responsibilities", label: "Confirm the operator responsibilities statement: you alone are responsible for your licences, insurance, vehicles and drivers" });
   }
   return gaps;
 }

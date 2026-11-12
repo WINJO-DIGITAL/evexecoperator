@@ -11,7 +11,7 @@ const tenant = {
       legal_name: "Coastal Cars Ltd", status: "limited company", company_number: "12345678",
       registered_address: "1 High Street, Southport", base: "Southport, Merseyside", area: "Southport",
       service: "airport transfers", fleet: "three saloons", luggage: "four suitcases", jurisdiction: "scotland",
-      points_name: "", ico_registration: "ZA123456", insurance_confirmed: true,
+      points_name: "", ico_registration: "ZA123456", insurance_confirmed: true, responsibilities_confirmed: true,
     },
   },
 };
@@ -47,7 +47,7 @@ describe("legal form", () => {
     expect(p).not.toHaveProperty("email");
     expect(Object.keys(p).sort()).toEqual([
       "area", "base", "company_number", "custom_terms", "fleet", "ico_registration", "insurance_confirmed", "jurisdiction",
-      "legal_name", "luggage", "numbers_confirmed", "points_name", "policy", "privacy_extra", "registered_address", "service", "status", "terms_mode",
+      "legal_name", "luggage", "numbers_confirmed", "points_name", "policy", "privacy_extra", "registered_address", "responsibilities_confirmed", "service", "status", "terms_mode",
     ]);
   });
 });
@@ -59,12 +59,16 @@ describe("legal gaps", () => {
 
   it("lists the missing details for a business that has set nothing", () => {
     const keys = legalGaps(legalFormFromTenant({ name: "New", contact_email: "a@b.test", contact_phone: "07123456789", brand: {} })).map((g) => g.key);
-    expect(keys.sort()).toEqual(["area", "base", "insurance", "licence", "status"].sort());
+    expect(keys.sort()).toEqual(["area", "base", "insurance", "licence", "responsibilities", "status"].sort());
   });
 
   it("asks for the company number and registered office of a limited company", () => {
     const f = { ...legalFormFromTenant(tenant), companyNumber: "", registeredAddress: "" };
     expect(legalGaps(f).map((g) => g.key)).toEqual(expect.arrayContaining(["company_number", "registered_address"]));
+  });
+
+  it("asks for the responsibilities confirmation until it is given", () => {
+    expect(legalGaps({ ...legalFormFromTenant(tenant), responsibilitiesConfirmed: false }).map((g) => g.key)).toContain("responsibilities");
   });
 
   it("asks for insurance until it is confirmed", () => {
