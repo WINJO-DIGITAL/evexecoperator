@@ -154,3 +154,12 @@ User chose option A from five (headset, route, job board, signal tower, schedule
 Private hire operator licence **PHO0079** (user, 19/10/2026) is in every email footer, HTML and plain text: `LICENCE` in `src/lib/email/template.js`, kept identical to the website's `lib/emailTemplate.js`.
 
 - **Password rule (19/10/2026):** Supabase Auth requires 8+ characters with a letter and a number (set by the user). Every password form checks the same rule first and says so.
+
+## Update — 2026-11-12: setting up a new business (platform owner)
+
+- **Route** `src/app/api/platform/tenants/route.ts` (server only, service role; the caller must be a `super_admin`, checked on the server by `getSuperAdmin()` in `src/lib/server/staff.ts`). `GET` lists businesses with their admin count; `POST { action: "create" }` calls the database function `public.provision_tenant` (checked short name and name, an empty price list, its own notification settings with **SMS, WhatsApp and push off**; migration `20261112120000_provision_tenant.sql` in `evexec`, applied); `POST { action: "invite" }` makes someone the business's first `operator_admin` and emails the same branded set-password link the team invites use (run again to resend); `POST { action: "members" }` lists a business's staff.
+- **Replaces** the `manage-tenants` Supabase edge function (it was in no repository, created a bare row and invited through Supabase's built-in mailer). The platform screen (`PlatformSettings.jsx`, Settings → Platform, super admin only) now calls the route. The old function can be deleted in the Supabase dashboard.
+- `linkFor`, `setRole`, `isUuid` and `getSuperAdmin` moved into `src/lib/server/staff.ts` and are shared with `/api/team` (its tests are unchanged and pass).
+- A new business has no prices, no logo and no driver yet: it sets them in Settings (Prices, Branding) and Drivers. Its customers see no EV Exec details (the website's built-in price list is EV Exec's only).
+- Invite emails are sent from the platform sender (`INVOICE_FROM`, EV Exec's address today); per-business sending domains are a separate, parked decision (may cost money).
+- Tests: `src/app/api/platform/tenants/tenants.test.ts` (14).

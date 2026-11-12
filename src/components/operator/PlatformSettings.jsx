@@ -5,12 +5,17 @@ import { Building2, Plus, RefreshCw, UserPlus, Users } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useOperatorToast } from "./Toast";
 
-async function callManageTenants(action, params = {}) {
-  const { data, error } = await supabase.functions.invoke("manage-tenants", {
-    body: { action, ...params },
+// Platform actions go through the Operator app's own server route (/api/platform/tenants),
+// which checks on the server that the caller is the platform owner.
+async function platformCall(method, body) {
+  const { data: { session } } = await supabase.auth.getSession();
+  const res = await fetch("/api/platform/tenants", {
+    method,
+    headers: { "content-type": "application/json", authorization: `Bearer ${session?.access_token ?? ""}` },
+    body: body ? JSON.stringify(body) : undefined,
   });
-  if (error) throw new Error(error.message || "Request failed");
-  if (!data?.ok) throw new Error(data?.reason || "Request failed");
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data?.error || "Request failed");
   return data;
 }
 
@@ -18,6 +23,7 @@ function CreateTenantForm({ onCreated, toast }) {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [contactEmail, setContactEmail] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
   const [saving, setSaving] = useState(false);
 
   async function handleSubmit(e) {
@@ -28,15 +34,18 @@ function CreateTenantForm({ onCreated, toast }) {
     }
     setSaving(true);
     try {
-      const { tenant } = await callManageTenants("create_tenant", {
+      const { tenant } = await platformCall("POST", {
+        action: "create",
         name: name.trim(),
         slug: slug.trim().toLowerCase(),
         contactEmail: contactEmail.trim() || undefined,
+        contactPhone: contactPhone.trim() || undefined,
       });
-      toast({ message: `Tenant "${tenant.name}" created`, type: "success" });
+      toast({ message: `"${tenant.name}" created. Now invite its first admin below.`, type: "success" });
       setName("");
       setSlug("");
       setContactEmail("");
+      setContactPhone("");
       onCreated();
     } catch (err) {
       toast({ message: err.message, type: "error" });
@@ -46,7 +55,7 @@ function CreateTenantForm({ onCreated, toast }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-3 sm:grid-cols-3">
+    <form onSubmit={handleSubmit} className="grid gap-3 sm:grid-cols-4">
       <input
         value={name}
         onChange={(e) => setName(e.target.value)}
@@ -66,13 +75,20 @@ function CreateTenantForm({ onCreated, toast }) {
         type="email"
         className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-amber-400"
       />
+      <input
+        value={contactPhone}
+        onChange={(e) => setContactPhone(e.target.value)}
+        placeholder="Phone (optional)"
+        type="tel"
+        className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-amber-400"
+      />
       <button
         type="submit"
         disabled={saving}
-        className="sm:col-span-3 flex items-center justify-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-semibold text-black transition hover:bg-amber-400 disabled:opacity-50"
+        className="sm:col-span-4 flex items-center justify-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-semibold text-black transition hover:bg-amber-400 disabled:opacity-50"
       >
         <Plus className="h-4 w-4" />
-        {saving ? "Creating…" : "Create tenant"}
+        {saving ? "Creating…" : "Create business"}
       </button>
     </form>
   );
@@ -86,16 +102,17 @@ function InviteForm({ tenants, toast }) {
   async function handleSubmit(e) {
     e.preventDefault();
     if (!tenantId || !email.trim()) {
-      toast({ message: "Pick a tenant and enter an email", type: "error" });
+      toast({ message: "Pick a business and enter an email", type: "error" });
       return;
     }
     setSending(true);
     try {
-      const { invite } = await callManageTenants("invite_operator_admin", {
-        tenantId,
-        email: email.trim(),
-      });
-      toast({ message: `Invited ${invite.email} as operator_admin`, type: "success" });
+      const r = await platformCall("POST", { action: "invite", tenantId, email: email.trim() });
+      if (r.emailed) {
+        toast({ message: `Invited ${r.email} as the business's admin. They'll get an email to set a password.`, type: "success" });
+      } else {
+        toast({ message: `${r.email} is set up as admin, but the email didn't send (${r.emailError}). Press invite again to retry.`, type: "error" });
+      }
       setEmail("");
     } catch (err) {
       toast({ message: err.message, type: "error" });
@@ -111,7 +128,7 @@ function InviteForm({ tenants, toast }) {
         onChange={(e) => setTenantId(e.target.value)}
         className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-amber-400"
       >
-        <option value="">Select tenant…</option>
+        <option value="">Select business…</option>
         {tenants.map((t) => (
           <option key={t.id} value={t.id}>
             {t.name}
@@ -131,7 +148,7 @@ function InviteForm({ tenants, toast }) {
         className="flex items-center justify-center gap-2 rounded-xl border border-amber-400/40 bg-amber-400/10 px-4 py-2.5 text-sm font-semibold text-amber-700 transition hover:bg-amber-400/20 disabled:opacity-50"
       >
         <UserPlus className="h-4 w-4" />
-        {sending ? "Inviting…" : "Invite as operator_admin"}
+        {sending ? "Inviting…" : "Invite as admin"}
       </button>
     </form>
   );
@@ -147,7 +164,7 @@ export default function PlatformSettings() {
     setLoading(true);
     setError(null);
     try {
-      const { tenants: rows } = await callManageTenants("list_tenants");
+      const { tenants: rows } = await platformCall("GET");
       setTenants(rows);
     } catch (err) {
       setError(err.message);
@@ -159,7 +176,7 @@ export default function PlatformSettings() {
   // First load. `loading` already starts true, so nothing is set until the answer arrives.
   useEffect(() => {
     let cancelled = false;
-    callManageTenants("list_tenants").then(
+    platformCall("GET").then(
       ({ tenants: rows }) => { if (!cancelled) { setTenants(rows); setLoading(false); } },
       (err) => { if (!cancelled) { setError(err.message); setLoading(false); } }
     );
@@ -170,7 +187,7 @@ export default function PlatformSettings() {
     <div className="space-y-8">
       <div>
         <div className="mb-3 flex items-center justify-between">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">Tenants</p>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">Businesses</p>
           <button
             onClick={loadTenants}
             className="flex items-center gap-1.5 text-xs text-slate-500 transition hover:text-amber-600"
@@ -189,7 +206,7 @@ export default function PlatformSettings() {
         <div className="space-y-2">
           {tenants.length === 0 && !loading && !error && (
             <p className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500">
-              No tenants yet.
+              No businesses yet.
             </p>
           )}
           {tenants.map((t) => (
@@ -206,21 +223,26 @@ export default function PlatformSettings() {
                   <p className="text-xs text-slate-500">{t.slug}</p>
                 </div>
               </div>
-              {t.contact_email && <p className="text-xs text-slate-400">{t.contact_email}</p>}
+              <div className="text-right">
+                {t.contact_email && <p className="text-xs text-slate-400">{t.contact_email}</p>}
+                <p className={`text-xs ${t.admins ? "text-slate-400" : "font-medium text-amber-700"}`}>
+                  {t.admins ? `${t.admins} admin${t.admins === 1 ? "" : "s"}` : "No admin yet"}
+                </p>
+              </div>
             </div>
           ))}
         </div>
       </div>
 
       <div>
-        <p className="mb-3 text-[10px] uppercase tracking-[0.2em] text-slate-500">Create a tenant</p>
+        <p className="mb-3 text-[10px] uppercase tracking-[0.2em] text-slate-500">Set up a business</p>
         <CreateTenantForm onCreated={loadTenants} toast={toast} />
       </div>
 
       <div>
         <p className="mb-3 flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-slate-500">
           <Users className="h-3 w-3" />
-          Invite staff
+          Invite a business's first admin
         </p>
         <InviteForm tenants={tenants} toast={toast} />
       </div>

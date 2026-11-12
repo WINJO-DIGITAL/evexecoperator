@@ -96,3 +96,56 @@ export async function sendEmail(to: string, mail: { subject: string; html: strin
     throw new Error(`The email provider rejected the send${detail ? `: ${detail}` : "."}`);
   }
 }
+
+export const isUuid = (v: unknown): v is string =>
+  typeof v === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
+
+export type PlatformCaller = { userId: string; email: string; name: string };
+
+/**
+ * The signed-in platform owner (a super_admin), or null. Unlike getCaller this
+ * does not need a business of their own: it is for actions on any business.
+ */
+export async function getSuperAdmin(req: Request, admin: SupabaseClient): Promise<PlatformCaller | null> {
+  const h = req.headers.get("authorization") ?? "";
+  const token = h.toLowerCase().startsWith("bearer ") ? h.slice(7).trim() : "";
+  if (!token) return null;
+  const { data, error } = await admin.auth.getUser(token);
+  const user = data?.user;
+  if (error || !user) return null;
+  const { data: roles } = await admin.from("tenant_users").select("role").eq("user_id", user.id).eq("role", "super_admin");
+  if (!(roles ?? []).length) return null;
+  const meta = (user.user_metadata ?? {}) as Record<string, string>;
+  return { userId: user.id, email: user.email ?? "", name: meta.full_name || meta.name || "" };
+}
+
+/** A person has one staff role per business: replace any other. */
+export async function setRole(admin: SupabaseClient, tenantId: string, userId: string, role: StaffRole) {
+  const others = STAFF_ROLES.filter((r) => r !== role) as unknown as string[];
+  const del = await admin.from("tenant_users").delete().eq("tenant_id", tenantId).eq("user_id", userId).in("role", others);
+  if (del.error) throw new Error(del.error.message);
+  const ins = await admin.from("tenant_users").upsert(
+    { tenant_id: tenantId, user_id: userId, role },
+    { onConflict: "tenant_id,user_id,role", ignoreDuplicates: true },
+  );
+  if (ins.error) throw new Error(ins.error.message);
+}
+
+/** A one-time link: invite for brand-new accounts, otherwise sign-in or reset. */
+export async function linkFor(admin: SupabaseClient, email: string, origin: string, prefer: "invite" | "recovery") {
+  if (prefer === "invite") {
+    const inv = await admin.auth.admin.generateLink({ type: "invite", email });
+    if (!inv.error && inv.data?.properties?.hashed_token) {
+      return { userId: inv.data.user.id, url: setPasswordUrl(origin, inv.data.properties.hashed_token, "invite"), newAccount: true };
+    }
+  }
+  // Already has an account (or resending): a reset link lets them set a password.
+  const rec = await admin.auth.admin.generateLink({ type: "recovery", email });
+  if (rec.error || !rec.data?.properties?.hashed_token) throw new Error(rec.error?.message || "Couldn't create a sign-in link.");
+  const neverSignedIn = !rec.data.user.last_sign_in_at;
+  return {
+    userId: rec.data.user.id,
+    url: setPasswordUrl(origin, rec.data.properties.hashed_token, "recovery"),
+    newAccount: neverSignedIn,
+  };
+}

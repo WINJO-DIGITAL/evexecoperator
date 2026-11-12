@@ -12,7 +12,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { teamInvite } from "@/lib/email/staff.js";
 import { loadBrand } from "@/lib/server/brands";
 import {
-  adminClient, appOrigin, getCaller, isEmail, json, sendEmail, setPasswordUrl, STAFF_ROLES, type Caller, type StaffRole,
+  adminClient, appOrigin, getCaller, isEmail, json, linkFor, sendEmail, setRole, STAFF_ROLES, type Caller, type StaffRole,
 } from "@/lib/server/staff";
 
 export const runtime = "nodejs";
@@ -46,18 +46,6 @@ async function listMembers(admin: SupabaseClient, tenantId: string): Promise<Mem
   return members.sort((a, b) => (a.role === b.role ? a.email.localeCompare(b.email) : a.role === "operator_admin" ? -1 : 1));
 }
 
-async function setRole(admin: SupabaseClient, tenantId: string, userId: string, role: StaffRole) {
-  // A person has one staff role per business: replace any other.
-  const others = STAFF_ROLES.filter((r) => r !== role) as unknown as string[];
-  const del = await admin.from("tenant_users").delete().eq("tenant_id", tenantId).eq("user_id", userId).in("role", others);
-  if (del.error) throw new Error(del.error.message);
-  const ins = await admin.from("tenant_users").upsert(
-    { tenant_id: tenantId, user_id: userId, role },
-    { onConflict: "tenant_id,user_id,role", ignoreDuplicates: true },
-  );
-  if (ins.error) throw new Error(ins.error.message);
-}
-
 const adminCount = (members: Member[]) => members.filter((m) => m.role === "operator_admin").length;
 
 async function guard(req: Request) {
@@ -79,25 +67,6 @@ export async function GET(req: Request) {
   } catch (e) {
     return json({ error: (e as Error).message }, 500);
   }
-}
-
-/** A one-time link: invite for brand-new accounts, otherwise sign-in or reset. */
-async function linkFor(admin: SupabaseClient, email: string, origin: string, prefer: "invite" | "recovery") {
-  if (prefer === "invite") {
-    const inv = await admin.auth.admin.generateLink({ type: "invite", email });
-    if (!inv.error && inv.data?.properties?.hashed_token) {
-      return { userId: inv.data.user.id, url: setPasswordUrl(origin, inv.data.properties.hashed_token, "invite"), newAccount: true };
-    }
-  }
-  // Already has an account (or resending): a reset link lets them set a password.
-  const rec = await admin.auth.admin.generateLink({ type: "recovery", email });
-  if (rec.error || !rec.data?.properties?.hashed_token) throw new Error(rec.error?.message || "Couldn't create a sign-in link.");
-  const neverSignedIn = !rec.data.user.last_sign_in_at;
-  return {
-    userId: rec.data.user.id,
-    url: setPasswordUrl(origin, rec.data.properties.hashed_token, "recovery"),
-    newAccount: neverSignedIn,
-  };
 }
 
 export async function POST(req: Request) {
