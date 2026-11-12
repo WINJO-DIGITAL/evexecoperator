@@ -75,7 +75,7 @@ describe("business details", () => {
   it("another business gets only what its own row holds", () => {
     expect({ ...fromRow({ id: COASTAL, ...COASTAL_ROW }) }).toEqual({
       name: "Coastal Cars", wordmark: "COASTAL CARS", phone: "07123 456789", email: "hello@coastal.test", licence: "PHO1234",
-      site: "https://coastal.test", tagline: "Airport transfers from Southport", primary: "#123456", accent: "#FF8800",
+      site: "https://coastal.test", tagline: "Airport transfers from Southport", primary: "#123456", accent: "#FF8800", policy: null,
     });
     const bare = fromRow({ id: BARE, ...BARE_ROW });
     expect([bare.phone, bare.licence, bare.site, bare.tagline]).toEqual(["", "", "", ""]);
