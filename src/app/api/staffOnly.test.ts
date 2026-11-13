@@ -199,6 +199,25 @@ describe("payment-link: an operator's card payments go to its own connected Stri
     expect(stripeCalls()).toHaveLength(0);
   });
 
+  it("an account that is no longer ready can still close its open checkout, but creates no new one", async () => {
+    process.env.STRIPE_PLATFORM_SECRET_KEY = "sk_test_platform";
+    state.roles = [{ tenant_id: "t2", role: "operator_admin" }];
+    state.booking = { ...t2Booking, stripe_session_id: "cs_open1" };
+    state.tenants = [{ stripe_connect_account_id: "acct_t2abc", stripe_connect_charges_enabled: false }];
+    vi.stubGlobal("fetch", vi.fn(async (url: string, init?: RequestInit) => {
+      if (String(url).endsWith("/cs_open1") && (!init || init.method !== "POST")) {
+        return new Response(JSON.stringify({ id: "cs_open1", status: "open", payment_status: "unpaid", metadata: { booking_ref: "EVX-9" }, amount_total: 9000, url: "https://stripe.test/open" }), { status: 200 });
+      }
+      return new Response(JSON.stringify({ id: "cs_open1", url: "https://stripe.test" }), { status: 200 });
+    }));
+    const { POST } = await import("./payment-link/route");
+    const res = await POST(req({ ref: "EVX-9" }));
+    expect(res.status).toBe(422);
+    const calls = stripeCalls().map(([u, i]) => `${(i as RequestInit | undefined)?.method ?? "GET"} ${new URL(String(u)).pathname}`);
+    expect(calls).toContain("POST /v1/checkout/sessions/cs_open1/expire");
+    expect(calls).not.toContain("POST /v1/checkout/sessions");
+  });
+
   it("refuses when the platform key is not set, even for a ready account", async () => {
     state.roles = [{ tenant_id: "t2", role: "operator_admin" }];
     state.booking = t2Booking;
