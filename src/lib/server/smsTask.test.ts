@@ -6,7 +6,7 @@ import { queueCustomerText, wantsCustomerText } from "./smsTask";
 function fakeAdmin(rows: any[]) {
   const log: string[] = [];
   const admin = {
-    from(_t: string) {
+    from() {
       return {
         select() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test fake / Supabase query builder; typed loosely on purpose
