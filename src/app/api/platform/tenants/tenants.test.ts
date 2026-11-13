@@ -92,7 +92,7 @@ beforeEach(() => {
     { tenant_id: T1, user_id: "admin1", role: "operator_admin" },
   ];
   db.tenants = [
-    { id: T1, name: "EV Exec", slug: "ev-exec", status: "active", contact_email: "book@evexec.co.uk", contact_phone: null, created_at: "2026-09-07" },
+    { id: T1, name: "EV Exec", slug: "ev-exec", status: "active", contact_email: "book@evexec.co.uk", contact_phone: null, created_at: "2026-09-07", brand: { site_url: "https://www.evexec.co.uk", licence: "PHO0079", invoice: { business_name: "EV Exec" } } },
     { id: T2, name: "Coastal Cars", slug: "coastal", status: "active", contact_email: null, contact_phone: null, created_at: "2026-11-01" },
   ];
   sent.length = 0;
@@ -122,6 +122,13 @@ describe("list", () => {
     const r = await call("GET");
     expect(r.status).toBe(200);
     expect(r.body.tenants.map((t: { slug: string; admins: number }) => [t.slug, t.admins])).toEqual([["ev-exec", 1], ["coastal", 0]]);
+  });
+  it("returns each business's website address, and nothing else from its brand record", async () => {
+    const r = await call("GET");
+    const [evExec, coastal] = r.body.tenants;
+    expect(evExec.site_url).toBe("https://www.evexec.co.uk");
+    expect(coastal.site_url).toBe(""); // a business with no address returns blank
+    for (const t of r.body.tenants) expect(t).not.toHaveProperty("brand");
   });
 });
 

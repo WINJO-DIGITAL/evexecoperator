@@ -43,13 +43,20 @@ export async function GET(req: Request) {
   try {
     const { data, error } = await g.admin
       .from("tenants")
-      .select("id, slug, name, status, contact_email, contact_phone, created_at")
+      .select("id, slug, name, status, contact_email, contact_phone, created_at, brand")
       .order("created_at", { ascending: true });
     if (error) throw new Error(error.message);
     const { data: roles } = await g.admin.from("tenant_users").select("tenant_id").eq("role", "operator_admin");
     const admins = new Map<string, number>();
     for (const r of roles ?? []) if (r.tenant_id) admins.set(r.tenant_id, (admins.get(r.tenant_id) ?? 0) + 1);
-    return json({ tenants: (data ?? []).map((t) => ({ ...t, admins: admins.get(t.id) ?? 0 })) });
+    return json({
+      tenants: (data ?? []).map(({ brand, ...t }) => ({
+        ...t,
+        // Only the website address, not the whole brand record.
+        site_url: typeof brand?.site_url === "string" ? brand.site_url : "",
+        admins: admins.get(t.id) ?? 0,
+      })),
+    });
   } catch (e) {
     return json({ error: (e as Error).message }, 500);
   }

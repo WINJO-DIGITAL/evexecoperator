@@ -5,6 +5,7 @@ import { Building2, Plus, RefreshCw, UserPlus, Users } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useOperatorToast } from "./Toast";
 import FeesSection from "./FeesSection";
+import { siteAddressProblem, tidySiteAddress } from "@/lib/operator/siteAddress";
 
 // Platform actions go through the Operator app's own server route (/api/platform/tenants),
 // which checks on the server that the caller is the platform owner.
@@ -155,6 +156,50 @@ function InviteForm({ tenants, toast }) {
   );
 }
 
+// The website address that decides which business a visitor's domain belongs to. Platform owner only;
+// the database refuses an address another business already uses.
+function SiteAddress({ tenant, toast, onSaved }) {
+  const [value, setValue] = useState(tenant.site_url || "");
+  const [busy, setBusy] = useState(false);
+  const changed = tidySiteAddress(value) !== tidySiteAddress(tenant.site_url || "");
+
+  async function save() {
+    const problem = siteAddressProblem(value);
+    if (problem) { toast({ message: problem, type: "error" }); return; }
+    setBusy(true);
+    const { error } = await supabase.rpc("set_tenant_site", { p_tenant_id: tenant.id, p_site_url: tidySiteAddress(value) });
+    setBusy(false);
+    if (error) { toast({ message: error.message, type: "error" }); return; }
+    toast({ message: `${tenant.name}: website address saved`, type: "success" });
+    onSaved();
+  }
+
+  return (
+    <div className="mt-3 border-t border-slate-100 pt-3">
+      <label className="block text-[11px] text-slate-500" htmlFor={`site-${tenant.id}`}>
+        Website address (visitors on this domain reach this business)
+      </label>
+      <div className="mt-1 flex gap-2">
+        <input
+          id={`site-${tenant.id}`}
+          className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-[#0F1B33] outline-none focus:border-amber-400/40"
+          inputMode="url"
+          placeholder="https://www.example.co.uk"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+        />
+        <button
+          disabled={busy || !changed}
+          onClick={save}
+          className="rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-black hover:bg-amber-400 disabled:opacity-40"
+        >
+          Save
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function PlatformSettings() {
   const toast = useOperatorToast();
   const [tenants, setTenants] = useState([]);
@@ -213,8 +258,9 @@ export default function PlatformSettings() {
           {tenants.map((t) => (
             <div
               key={t.id}
-              className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-4 py-3"
+              className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3"
             >
+              <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-400/10 text-amber-600">
                   <Building2 className="h-4 w-4" />
@@ -230,6 +276,8 @@ export default function PlatformSettings() {
                   {t.admins ? `${t.admins} admin${t.admins === 1 ? "" : "s"}` : "No admin yet"}
                 </p>
               </div>
+              </div>
+              <SiteAddress key={`${t.id}:${t.site_url || ""}`} tenant={t} toast={toast} onSaved={loadTenants} />
             </div>
           ))}
         </div>
