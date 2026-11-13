@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { paymentLink } from "@/lib/email/content.js";
 import { brandFor } from "@/lib/email/brand.js";
 import { loadBrand } from "@/lib/server/brands";
+import { userFromToken } from "@/lib/server/staff";
 import { stripeContext, type StripeContext } from "@/lib/server/stripeAccount";
 import { when } from "@/lib/email/template.js";
 
@@ -130,15 +131,15 @@ export async function POST(req: Request) {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 
-  const { data: userData, error: userErr } = await admin.auth.getUser(token);
-  if (userErr || !userData?.user) return json({ error: "Not authorised." }, 401);
+  const authedUser = await userFromToken(admin, token);
+  if (!authedUser) return json({ error: "Not authorised." }, 401);
 
   // Signed in isn't enough (website customers have logins on this project):
   // the caller must be staff, and below, of the business that owns the booking.
   const { data: roles } = await admin
     .from("tenant_users")
     .select("tenant_id, role")
-    .eq("user_id", userData.user.id)
+    .eq("user_id", authedUser.id)
     .in("role", ["super_admin", "operator_admin", "dispatcher"]);
   const isSuper = (roles ?? []).some((r) => r.role === "super_admin");
   const staffTenants = new Set((roles ?? []).map((r) => r.tenant_id).filter(Boolean));

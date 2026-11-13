@@ -5,6 +5,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 export const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 import { senderFor } from "@/lib/server/sender";
 
@@ -20,6 +21,23 @@ export const isEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 export function adminClient(): SupabaseClient | null {
   if (!SUPABASE_URL || !SERVICE_ROLE_KEY) return null;
   return createClient(SUPABASE_URL, SERVICE_ROLE_KEY, { auth: { autoRefreshToken: false, persistSession: false } });
+}
+
+
+/**
+ * Who a sign-in token belongs to. Checked with the public (anon) key first, the same call the
+ * browser makes, because the server was seeing 401s when it checked a valid user token with the
+ * admin key (13/11/2026, Supabase logs). Falls back to the admin client when the public key is
+ * not set or refuses.
+ */
+export async function userFromToken(admin: SupabaseClient, token: string) {
+  if (SUPABASE_URL && ANON_KEY) {
+    const pub = createClient(SUPABASE_URL, ANON_KEY, { auth: { autoRefreshToken: false, persistSession: false } });
+    const r = await pub.auth.getUser(token);
+    if (!r.error && r.data?.user) return r.data.user;
+  }
+  const r = await admin.auth.getUser(token);
+  return !r.error && r.data?.user ? r.data.user : null;
 }
 
 export type Caller = {
@@ -41,9 +59,8 @@ export async function getCaller(req: Request, admin: SupabaseClient): Promise<Ca
   const h = req.headers.get("authorization") ?? "";
   const token = h.toLowerCase().startsWith("bearer ") ? h.slice(7).trim() : "";
   if (!token) return null;
-  const { data, error } = await admin.auth.getUser(token);
-  const user = data?.user;
-  if (error || !user) return null;
+  const user = await userFromToken(admin, token);
+  if (!user) return null;
 
   const { data: roles } = await admin.from("tenant_users").select("tenant_id, role").eq("user_id", user.id);
   const rows = roles ?? [];
@@ -109,9 +126,8 @@ export async function getSuperAdmin(req: Request, admin: SupabaseClient): Promis
   const h = req.headers.get("authorization") ?? "";
   const token = h.toLowerCase().startsWith("bearer ") ? h.slice(7).trim() : "";
   if (!token) return null;
-  const { data, error } = await admin.auth.getUser(token);
-  const user = data?.user;
-  if (error || !user) return null;
+  const user = await userFromToken(admin, token);
+  if (!user) return null;
   const { data: roles } = await admin.from("tenant_users").select("role").eq("user_id", user.id).eq("role", "super_admin");
   if (!(roles ?? []).length) return null;
   const meta = (user.user_metadata ?? {}) as Record<string, string>;
