@@ -194,7 +194,7 @@ Design and decisions: `evexec/docs/payments/stripe-connect-design.md` (owner, 12
 
 ## Update — 2026-11-13: platform fees (Settings → Platform → Fees, platform owner only)
 
-What the platform (Winjo Digital) charges each operator: a default monthly (£49) and set-up (£999) rate, plus an optional per-business rate (blank = default, £0 = free). EV Exec is a customer like any other and is set to £0. **A record only: nothing is billed from these rates** (no Stripe subscription or invoice; billing would cost money and needs the owner's approval first). Database: `platform_fees`, `tenants.monthly_fee_pence` / `setup_fee_pence`, and four owner-only functions (`get_platform_fees`, `set_default_fees`, `set_tenant_fees`, `list_tenant_fees`; migration `20261113150000` in `evexec`, applied). Screen: `FeesSection.jsx`; helpers `src/lib/operator/fees.js`.
+What the platform (Winjo Digital) charges each operator: a default monthly (£99) and set-up (£999) rate, plus an optional per-business rate (blank = default, £0 = free). EV Exec is a customer like any other and is set to £0. **A record only: nothing is billed from these rates** (no Stripe subscription or invoice; billing would cost money and needs the owner's approval first). Database: `platform_fees`, `tenants.monthly_fee_pence` / `setup_fee_pence`, and four owner-only functions (`get_platform_fees`, `set_default_fees`, `set_tenant_fees`, `list_tenant_fees`; migration `20261113150000` in `evexec`, applied). Screen: `FeesSection.jsx`; helpers `src/lib/operator/fees.js`.
 
 ## Update — 2026-11-13: Stripe Connect, phase 2 (card payments on the operator's own account)
 
