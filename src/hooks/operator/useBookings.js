@@ -299,11 +299,13 @@ export function useBookings({ scope = "operational" } = {}) {
     if (!isConfigured) return;
 
     try {
-      const { error: err } = await supabase
+      const { data: updated, error: err } = await supabase
         .from("bookings")
         .update({ status })
-        .eq("ref", id);
+        .eq("ref", id)
+        .select("ref");
       if (err) throw new Error(err.message);
+      if (!updated?.length) throw new Error("This job could not be updated. It may have changed, or you may not have access to it. Refresh and try again.");
     } catch (err) {
       setBookings(snapshot);
       throw err;
@@ -342,10 +344,16 @@ export function useBookings({ scope = "operational" } = {}) {
       if (rejecting && current && !["Cancelled", "Completed"].includes(current.status)) {
         patch.status = "Cancelled";
       }
-      const { error: err } = await supabase.from("bookings").update(patch).eq("ref", id);
+      const { data: updated, error: err } = await supabase
+        .from("bookings")
+        .update(patch).eq("ref", id).select("ref");
       if (err) {
         setBookings(snapshot);
         throw new Error(err.message);
+      }
+      if (!updated?.length) {
+        setBookings(snapshot);
+        throw new Error("This job could not be updated. It may have changed, or you may not have access to it. Refresh and try again.");
       }
       const legPatch = { operator_response: decision, operator_responded_at: patch.operator_responded_at };
       const legs = supabase
@@ -556,8 +564,10 @@ export function useBookings({ scope = "operational" } = {}) {
       const { error: err } = await supabase
         .from("bookings")
         .update(update)
-        .eq("ref", id);
+        .eq("ref", id)
+        .select("ref");
       if (err) throw new Error(err.message);
+      if (!updated?.length) throw new Error("This job could not be updated. It may have changed, or you may not have access to it. Refresh and try again.");
     } catch (err) {
       setBookings(snapshot);
       throw err;
@@ -572,11 +582,13 @@ export function useBookings({ scope = "operational" } = {}) {
     if (!isConfigured) return;
 
     try {
-      const { error: err } = await supabase
+      const { data: updated, error: err } = await supabase
         .from("bookings")
         .update({ notes: notes?.trim() || null })
-        .eq("ref", id);
+        .eq("ref", id)
+        .select("ref");
       if (err) throw new Error(err.message);
+      if (!updated?.length) throw new Error("This job could not be updated. It may have changed, or you may not have access to it. Refresh and try again.");
     } catch (err) {
       setBookings(snapshot);
       throw err;
@@ -593,11 +605,13 @@ export function useBookings({ scope = "operational" } = {}) {
     if (!isConfigured) return;
 
     try {
-      const { error: err } = await supabase
+      const { data: updated, error: err } = await supabase
         .from("bookings")
         .update({ priority: newPriority })
-        .eq("ref", id);
+        .eq("ref", id)
+        .select("ref");
       if (err) throw new Error(err.message);
+      if (!updated?.length) throw new Error("This job could not be updated. It may have changed, or you may not have access to it. Refresh and try again.");
     } catch (err) {
       setBookings(snapshot);
       throw err;
@@ -611,11 +625,13 @@ export function useBookings({ scope = "operational" } = {}) {
     if (!isConfigured) return;
 
     try {
-      const { error: err } = await supabase
+      const { data: updated, error: err } = await supabase
         .from("bookings")
         .update({ payment_status: paymentStatus })
-        .eq("ref", id);
+        .eq("ref", id)
+        .select("ref");
       if (err) throw new Error(err.message);
+      if (!updated?.length) throw new Error("This job could not be updated. It may have changed, or you may not have access to it. Refresh and try again.");
     } catch (err) {
       setBookings(snapshot);
       throw err;
@@ -629,11 +645,13 @@ export function useBookings({ scope = "operational" } = {}) {
     if (!isConfigured) return;
 
     try {
-      const { error: err } = await supabase
+      const { data: updated, error: err } = await supabase
         .from("bookings")
         .update({ payment_method: paymentMethod })
-        .eq("ref", id);
+        .eq("ref", id)
+        .select("ref");
       if (err) throw new Error(err.message);
+      if (!updated?.length) throw new Error("This job could not be updated. It may have changed, or you may not have access to it. Refresh and try again.");
     } catch (err) {
       setBookings(snapshot);
       throw err;
@@ -682,8 +700,13 @@ export function useBookings({ scope = "operational" } = {}) {
     if (!isConfigured) return;
 
     try {
-      const { error: err } = await supabase.from("bookings").update(dbPatch).eq("ref", id);
+      const { data: updated, error: err } = await supabase
+        .from("bookings")
+        .update(dbPatch)
+        .eq("ref", id)
+        .select("ref");
       if (err) throw new Error(err.message);
+      if (!updated?.length) throw new Error("This job could not be updated. It may have changed, or you may not have access to it. Refresh and try again.");
       await fetchBookings();
     } catch (err) {
       setBookings(snapshot);
