@@ -357,6 +357,8 @@ describe("useBookings — updateStatus", () => {
 
     const { result } = renderHook(() => useBookings());
     await act(async () => {});
+    mockChain.eq.mockReturnValueOnce(mockChain);
+    mockChain.select.mockResolvedValueOnce({ data: [{ ref: "EVX-LIVE" }], error: null });
 
     await act(async () => {
       await result.current.updateStatus("EVX-LIVE", "En Route");
@@ -373,10 +375,11 @@ describe("useBookings — updateStatus", () => {
       priority: false, updated_at: null,
     };
     primeRows([dispatchedRow], 2);
-    mockChain.eq.mockResolvedValueOnce({ data: [], error: { message: "DB write error" } });
 
     const { result } = renderHook(() => useBookings());
     await act(async () => {});
+    mockChain.eq.mockReturnValueOnce(mockChain);
+    mockChain.select.mockResolvedValueOnce({ data: [], error: { message: "DB write error" } });
 
     await expect(
       act(() => result.current.updateStatus("EVX-ERR", "En Route"))
@@ -492,6 +495,8 @@ describe("useBookings — respondToBooking", () => {
 
   it("accepting a return booking accepts its return leg too, with one customer notice", async () => {
     const { result } = await loaded();
+    mockChain.eq.mockReturnValueOnce(mockChain);
+    mockChain.select.mockResolvedValueOnce({ data: [{ ref: "EVX-OUT1" }], error: null });
     await act(async () => { await result.current.respondToBooking("EVX-OUT1", "accepted"); });
     expect(mockChain.update).toHaveBeenCalledTimes(2);
     expect(mockChain.update).toHaveBeenNthCalledWith(2, expect.objectContaining({ operator_response: "accepted" }));
@@ -506,6 +511,8 @@ describe("useBookings — respondToBooking", () => {
 
   it("declining a return booking cancels its return leg too", async () => {
     const { result } = await loaded();
+    mockChain.eq.mockReturnValueOnce(mockChain);
+    mockChain.select.mockResolvedValueOnce({ data: [{ ref: "EVX-OUT1" }], error: null });
     await act(async () => { await result.current.respondToBooking("EVX-OUT1", "rejected"); });
     expect(mockChain.update).toHaveBeenNthCalledWith(2, expect.objectContaining({ operator_response: "rejected", status: "Cancelled" }));
     expect(mockChain.not).toHaveBeenCalledWith("status", "in", "(Cancelled,Completed)");
