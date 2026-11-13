@@ -167,7 +167,11 @@ export async function POST(req: Request) {
   // The business's own Stripe account (EV Exec's own, or an operator's connected account once
   // Stripe says it can take card payments). Otherwise refused: money never goes to another
   // business's account.
-  const ctx = await stripeContext(admin, booking.tenant_id);
+  // Reading or closing a checkout that already exists only needs the account to be known,
+  // so an operator whose account has since become unready can still close an open link.
+  // Creating a NEW checkout needs the account to be ready (checked just before it is made).
+  const ctx = await stripeContext(admin, booking.tenant_id, { requireReady: false });
+  const canTakePayments = !!(await stripeContext(admin, booking.tenant_id));
   if (!ctx) {
     return json({ error: `${brand.name || "This business"} cannot take card payments online yet. Ask the customer to pay by cash or bank transfer.` }, 422);
   }
@@ -203,7 +207,8 @@ export async function POST(req: Request) {
       return json({ error: "This booking has already been paid. The payment is being recorded." }, 409);
     }
     const ours = prev?.metadata?.booking_ref === booking.ref || prev?.metadata?.bookingId === booking.id;
-    if (prev?.status === "open" && ours && prev.amount_total === unitAmount && prev.url) {
+    // An open link is only reused while the account can take payments; otherwise it is closed.
+    if (prev?.status === "open" && ours && prev.amount_total === unitAmount && prev.url && canTakePayments) {
       session = prev;
     } else if (prev?.status === "open" && prev.id) {
       await stripeSession(prev.id, ctx, "/expire");
@@ -211,6 +216,9 @@ export async function POST(req: Request) {
   }
 
   if (!session) {
+    if (!canTakePayments) {
+      return json({ error: `${brand.name || "This business"} cannot take card payments online yet. Ask the customer to pay by cash or bank transfer.` }, 422);
+    }
     const created = await createCheckout(booking, unitAmount, email, ctx);
     if (!created.url) {
       return json({ error: created.error?.message ?? "Stripe could not create the payment link." }, 502);
