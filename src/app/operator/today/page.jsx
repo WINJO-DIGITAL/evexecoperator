@@ -26,7 +26,8 @@ function Tile({ icon: Icon, label, sub, value, tone, href }) {
       </span>
       <div className="min-w-0">
         <p className="text-2xl font-semibold leading-none text-[#0F1B33]">{value}</p>
-        <p className="mt-1 truncate text-xs text-slate-500">{label}{sub && <span className="hidden sm:inline"> · {sub}</span>}</p>
+        <p className="mt-1 text-xs leading-snug text-slate-500">{label}</p>
+        {sub && <p className="hidden text-[11px] leading-snug text-slate-400 sm:block">{sub}</p>}
       </div>
     </div>
   );

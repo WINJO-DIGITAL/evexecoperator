@@ -639,7 +639,6 @@ export default function DriversPage() {
             <div key={s.label} className="card p-4 sm:p-5">
               <div className="mb-2 flex items-center justify-between sm:mb-3">
                 <s.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${s.color}`} />
-                <span className="text-[9px] uppercase tracking-[0.2em] text-slate-600 sm:text-[10px]">Live</span>
               </div>
               <p className={`text-2xl font-semibold sm:text-3xl ${s.color}`}>{s.value}</p>
               <p className="mt-1 text-xs text-slate-500 sm:text-sm">{s.label}</p>
@@ -675,7 +674,7 @@ export default function DriversPage() {
         </div>
 
         {/* Driver cards grid */}
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {drivers.map((driver) => (
             <DriverCard
               key={driver.id}
@@ -713,7 +712,7 @@ export default function DriversPage() {
                 customer texts for their jobs appear on Today under &ldquo;Texts to send&rdquo;.
               </p>
             </div>
-            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {partners.map((p) => (
                 <DriverCard
                   key={p.id}
