@@ -27,6 +27,7 @@ import {
   Palette,
   ImageUp,
   FileText,
+  CreditCard,
 } from "lucide-react";
 import { useOperatorToast } from "@/components/operator/Toast";
 import { isConfigured, supabase } from "@/lib/supabase";
@@ -43,6 +44,7 @@ import { useOperator } from "@/components/operator/OperatorContext";
 import AuditLogTab from "@/components/AuditLogTab";
 import TeamSettings from "@/components/operator/TeamSettings";
 import LegalSettings from "@/components/operator/LegalSettings";
+import PaymentsSettings from "@/components/operator/PaymentsSettings";
 import { useAuditLog } from "@/hooks/useAuditLog";
 
 const SECTIONS = [
@@ -52,6 +54,7 @@ const SECTIONS = [
   { key: "notifications", label: "Notifications", icon: Bell },
   { key: "prices", label: "Prices", icon: Car },
   { key: "legal", label: "Legal", icon: FileText },
+  { key: "payments", label: "Payments", icon: CreditCard },
   { key: "integrations", label: "Integrations", icon: Plug },
   { key: "security", label: "Security", icon: Shield },
   { key: "activity", label: "Activity log", icon: History },
@@ -1016,6 +1019,7 @@ export default function Settings() {
     notifications: <NotificationCenter />,
     prices: <PriceSettings toast={toast} />,
     legal: <LegalSettings toast={toast} />,
+    payments: <PaymentsSettings toast={toast} />,
     integrations: <IntegrationSettings toast={toast} />,
     security: <SecuritySettings toast={toast} />,
     activity: <ActivitySettings />,
