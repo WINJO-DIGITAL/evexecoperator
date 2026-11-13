@@ -1030,24 +1030,28 @@ export default function Settings() {
     <div className="p-4 sm:p-6 lg:p-10">
       <Suspense fallback={null}><SectionFromUrl onSection={setActive} /></Suspense>
       {/* Mobile: horizontal scrollable tab strip */}
-      <div className="mb-6 flex gap-1 overflow-x-auto rounded-2xl border border-slate-100 bg-white p-1 lg:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {sections.map((s) => {
-          const Icon = s.icon;
-          return (
-            <button
-              key={s.key}
-              onClick={() => setActive(s.key)}
-              className={`flex flex-shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-sm transition ${
-                active === s.key
-                  ? "bg-amber-400/10 text-amber-600"
-                  : "text-slate-500 hover:text-[#0F1B33]"
-              }`}
-            >
-              <Icon className="h-4 w-4" />
-              {s.label}
-            </button>
-          );
-        })}
+      {/* The row scrolls sideways on phones. The faded right edge is the cue that more tabs are there. */}
+      <div className="relative mb-6 lg:hidden">
+        <div className="flex gap-1 overflow-x-auto rounded-2xl border border-slate-100 bg-white p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {sections.map((s) => {
+            const Icon = s.icon;
+            return (
+              <button
+                key={s.key}
+                onClick={(e) => { setActive(s.key); e.currentTarget.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" }); }}
+                className={`flex flex-shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-sm transition ${
+                  active === s.key
+                    ? "bg-amber-400/10 text-amber-600"
+                    : "text-slate-500 hover:text-[#0F1B33]"
+                }`}
+              >
+                <Icon className="h-4 w-4" />
+                {s.label}
+              </button>
+            );
+          })}
+        </div>
+        <div aria-hidden="true" className="pointer-events-none absolute inset-y-1 right-1 w-10 rounded-r-xl bg-gradient-to-l from-white to-transparent" />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
