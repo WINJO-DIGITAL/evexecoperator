@@ -65,7 +65,21 @@ export default function FeesSection({ toast }) {
     setSetup(penceToPounds(d.data.default_setup_pence));
     setRows(r.data ?? []);
   }, []);
-  useEffect(() => { load(); }, [load]);
+  // Initial load: the effect only starts the request and sets state after it resolves.
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const [d, r] = await Promise.all([supabase.rpc("get_platform_fees"), supabase.rpc("list_tenant_fees")]);
+      if (!active) return;
+      if (d.error || r.error) { setError((d.error || r.error).message); return; }
+      setError(null);
+      setDefaults({ monthly: d.data.default_monthly_pence, setup: d.data.default_setup_pence });
+      setMonthly(penceToPounds(d.data.default_monthly_pence));
+      setSetup(penceToPounds(d.data.default_setup_pence));
+      setRows(r.data ?? []);
+    })();
+    return () => { active = false; };
+  }, []);
 
   async function saveDefaults() {
     const parsed = checkFees({ monthly, setup, allowBlank: false });

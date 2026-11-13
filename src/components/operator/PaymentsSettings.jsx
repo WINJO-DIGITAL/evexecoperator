@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 // Settings → Payments: connect this business's OWN Stripe account so its
@@ -39,10 +39,15 @@ export default function PaymentsSettings({ toast }) {
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
 
-  const load = useCallback(async () => {
-    try { setView(await api("GET")); setError(null); } catch (e) { setError(e.message); }
+  // Initial load: the effect only starts the request and sets state after it resolves.
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try { const v = await api("GET"); if (active) { setView(v); setError(null); } }
+      catch (e) { if (active) setError(e.message); }
+    })();
+    return () => { active = false; };
   }, []);
-  useEffect(() => { load(); }, [load]);
 
   async function connect() {
     setBusy(true);
