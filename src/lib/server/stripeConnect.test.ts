@@ -6,7 +6,9 @@ beforeEach(() => { process.env.STRIPE_PLATFORM_SECRET_KEY = "sk_test_abc123"; })
 afterEach(() => { if (original === undefined) delete process.env.STRIPE_PLATFORM_SECRET_KEY; else process.env.STRIPE_PLATFORM_SECRET_KEY = original; });
 
 function fakeStripe(reply: unknown, ok = true, status = 200) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test fake / Supabase query builder; typed loosely on purpose
   const calls: { url: string; method?: string; headers: any; body?: string }[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test fake / Supabase query builder; typed loosely on purpose
   const f = (async (url: any, init: any) => {
     calls.push({ url: String(url), method: init?.method, headers: init?.headers, body: init?.body });
     return { ok, status, json: async () => reply } as Response;

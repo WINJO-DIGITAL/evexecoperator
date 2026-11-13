@@ -4,6 +4,7 @@ import { ConnectError } from "./stripeConnect";
 
 function fakeAdmin(row: Record<string, unknown>) {
   const updates: Record<string, unknown>[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test fake / Supabase query builder; typed loosely on purpose
   const admin: any = {
     from: () => ({
       select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: row, error: null }) }) }),
@@ -14,6 +15,7 @@ function fakeAdmin(row: Record<string, unknown>) {
 }
 const row = (extra = {}) => ({ id: "t1", name: "Acme Cars", contact_email: "a@acme.invalid", stripe_connect_account_id: null, stripe_connect_charges_enabled: false, stripe_connect_details_submitted: false, ...extra });
 const status = (o = {}) => ({ accountId: "acct_1", chargesEnabled: false, detailsSubmitted: false, payoutsEnabled: false, requirementsDue: [], ...o });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test fake / Supabase query builder; typed loosely on purpose
 const deps = (o: any = {}) => ({
   configured: () => true,
   create: async () => status(),
