@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Building2, Plus, RefreshCw, UserPlus, Users } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useOperatorToast } from "./Toast";
+import FeesSection from "./FeesSection";
 
 // Platform actions go through the Operator app's own server route (/api/platform/tenants),
 // which checks on the server that the caller is the platform owner.
@@ -232,6 +233,11 @@ export default function PlatformSettings() {
             </div>
           ))}
         </div>
+      </div>
+
+      <div>
+        <p className="mb-3 text-[10px] uppercase tracking-[0.2em] text-slate-500">Fees</p>
+        <FeesSection toast={toast} />
       </div>
 
       <div>
