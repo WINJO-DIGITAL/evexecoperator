@@ -3,14 +3,14 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // A fake Supabase client: getUser always succeeds (a signed-in account);
 // tenant_users returns whatever the test sets; bookings returns one booking.
-const state: { roles: Array<{ tenant_id: string | null; role: string }>; booking: Record<string, unknown> } = { roles: [], booking: {} };
+const state: { roles: Array<{ tenant_id: string | null; role: string }>; booking: Record<string, unknown>; tenants: Array<Record<string, unknown>> } = { roles: [], booking: {}, tenants: [] };
 
 function chain(table: string) {
   const q: Record<string, unknown> = {};
   const self = () => q;
   for (const m of ["select", "eq", "in", "limit", "order", "update", "insert"]) q[m] = vi.fn(self);
   q.single = vi.fn(async () => ({ data: table === "bookings" ? state.booking : null, error: null }));
-  q.then = (res: (v: unknown) => unknown) => res({ data: table === "tenant_users" ? state.roles : [], error: null });
+  q.then = (res: (v: unknown) => unknown) => res({ data: table === "tenant_users" ? state.roles : table === "tenants" ? state.tenants : [], error: null });
   return q;
 }
 vi.mock("@supabase/supabase-js", () => ({
@@ -33,6 +33,8 @@ const req = (body: unknown) => new Request("http://localhost/api", {
 });
 
 beforeEach(() => {
+  delete process.env.STRIPE_PLATFORM_SECRET_KEY;
+  state.tenants = [];
   state.roles = [];
   state.booking = { ref: "EVX-1", tenant_id: "t1", customer_email: "c@example.com", quoted_price: 90 };
   vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ id: "cs_1", url: "https://stripe.test" }), { status: 200 })));
@@ -153,5 +155,57 @@ describe("payment-link: no duplicate or split payments", () => {
     const res = await POST(req({ ref: "EVX-1" }));
     expect(res.status).toBe(409);
     expect(stripeCalls()).toEqual(["GET /cs_paid"]);
+  });
+});
+
+
+describe("payment-link: an operator's card payments go to its own connected Stripe account", () => {
+  const t2Booking = { id: "b9", ref: "EVX-9", tenant_id: "t2", customer_email: "c@example.com", quoted_price: 90, payment_status: "Unpaid" };
+  const stripeCalls = () => (fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.filter(([u]) => String(u).startsWith("https://api.stripe.com"));
+
+  it("charges directly on the operator's connected account with the platform key", async () => {
+    process.env.STRIPE_PLATFORM_SECRET_KEY = "sk_test_platform";
+    state.roles = [{ tenant_id: "t2", role: "operator_admin" }];
+    state.booking = t2Booking;
+    state.tenants = [{ stripe_connect_account_id: "acct_t2abc", stripe_connect_charges_enabled: true }];
+    const { POST } = await import("./payment-link/route");
+    const res = await POST(req({ ref: "EVX-9" }));
+    expect(res.status).toBe(200);
+    const [, init] = stripeCalls().find(([u]) => String(u) === "https://api.stripe.com/v1/checkout/sessions")!;
+    const headers = (init as RequestInit).headers as Record<string, string>;
+    expect(headers.Authorization).toBe("Bearer sk_test_platform");
+    expect(headers["Stripe-Account"]).toBe("acct_t2abc");
+  });
+
+  it("the account owner (EV Exec) still uses its own key and no connected account", async () => {
+    state.roles = [{ tenant_id: "t1", role: "operator_admin" }];
+    state.booking = { id: "b1", ref: "EVX-1", tenant_id: "t1", customer_email: "c@example.com", quoted_price: 90, payment_status: "Unpaid" };
+    const { POST } = await import("./payment-link/route");
+    await POST(req({ ref: "EVX-1" }));
+    const [, init] = stripeCalls().find(([u]) => String(u) === "https://api.stripe.com/v1/checkout/sessions")!;
+    const headers = (init as RequestInit).headers as Record<string, string>;
+    expect(headers.Authorization).toBe("Bearer sk_test_x");
+    expect(headers["Stripe-Account"]).toBeUndefined();
+  });
+
+  it("refuses, and never calls Stripe, when the connected account is not ready yet", async () => {
+    process.env.STRIPE_PLATFORM_SECRET_KEY = "sk_test_platform";
+    state.roles = [{ tenant_id: "t2", role: "operator_admin" }];
+    state.booking = t2Booking;
+    state.tenants = [{ stripe_connect_account_id: "acct_t2abc", stripe_connect_charges_enabled: false }];
+    const { POST } = await import("./payment-link/route");
+    const res = await POST(req({ ref: "EVX-9" }));
+    expect(res.status).toBe(422);
+    expect(stripeCalls()).toHaveLength(0);
+  });
+
+  it("refuses when the platform key is not set, even for a ready account", async () => {
+    state.roles = [{ tenant_id: "t2", role: "operator_admin" }];
+    state.booking = t2Booking;
+    state.tenants = [{ stripe_connect_account_id: "acct_t2abc", stripe_connect_charges_enabled: true }];
+    const { POST } = await import("./payment-link/route");
+    const res = await POST(req({ ref: "EVX-9" }));
+    expect(res.status).toBe(422);
+    expect(stripeCalls()).toHaveLength(0);
   });
 });
