@@ -16,6 +16,7 @@ import { playNewBookingChime } from "@/lib/operator/notificationSound";
 import { useTenantProfile } from "@/hooks/operator/useTenantProfile";
 import { pricingFromTenant } from "@/lib/prices";
 import { brandFrom } from "@/lib/brand";
+import { bookingPageLink } from "@/lib/operator/portals";
 import { useQuoteRequests } from "@/hooks/useQuoteRequests";
 import { useMissedCalls as useInboxMissedCalls } from "@/hooks/useMissedCalls";
 import { useContactMessages } from "@/hooks/useContactMessages";
@@ -287,7 +288,7 @@ export default function Layout({ children, onSignOut }) {
   return (
     <OperatorProvider value={operatorValue}>
     <div className="min-h-screen bg-white text-[#0F1B33]">
-      <Sidebar inboxCount={inboxCount} businessName={businessName} logoUrl={brandFrom(profile.tenant).logoUrl} onSignOut={onSignOut} />
+      <Sidebar inboxCount={inboxCount} businessName={businessName} logoUrl={brandFrom(profile.tenant).logoUrl} bookingPageUrl={bookingPageLink(profile.tenant)} onSignOut={onSignOut} />
       <main className="ml-0 min-h-screen w-full max-w-full overflow-x-hidden pb-[calc(5rem+env(safe-area-inset-bottom))] sm:ml-20 sm:w-auto lg:ml-60 sm:pb-0 bg-[linear-gradient(180deg,#F5F6F9_0%,#EEF0F4_100%)]">
         <header className="sticky top-0 z-40 border-b border-slate-100 bg-white/85 px-4 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] sm:px-10 sm:pb-6 sm:pt-6 backdrop-blur-xl">
           <div className="flex items-center justify-between gap-3">

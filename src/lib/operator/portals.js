@@ -39,3 +39,13 @@ export function driverJobUrl(bookingRef) {
   const base = PORTALS.driverApp.url.replace(/\/$/, "");
   return `${base}/jobs/${encodeURIComponent(bookingRef)}`;
 }
+
+/**
+ * The public booking page link for the signed-in business: its own website address, or null when it
+ * has not got one yet (so another business's staff are never sent to EV Exec's website). Before the
+ * business has loaded, null as well. A bare https domain only.
+ */
+export function bookingPageLink(tenant) {
+  const site = String(tenant?.brand?.site_url ?? "").trim().replace(/\/+$/, "");
+  return /^https:\/\/[^\s/]+$/i.test(site) ? site : null;
+}

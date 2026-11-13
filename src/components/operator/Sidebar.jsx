@@ -52,8 +52,10 @@ function Badge({ count, className = "" }) {
   );
 }
 
-export default function Sidebar({ inboxCount = 0, businessName = DEPLOYMENT_BRAND.name, logoUrl = null, onSignOut }) {
+export default function Sidebar({ inboxCount = 0, businessName = DEPLOYMENT_BRAND.name, logoUrl = null, bookingPageUrl = null, onSignOut }) {
   const pathname = usePathname();
+  // The Booking page link is this business's own website (hidden until it has one).
+  const portals = portalLinks.flatMap((p) => (p.label === "Booking page" ? (bookingPageUrl ? [{ ...p, href: bookingPageUrl }] : []) : [p]));
   const [moreOpen, setMoreOpen] = useState(false);
   const badgeFor = (item) => (item.badge === "inbox" ? inboxCount : 0);
   const moreItems = navItems.filter((i) => !i.mobile);
@@ -126,7 +128,7 @@ export default function Sidebar({ inboxCount = 0, businessName = DEPLOYMENT_BRAN
 
         <div className="mt-4 flex flex-col gap-1 border-t border-white/5 px-2 pt-4 lg:px-0">
           <p className="hidden px-3 pb-1 text-[10px] uppercase tracking-[0.2em] text-slate-600 lg:block">Open</p>
-          {portalLinks.map((p) => {
+          {portals.map((p) => {
             const Icon = p.icon;
             return (
               <a
@@ -204,7 +206,7 @@ export default function Sidebar({ inboxCount = 0, businessName = DEPLOYMENT_BRAN
               );
             })}
             <div className="my-2 border-t border-slate-100" />
-            {portalLinks.map((p) => {
+            {portals.map((p) => {
               const Icon = p.icon;
               return (
                 <a key={p.label} href={p.href} target="_blank" rel="noopener noreferrer" className="flex min-h-[48px] items-center gap-3 rounded-2xl px-3 text-sm text-slate-700">
