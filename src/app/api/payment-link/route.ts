@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { paymentLink } from "@/lib/email/content.js";
 import { brandFor } from "@/lib/email/brand.js";
 import { loadBrand } from "@/lib/server/brands";
-import { cardPaymentsAllowed } from "@/lib/server/stripeOwner";
+import { stripeContext, type StripeContext } from "@/lib/server/stripeAccount";
 import { when } from "@/lib/email/template.js";
 
 // Generates a Stripe payment link for a booking and sends it to the customer.
@@ -19,7 +19,8 @@ import { when } from "@/lib/email/template.js";
 // anything chargeable.
 //
 // Required env (set in Vercel project settings):
-//   STRIPE_SECRET_KEY            — sk_live_… / sk_test_…
+//   STRIPE_SECRET_KEY            — the account owner's (EV Exec) own Stripe key
+//   STRIPE_PLATFORM_SECRET_KEY   — the platform key for operators' connected accounts (see stripeAccount.ts)
 //   SUPABASE_SERVICE_ROLE_KEY    — service role key (server only, never NEXT_PUBLIC)
 //   NEXT_PUBLIC_SUPABASE_URL     — already configured for the client
 // Optional:
@@ -30,7 +31,6 @@ import { when } from "@/lib/email/template.js";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://evexecoperator.vercel.app";
@@ -51,11 +51,11 @@ type CheckoutSession = {
   error?: { message?: string };
 };
 
-async function stripeSession(id: string, action = ""): Promise<CheckoutSession | null> {
+async function stripeSession(id: string, ctx: StripeContext, action = ""): Promise<CheckoutSession | null> {
   try {
     const res = await fetch(`https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(id)}${action}`, {
       method: action ? "POST" : "GET",
-      headers: { Authorization: `Bearer ${STRIPE_SECRET_KEY}` },
+      headers: ctx.headers,
     });
     return res.ok ? ((await res.json()) as CheckoutSession) : null;
   } catch {
@@ -76,6 +76,7 @@ async function createCheckout(
   booking: { ref: string; tenant_id?: string | null },
   unitAmount: number,
   email: string,
+  ctx: StripeContext,
 ): Promise<CheckoutSession> {
   const form = new URLSearchParams();
   form.set("mode", "payment");
@@ -97,7 +98,7 @@ async function createCheckout(
   const stripeRes = await fetch("https://api.stripe.com/v1/checkout/sessions", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${STRIPE_SECRET_KEY}`,
+      ...ctx.headers,
       "Content-Type": "application/x-www-form-urlencoded",
     },
     body: form.toString(),
@@ -107,11 +108,11 @@ async function createCheckout(
 }
 
 export async function POST(req: Request) {
-  if (!STRIPE_SECRET_KEY || !SUPABASE_URL || !SERVICE_ROLE_KEY) {
+  if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
     return json(
       {
         error:
-          "Payment links aren't set up yet. Add STRIPE_SECRET_KEY and SUPABASE_SERVICE_ROLE_KEY in the Vercel project settings.",
+          "Payment links aren't set up yet. Add SUPABASE_SERVICE_ROLE_KEY in the Vercel project settings.",
         configured: false,
       },
       503
@@ -163,7 +164,11 @@ export async function POST(req: Request) {
   if (!isSuper && !staffTenants.has(booking.tenant_id)) return json({ error: "Booking not found." }, 404);
   await loadBrand(admin, booking.tenant_id); // this business's name and number for the email and text
   const brand = brandFor(booking.tenant_id);
-  if (!cardPaymentsAllowed(booking.tenant_id)) {
+  // The business's own Stripe account (EV Exec's own, or an operator's connected account once
+  // Stripe says it can take card payments). Otherwise refused: money never goes to another
+  // business's account.
+  const ctx = await stripeContext(admin, booking.tenant_id);
+  if (!ctx) {
     return json({ error: `${brand.name || "This business"} cannot take card payments online yet. Ask the customer to pay by cash or bank transfer.` }, 422);
   }
 
@@ -193,7 +198,7 @@ export async function POST(req: Request) {
   // never pay the same booking twice.
   let session: CheckoutSession | null = null;
   if (booking.stripe_session_id) {
-    const prev = await stripeSession(booking.stripe_session_id);
+    const prev = await stripeSession(booking.stripe_session_id, ctx);
     if (prev?.payment_status === "paid") {
       return json({ error: "This booking has already been paid. The payment is being recorded." }, 409);
     }
@@ -201,12 +206,12 @@ export async function POST(req: Request) {
     if (prev?.status === "open" && ours && prev.amount_total === unitAmount && prev.url) {
       session = prev;
     } else if (prev?.status === "open" && prev.id) {
-      await stripeSession(prev.id, "/expire");
+      await stripeSession(prev.id, ctx, "/expire");
     }
   }
 
   if (!session) {
-    const created = await createCheckout(booking, unitAmount, email);
+    const created = await createCheckout(booking, unitAmount, email, ctx);
     if (!created.url) {
       return json({ error: created.error?.message ?? "Stripe could not create the payment link." }, 502);
     }
