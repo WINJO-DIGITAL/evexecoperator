@@ -491,7 +491,7 @@ function DesktopRow({ booking, selected, onSelect, drivers, onAssign, onStatus, 
       onClick={() => onSelect(booking)}
       onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); onSelect(booking); } }}
       aria-label={`Open booking ${booking.id} for ${booking.customer}`}
-      className={`group relative grid cursor-pointer grid-cols-[64px_minmax(0,1.3fr)_minmax(0,1.6fr)_minmax(150px,1fr)_72px_190px_16px] items-center gap-5 px-5 py-3.5 outline-none transition hover:bg-slate-50 focus-visible:bg-amber-50/60 ${
+      className={`group relative grid cursor-pointer grid-cols-[56px_minmax(130px,1.1fr)_minmax(0,1.3fr)_minmax(120px,0.8fr)_64px_190px_12px] items-center gap-3 px-4 py-3.5 xl:grid-cols-[64px_minmax(0,1.3fr)_minmax(0,1.6fr)_minmax(150px,1fr)_72px_190px_16px] xl:gap-5 xl:px-5 outline-none transition hover:bg-slate-50 focus-visible:bg-amber-50/60 ${
         selected ? "bg-amber-50/60" : ""
       } ${isCancelled ? "opacity-60" : ""}`}
     >

@@ -42,6 +42,7 @@ export default function SetupChecklist({ drivers, hasBookings }) {
   const hidden = useSyncExternalStore(subscribeHidden, () => isHidden(tenant?.id), () => true);
   const [teamSize, setTeamSize] = useState(null);
   const [push, setPush] = useState(null);
+  const [showDone, setShowDone] = useState(false);
 
   useEffect(() => {
     if (!isAdmin || hidden) return;
@@ -93,7 +94,7 @@ export default function SetupChecklist({ drivers, hasBookings }) {
         </button>
       </div>
       <ul className="divide-y divide-slate-100">
-        {steps.map((s) => (
+        {(showDone ? steps : steps.filter((s) => !s.done)).map((s) => (
           <li key={s.key}>
             <Link href={s.href} className="flex items-center gap-3 px-4 py-3 transition hover:bg-slate-50 sm:px-5">
               {s.done ? <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-emerald-500" /> : <Circle className="h-5 w-5 flex-shrink-0 text-slate-300" />}
@@ -105,6 +106,16 @@ export default function SetupChecklist({ drivers, hasBookings }) {
           </li>
         ))}
       </ul>
+      {doneCount > 0 && (
+        <button
+          type="button"
+          onClick={() => setShowDone((v) => !v)}
+          aria-expanded={showDone}
+          className="w-full border-t border-slate-100 px-4 py-2.5 text-left text-xs font-medium text-slate-500 transition hover:bg-slate-50 hover:text-slate-700 sm:px-5"
+        >
+          {showDone ? "Hide completed steps" : `Show ${doneCount} completed step${doneCount === 1 ? "" : "s"}`}
+        </button>
+      )}
     </section>
   );
 }
