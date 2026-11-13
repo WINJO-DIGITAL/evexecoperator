@@ -7,6 +7,7 @@
 
 type Row = { id: string; message: string };
 type Admin = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test fake / Supabase query builder; typed loosely on purpose
   from: (table: string) => any; // supabase-js query builder
 };
 
