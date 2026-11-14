@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { Zap } from "lucide-react";
 
 function compute(pickupTime, now) {
   if (!pickupTime) return null;
@@ -33,7 +34,7 @@ export default function ETACountdown({ pickupTime, className = "" }) {
 
   return (
     <span className={`${state.color} ${className} text-xs tabular-nums`}>
-      {state.urgent && <span className="mr-1">⚡</span>}
+      {state.urgent && <Zap size={12} className="mr-1 inline-block align-[-1px]" />}
       {state.label}
     </span>
   );
