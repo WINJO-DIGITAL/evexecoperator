@@ -14,7 +14,7 @@ export function useTextTasks() {
 
   const queryTasks = useCallback(() => Promise.all([
       supabase.from("operator_sms_tasks")
-        .select(`id, kind, customer_name, customer_phone, message, status, created_at, booking_id, ${BOOKING}`)
+        .select(`id, kind, customer_name, customer_phone, message, status, created_at, booking_id, quote_request_id, ${BOOKING}, quote_requests(status, pickup_date)`)
         .in("status", ["pending", "opened"]),
       supabase.from("driver_sms_reminders")
         .select(`id, reminder_type, customer_name, customer_phone, message, status, created_at, booking_id, travel_date, travel_time, drivers!inner(name, kind), ${BOOKING}`)

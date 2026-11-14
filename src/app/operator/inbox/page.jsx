@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
+import QuoteDetailModal from "@/components/operator/QuoteDetailModal";
 import InboxTab from "@/components/InboxTab";
 import { useOperator } from "@/components/operator/OperatorContext";
 import { useOperatorToast } from "@/components/operator/Toast";
@@ -12,9 +13,10 @@ import { QUOTE_REQUEST_STATUS, CONTACT_MESSAGE_STATUS } from "@/lib/database.typ
 // Booking form pre-filled from the quote and marks the quote converted once
 // the booking is created.
 export default function InboxPage() {
-  const { inbox, openNewBooking } = useOperator();
+  const { inbox, openNewBooking, profile } = useOperator();
   const toast = useOperatorToast();
 
+  const [openQuote, setOpenQuote] = useState(null);
   const fail = useCallback((what) => toast({ message: `Couldn't ${what} — check connection and try again`, type: "error" }), [toast]);
 
   const convertQuote = useCallback((quote) => {
@@ -42,10 +44,22 @@ export default function InboxPage() {
           contactMessages={inbox.contactMessages}
           onDismissQuote={async (id) => { if (!(await inbox.setQuoteStatus(id, QUOTE_REQUEST_STATUS.DISMISSED))) fail("dismiss the quote"); }}
           onConvertQuote={convertQuote}
+          onOpenQuote={(q) => setOpenQuote(q)}
           onToggleMissedCall={async (id, resolved) => { if (!(await inbox.setMissedCallResolved(id, resolved))) fail("update the missed call"); }}
           onToggleContactMessage={async (id, read) => {
             if (!(await inbox.setContactMessageStatus(id, read ? CONTACT_MESSAGE_STATUS.READ : CONTACT_MESSAGE_STATUS.NEW))) fail("update the message");
           }}
+        />
+      )}
+      {openQuote && (
+        <QuoteDetailModal
+          quote={inbox.quoteRequests.find((q) => q.id === openQuote.id) ?? openQuote}
+          businessName={profile?.tenant?.name ?? ""}
+          toast={toast}
+          onClose={() => setOpenQuote(null)}
+          onSaved={() => inbox.refetch?.()}
+          onConvert={() => { const q = openQuote; setOpenQuote(null); convertQuote(q); }}
+          onDismiss={async () => { const id = openQuote.id; setOpenQuote(null); if (!(await inbox.setQuoteStatus(id, QUOTE_REQUEST_STATUS.DISMISSED))) fail("dismiss the quote"); }}
         />
       )}
     </div>

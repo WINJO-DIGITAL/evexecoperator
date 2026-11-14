@@ -26,6 +26,7 @@ interface Props {
   contactMessages: DbContactMessage[];
   onDismissQuote: (id: string) => void;
   onConvertQuote: (quote: DbQuoteRequest) => void;
+  onOpenQuote?: (quote: DbQuoteRequest) => void;
   onToggleMissedCall: (id: string, resolved: boolean) => void;
   onToggleContactMessage: (id: string, read: boolean) => void;
 }
@@ -36,6 +37,7 @@ export default function InboxTab({
   contactMessages,
   onDismissQuote,
   onConvertQuote,
+  onOpenQuote,
   onToggleMissedCall,
   onToggleContactMessage,
 }: Props) {
@@ -70,6 +72,7 @@ export default function InboxTab({
               quote={quote}
               onDismiss={() => onDismissQuote(quote.id)}
               onConvert={() => onConvertQuote(quote)}
+              onOpen={() => onOpenQuote?.(quote)}
             />
           ))
         )}
@@ -144,10 +147,12 @@ function QuoteRequestCard({
   quote,
   onDismiss,
   onConvert,
+  onOpen,
 }: {
   quote: DbQuoteRequest;
   onDismiss: () => void;
   onConvert: () => void;
+  onOpen: () => void;
 }) {
   const from  = quote.airport ?? quote.pickup_location ?? "—";
   const to    = quote.destination ?? "—";
@@ -161,7 +166,13 @@ function QuoteRequestCard({
     : null;
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-card overflow-hidden">
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={onOpen}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen(); } }}
+      className="rounded-2xl border border-slate-200 bg-white shadow-card overflow-hidden cursor-pointer hover:border-amber-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+    >
       <div className="px-4 pt-3 pb-4 space-y-2.5">
         <div className="flex items-start justify-between gap-2">
           <div>
@@ -227,8 +238,16 @@ function QuoteRequestCard({
           </div>
         )}
 
+        {/* Price state */}
+        {quote.quoted_price != null && (
+          <p className="text-xs font-semibold text-emerald-700 bg-emerald-50 rounded-lg px-3 py-1.5">
+            Priced at £{Number(quote.quoted_price)}{quote.customer_response ? ` · customer said ${quote.customer_response === "yes" ? "YES" : "NO"}` : " · waiting for reply"}
+          </p>
+        )}
+        <p className="text-xs font-semibold text-amber-700">Tap to view and price</p>
+
         {/* Actions */}
-        <div className="flex gap-2 pt-1">
+        <div className="flex gap-2 pt-1" onClick={(e) => e.stopPropagation()}>
           <button
             onClick={onDismiss}
             className="flex-1 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-500 border border-slate-200 hover:bg-slate-200 hover:text-slate-700 active:scale-[0.98] transition-all"

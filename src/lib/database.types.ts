@@ -133,6 +133,11 @@ export interface DbQuoteRequest {
   notes: string | null;
   status: string | null;
   created_at: string | null;
+  quoted_price?: number | null;
+  quoted_at?: string | null;
+  quote_token?: string;
+  customer_response?: "yes" | "no" | null;
+  responded_at?: string | null;
 }
 
 export const QUOTE_REQUEST_STATUS = {
