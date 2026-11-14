@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useRef, useState, useCallback } from "react"
 import {
   X, Phone, Mail, Plane, MapPin, Clock, Car, PoundSterling,
   User, AlertTriangle, ChevronDown, Check, Edit3, Loader2, RefreshCw,
-  CreditCard, Trash2, ShieldCheck, Send, Users, Briefcase, Calendar, RotateCcw, XCircle,
+  CreditCard, Trash2, ShieldCheck, Send, Users, Briefcase, Calendar, RotateCcw, XCircle, Zap,
 } from "lucide-react";
 import { bookingStatusColor } from "@/lib/operator/statusColor";
 import { reverseTarget, reverseLabel } from "@/lib/operator/statusFlow";
@@ -295,7 +295,7 @@ function MarkFarePaidButton({ paid, onSet }) {
       }`}
     >
       {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
-      {paid ? "Fare paid ✓" : "Mark fare paid"}
+      {paid ? "Fare paid" : "Mark fare paid"}
     </button>
   );
 }
@@ -718,7 +718,7 @@ export default function BookingDetailDrawer({
             <div className="mt-2 flex flex-wrap items-center gap-2">
               {booking.priority && (
                 <span className="rounded-full border border-red-400/30 bg-red-400/10 px-2 py-0.5 text-[10px] font-medium text-red-600">
-                  ⚡ Priority
+                  <Zap size={10} className="mr-1 inline-block align-[-1px]" />Priority
                 </span>
               )}
               <StatusPicker
