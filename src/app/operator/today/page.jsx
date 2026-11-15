@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
-  AlertCircle, CheckCircle2, ChevronRight, Clock, CreditCard, Inbox, MessageSquareReply, UserX,
+  AlertCircle, CheckCircle2, ChevronRight, Clock, CreditCard, Inbox, MessageSquareReply, UserX, Flag,
 } from "lucide-react";
 import { useBookings, ukDateDaysAgo } from "@/hooks/operator/useBookings";
 import { useDrivers } from "@/hooks/operator/useDrivers";
@@ -84,10 +84,17 @@ export default function TodayPage() {
       return m != null && m > -60 && m <= 48 * 60;
     });
     const unpaid = bookings.filter(unpaidCompleted);
+    // Partner jobs (no Driver App) are only marked Completed by the office. Past ones still
+    // on Dispatched or on the road are listed so they don't pile up unmarked.
+    const partnerIds = new Set(drivers.filter((d) => d.kind === "partner").map((d) => d.id));
+    const unfinished = bookings.filter((b) =>
+      partnerIds.has(b.driverId) && b.travelDate && b.travelDate < today
+      && (b.status === "Dispatched" || ON_ROAD_STATUSES.includes(b.status)));
     const needs = [
       ...reply.map((b) => ({ b, kind: "reply" })),
       ...noDriver.map((b) => ({ b, kind: "driver" })),
       ...unpaid.map((b) => ({ b, kind: "unpaid" })),
+      ...unfinished.map((b) => ({ b, kind: "finish" })),
     ];
 
     const driverDay = drivers.map((d) => {
@@ -105,6 +112,7 @@ export default function TodayPage() {
     reply: { label: "Accept or decline", icon: MessageSquareReply, cls: "bg-amber-50 text-amber-700 border-amber-200" },
     driver: { label: "No driver", icon: UserX, cls: "bg-red-50 text-red-700 border-red-200" },
     unpaid: { label: "Unpaid", icon: CreditCard, cls: "bg-violet-50 text-violet-700 border-violet-200" },
+    finish: { label: "Mark completed", icon: Flag, cls: "bg-slate-100 text-slate-700 border-slate-300" },
   };
 
   return (
