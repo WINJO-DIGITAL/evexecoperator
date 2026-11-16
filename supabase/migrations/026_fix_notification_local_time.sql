@@ -1,0 +1,19 @@
+-- Fix: driver/customer notification times were shown 1 hour behind during BST.
+--
+-- pickup_time is stored as a true UTC instant (e.g. 14:00 BST = 13:00Z). The
+-- enqueue triggers formatted it in the UTC session, so texts read "13:00" for a
+-- 14:00 pickup. Fixed by displaying straight from travel_time / travel_date
+-- (already the correct UK local values) and scheduling the 24h reminder off a
+-- Europe/London-correct instant:
+--   coalesce(pickup_time,
+--            (travel_date || ' ' || travel_time)::timestamp at time zone 'Europe/London')
+--
+-- Both enqueue_operator_customer_notifications() and enqueue_driver_notifications()
+-- were replaced live with this change (all other logic — channel routing, fare
+-- text, driver clause, route, status pings, de-dup — is unchanged). See the
+-- project migration history entry "fix_notification_local_time" for the full
+-- bodies. Existing pending queue rows were also corrected in place.
+--
+-- NOTE: this only affects notifications sent by THIS system. The branded HTML
+-- email rendered by the external website/notification service still converts the
+-- time to Europe/London (showing +1h); that must be fixed in that separate repo.
