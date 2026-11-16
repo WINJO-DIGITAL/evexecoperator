@@ -15,6 +15,8 @@ export async function POST(req: Request) {
   if (!admin) return json({ error: "Not configured on the server." }, 503);
   const caller = await getCaller(req, admin);
   if (!caller) return json({ error: "Not authorised." }, 403);
+  // This business's own rows: the service client, or the signed-in user's own access when the server key is refused.
+  const db = caller.db ?? admin;
 
   let body: Body;
   try { body = (await req.json()) as Body; } catch { return json({ error: "Send the quote and price." }, 400); }
@@ -24,8 +26,8 @@ export async function POST(req: Request) {
   if (!/^[0-9a-f-]{36}$/i.test(quoteId)) return json({ error: "Unknown quote." }, 400);
 
   const [{ data: quote }, { data: tenant }] = await Promise.all([
-    admin.from("quote_requests").select("*").eq("id", quoteId).maybeSingle(),
-    admin.from("tenants").select("name, brand").eq("id", caller.tenantId).maybeSingle(),
+    db.from("quote_requests").select("*").eq("id", quoteId).maybeSingle(),
+    db.from("tenants").select("name, brand").eq("id", caller.tenantId).maybeSingle(),
   ]);
   if (!quote || quote.tenant_id !== caller.tenantId) return json({ error: "Quote not found." }, 404);
   if (quote.status && quote.status !== "new") return json({ error: "This quote is no longer open." }, 409);
@@ -36,7 +38,7 @@ export async function POST(req: Request) {
   }
 
   // Save the price first. The reply links use the same token, so they stay valid if the price is re-sent.
-  const { error: saveErr } = await admin.from("quote_requests")
+  const { error: saveErr } = await db.from("quote_requests")
     .update({ quoted_price: parsed.value, quoted_at: new Date().toISOString() })
     .eq("id", quote.id)
     .eq("tenant_id", caller.tenantId);
@@ -71,11 +73,11 @@ export async function POST(req: Request) {
     opened_at: null,
     sent_at: null,
   };
-  const { data: existing } = await admin.from("operator_sms_tasks")
+  const { data: existing } = await db.from("operator_sms_tasks")
     .select("id").eq("quote_request_id", quote.id).eq("kind", "quote").maybeSingle();
   const taskErr = existing
-    ? (await admin.from("operator_sms_tasks").update(row).eq("id", existing.id)).error
-    : (await admin.from("operator_sms_tasks").insert(row)).error;
+    ? (await db.from("operator_sms_tasks").update(row).eq("id", existing.id)).error
+    : (await db.from("operator_sms_tasks").insert(row)).error;
   if (taskErr) return json({ error: "Price saved, but the text couldn't be queued. Try again." }, 500);
 
   const phone = String(quote.phone ?? "").trim();

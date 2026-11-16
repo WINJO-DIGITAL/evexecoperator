@@ -47,7 +47,23 @@ export type Caller = {
   tenantId: string;
   tenantName: string;
   isAdmin: boolean; // operator_admin of this tenant, or super_admin
+  /**
+   * A client for this business's own rows: the service client when its key works,
+   * otherwise the signed-in user's own access (limited by the database's row rules).
+   * Routes that only touch the caller's own business use this, so they keep working
+   * if the server's service key is ever refused.
+   */
+  db?: SupabaseClient;
 };
+
+/** A client that acts as the signed-in user (their token), so the database's row rules apply. */
+export function userClient(token: string): SupabaseClient | null {
+  if (!SUPABASE_URL || !ANON_KEY) return null;
+  return createClient(SUPABASE_URL, ANON_KEY, {
+    auth: { autoRefreshToken: false, persistSession: false },
+    global: { headers: { Authorization: `Bearer ${token}` } },
+  });
+}
 
 /**
  * The signed-in staff member making the request (Bearer token), with their
@@ -62,17 +78,29 @@ export async function getCaller(req: Request, admin: SupabaseClient): Promise<Ca
   const user = await userFromToken(admin, token);
   if (!user) return null;
 
-  const { data: roles } = await admin.from("tenant_users").select("tenant_id, role").eq("user_id", user.id);
+  // The service client reads every business's rows. If the database refuses its key (the
+  // lookup errors), fall back to the user's own access: they can read their own role rows
+  // and their own business, which is all this check needs.
+  let reader: SupabaseClient = admin;
+  let { data: roles, error: rolesErr } = await admin.from("tenant_users").select("tenant_id, role").eq("user_id", user.id);
+  if (rolesErr) {
+    const own = userClient(token);
+    console.error("Staff lookup with the service key failed; using the signed-in user's own access instead:", rolesErr.message);
+    if (own) {
+      reader = own;
+      ({ data: roles } = await own.from("tenant_users").select("tenant_id, role").eq("user_id", user.id));
+    }
+  }
   const rows = roles ?? [];
   const isSuper = rows.some((r) => r.role === "super_admin");
   const staff = rows.find((r) => r.tenant_id && (STAFF_ROLES as readonly string[]).includes(r.role));
   let tenantId = staff?.tenant_id as string | undefined;
   if (!tenantId && isSuper) {
-    const { data: t } = await admin.from("tenants").select("id").order("created_at", { ascending: true }).limit(1).maybeSingle();
+    const { data: t } = await reader.from("tenants").select("id").order("created_at", { ascending: true }).limit(1).maybeSingle();
     tenantId = t?.id;
   }
   if (!tenantId) return null;
-  const { data: tenant } = await admin.from("tenants").select("name").eq("id", tenantId).maybeSingle();
+  const { data: tenant } = await reader.from("tenants").select("name").eq("id", tenantId).maybeSingle();
   const meta = (user.user_metadata ?? {}) as Record<string, string>;
   return {
     userId: user.id,
@@ -81,6 +109,7 @@ export async function getCaller(req: Request, admin: SupabaseClient): Promise<Ca
     tenantId,
     tenantName: tenant?.name || "your business",
     isAdmin: isSuper || rows.some((r) => r.tenant_id === tenantId && r.role === "operator_admin"),
+    db: reader,
   };
 }
 

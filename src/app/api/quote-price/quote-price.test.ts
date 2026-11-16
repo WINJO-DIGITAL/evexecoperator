@@ -6,14 +6,20 @@ const QUOTE = "22222222-0000-4000-8000-000000000003";
 
 type Store = { quote: Record<string, unknown> | null; tasks: Record<string, unknown>[]; saved: Record<string, unknown> | null };
 let store: Store;
-let caller: { tenantId: string } | null;
+let caller: { tenantId: string; db?: unknown } | null;
+let adminRefused = false; // the server's service key is refused by the database
 
 vi.mock("@/lib/server/staff", () => {
   const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
   return {
     json,
-    adminClient: () => ({
+    adminClient: () => makeClient(true),
+    getCaller: async () => (caller ? { ...caller, db: adminRefused ? makeClient(false) : caller.db } : null),
+  };
+  function makeClient(isAdmin: boolean) {
+    return {
       from(table: string) {
+        if (isAdmin && adminRefused) throw new Error("service key refused");
         const chain = {
           select: () => chain, eq: () => chain, maybeSingle: async () => {
             if (table === "quote_requests") return { data: store.quote };
@@ -30,9 +36,8 @@ vi.mock("@/lib/server/staff", () => {
         };
         return chain;
       },
-    }),
-    getCaller: async () => caller,
-  };
+    };
+  }
 });
 
 const { POST } = await import("./route");
@@ -40,6 +45,7 @@ const { POST } = await import("./route");
 const req = (body: unknown) => new Request("https://x.test/api/quote-price", { method: "POST", body: JSON.stringify(body) });
 
 beforeEach(() => {
+  adminRefused = false;
   caller = { tenantId: TENANT };
   store = {
     quote: {
@@ -86,6 +92,16 @@ describe("POST /api/quote-price", () => {
     expect(body.smsHref).toMatch(/^sms:07700900123\?&body=/);
     expect(store.tasks).toHaveLength(1);
     expect(store.tasks[0]).toMatchObject({ kind: "quote", quote_request_id: QUOTE, status: "pending", booking_id: null });
+  });
+
+  it("still saves the price and queues the text when the server's service key is refused", async () => {
+    adminRefused = true; // every call through the service client would throw; the caller's own client is used
+    const res = await POST(req({ quoteId: QUOTE, price: "95" }));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.message).toContain("we can do it for £95.");
+    expect(store.saved).toMatchObject({ quoted_price: 95 });
+    expect(store.tasks).toHaveLength(1);
   });
 
   it("does not queue a text when there is no phone number, but still saves the price", async () => {

@@ -76,7 +76,10 @@ export async function POST(req: Request) {
   if (userErr || !userData?.user) return json({ error: "Not authorised." }, 401);
   const admin = adminClient();
   if (!admin) return json({ error: "not configured" }, 503);
-  if (!(await getCaller(req, admin))) return json({ error: "Not authorised." }, 403);
+  const caller = await getCaller(req, admin);
+  if (!caller) return json({ error: "Not authorised." }, 403);
+  // The service client, or the signed-in user's own access when the server key is refused.
+  const work = caller.db ?? admin;
 
   let body: { ref?: string; decision?: string };
   try { body = await req.json(); } catch { return json({ error: "Invalid request body." }, 400); }
@@ -96,7 +99,7 @@ export async function POST(req: Request) {
   const when = `${fmtDate(str(b.travel_date) || null)} ${time5(b.travel_time)}`.trim();
 
   // The business's own name and number go in the texts and the email.
-  await loadBrand(admin, str(b.tenant_id) || null);
+  await loadBrand(work, str(b.tenant_id) || null);
   const brand = brandFor(str(b.tenant_id) || undefined);
   // The business's own website. A business with no website gets no pay link (its customers are told to contact it instead).
   const siteOwn = (brand.site || "").replace(/\/$/, "");
@@ -140,7 +143,7 @@ export async function POST(req: Request) {
   if (wantsCustomerText({ accepted, emailed, phone })) {
     // Replaces an earlier "we've received your request" text for this booking, so the
     // customer is sent the confirmation (see src/lib/server/smsTask.ts).
-    smsQueued = await queueCustomerText(admin, {
+    smsQueued = await queueCustomerText(work, {
       tenantId: b.tenant_id, bookingId: b.id, kind: accepted ? "confirmation" : "rejection",
       name: str(b.customer_name) || null, phone, message: smsText,
     });
