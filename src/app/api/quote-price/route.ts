@@ -14,7 +14,11 @@ export async function POST(req: Request) {
   const admin = adminClient();
   if (!admin) return json({ error: "Not configured on the server." }, 503);
   const caller = await getCaller(req, admin);
-  if (!caller) return json({ error: "Not authorised." }, 403);
+  if (!caller) {
+    return json({
+      error: "Your sign-in isn't set up as office staff for this business, so you can't send quote prices. Ask an admin to check your role in Settings → Team, then sign out and back in.",
+    }, 403);
+  }
 
   let body: Body;
   try { body = (await req.json()) as Body; } catch { return json({ error: "Send the quote and price." }, 400); }
