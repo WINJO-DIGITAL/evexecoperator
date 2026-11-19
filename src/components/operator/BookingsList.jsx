@@ -272,14 +272,10 @@ function MobileDriverSheet({ booking, drivers, onAssign, onClose }) {
 }
 
 // ── Booking card ──────────────────────────────────────────────────────────────
-const STATUS_EDGE = {
-  Dispatched: "bg-amber-400",
+const ON_ROAD_EDGE = {
   "En Route": "bg-blue-500",
   Arrived: "bg-indigo-500",
   "Passenger On Board": "bg-emerald-500",
-  Completed: "bg-slate-300",
-  Cancelled: "bg-slate-200",
-  "No Show": "bg-slate-300",
 };
 
 function initials(name) {
@@ -336,7 +332,11 @@ function RouteLines({ from, to, className = "" }) {
 }
 
 function edgeColour(booking, facts) {
-  return facts.pendingRequest ? "bg-amber-400" : booking.priority ? "bg-red-500" : STATUS_EDGE[booking.status] || "bg-red-400";
+  // Colour only where it asks for attention or shows a job on the road; quiet otherwise.
+  if (facts.pendingRequest) return "bg-amber-400";
+  if (booking.priority) return "bg-red-500";
+  if (!booking.driverId && !facts.isDone && !facts.isCancelled) return "bg-red-400";
+  return ON_ROAD_EDGE[booking.status] || "bg-transparent";
 }
 
 // Phone/tablet booking card. The whole card opens the booking; the driver

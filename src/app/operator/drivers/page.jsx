@@ -633,7 +633,7 @@ export default function DriversPage() {
         />
       )}
 
-      <div className="grid gap-4 p-4 sm:gap-6 sm:p-6 lg:p-10">
+      <div className="grid grid-cols-1 gap-4 p-4 sm:gap-6 sm:p-6 lg:p-10">
         {/* Stats strip */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           {[

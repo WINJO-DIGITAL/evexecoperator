@@ -1084,8 +1084,7 @@ export default function Settings() {
         {/* Content panel */}
         <div className="card p-6 sm:p-8">
           <div className="mb-6 sm:mb-8">
-            <p className="text-xs text-amber-600">Settings</p>
-            <h2 className="mt-2 text-2xl font-semibold text-[#0F1B33]">
+            <h2 className="text-xl font-semibold text-[#0F1B33]">
               {sections.find((s) => s.key === active)?.label}
             </h2>
           </div>

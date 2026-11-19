@@ -28,7 +28,7 @@ const pageMeta = {
   "/operator/bookings": { label: "Operations", title: "Bookings" },
   "/operator/inbox": { label: "Requests", title: "Inbox" },
   "/operator/customers": { label: "People", title: "Customers" },
-  "/operator/drivers": { label: "Fleet", title: "Driver Management" },
+  "/operator/drivers": { label: "Fleet", title: "Drivers" },
   "/operator/invoices": { label: "Billing", title: "Invoices" },
   "/operator/analytics": { label: "Insights", title: "Analytics" },
   "/operator/settings": { label: "System", title: "Settings" },

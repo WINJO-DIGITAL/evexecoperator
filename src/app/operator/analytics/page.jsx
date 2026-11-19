@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { TrendingUp, Repeat, PoundSterling, Users, Calendar, Trophy, PieChart, CheckCircle2 } from "lucide-react";
+import { Trophy, PieChart, CheckCircle2 } from "lucide-react";
 import { useBookings, ukDateDaysAgo } from "@/hooks/operator/useBookings";
 import { ukDateOf, ukHourOf } from "@/lib/dates";
 import { useDrivers } from "@/hooks/operator/useDrivers";
@@ -266,7 +266,7 @@ export default function Analytics() {
   }, [bookings]);
 
   return (
-    <div className="grid gap-6 p-4 sm:p-6 lg:p-10">
+    <div className="grid grid-cols-1 gap-6 p-4 sm:p-6 lg:p-10">
       {/* Period selector */}
       <div className="flex flex-wrap items-center gap-2">
         {PERIODS.map((p) => (
@@ -297,36 +297,26 @@ export default function Analytics() {
             label: "Total Revenue",
             value: `£${totalRevenue.toLocaleString()}`,
             sub: subRevenue,
-            icon: PoundSterling,
           },
           {
             label: "Total Bookings",
             value: totalBookings,
             sub: avgPerJob > 0 ? `Avg £${avgPerJob} per job` : "No completed jobs yet",
-            icon: Calendar,
           },
           {
             label: "New Customers",
             value: newCustomers,
             sub: "First-time this period",
-            icon: Users,
           },
           {
             label: "Repeat Customers",
             value: repeatCustomers,
             sub: "Booked more than once",
-            icon: Repeat,
           },
         ].map((kpi) => (
-          <div key={kpi.label} className="card p-4 sm:p-5">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-100 bg-slate-50">
-                <kpi.icon className="h-4 w-4 text-amber-600" />
-              </div>
-              <TrendingUp className="h-3 w-3 text-emerald-600" />
-            </div>
-            <p className="text-sm text-slate-500">{kpi.label}</p>
-            <p className="mt-1 text-2xl font-semibold text-[#0F1B33] sm:text-3xl">{kpi.value}</p>
+          <div key={kpi.label} className="card px-4 py-3.5 sm:px-5 sm:py-4">
+            <p className="text-xs text-slate-500">{kpi.label}</p>
+            <p className="mt-1 text-2xl font-semibold leading-none tabular-nums text-[#0F1B33] sm:text-3xl">{kpi.value}</p>
             <p className="mt-2 text-xs text-slate-500">{kpi.sub}</p>
           </div>
         ))}
@@ -351,12 +341,11 @@ export default function Analytics() {
       )}
 
       {/* Charts row */}
-      <div className="grid gap-6 xl:grid-cols-[1fr_380px]">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
         {/* Revenue bar chart */}
         <div className="card p-5 sm:p-6">
           <div className="mb-6">
-            <p className="text-xs text-amber-600">Revenue</p>
-            <h2 className="mt-2 text-2xl font-semibold text-[#0F1B33]">
+            <h2 className="text-lg font-semibold text-[#0F1B33]">
               {period === "Today" ? "Today's Revenue" : `Revenue — ${period}`}
             </h2>
           </div>
@@ -384,8 +373,7 @@ export default function Analytics() {
         {/* Top routes */}
         <div className="card p-5 sm:p-6">
           <div className="mb-6">
-            <p className="text-xs text-amber-600">Routes</p>
-            <h2 className="mt-2 text-2xl font-semibold text-[#0F1B33]">Top Routes</h2>
+            <h2 className="text-lg font-semibold text-[#0F1B33]">Top Routes</h2>
           </div>
           {topRoutes.length === 0 ? (
             <p className="py-12 text-center text-sm text-slate-600">No route data yet.</p>
@@ -414,14 +402,13 @@ export default function Analytics() {
       </div>
 
       {/* Bottom row: Status breakdown + Driver leaderboard */}
-      <div className="grid gap-6 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         {/* Status breakdown */}
         <div className="card p-5 sm:p-6">
           <div className="mb-6 flex items-center gap-3">
             <PieChart className="h-4 w-4 text-amber-600" />
             <div>
-              <p className="text-xs text-amber-600">Breakdown</p>
-              <h2 className="mt-1 text-xl font-semibold text-[#0F1B33]">Jobs by Status</h2>
+              <h2 className="text-lg font-semibold text-[#0F1B33]">Jobs by Status</h2>
             </div>
           </div>
           {statusBreakdown.length === 0 ? (
@@ -455,8 +442,7 @@ export default function Analytics() {
           <div className="mb-6 flex items-center gap-3">
             <Trophy className="h-4 w-4 text-amber-600" />
             <div>
-              <p className="text-xs text-amber-600">Performance</p>
-              <h2 className="mt-1 text-xl font-semibold text-[#0F1B33]">Driver Leaderboard</h2>
+              <h2 className="text-lg font-semibold text-[#0F1B33]">Driver Leaderboard</h2>
             </div>
           </div>
           {driverLeaderboard.length === 0 ? (

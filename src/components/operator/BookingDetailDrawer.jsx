@@ -1120,60 +1120,53 @@ export default function BookingDetailDrawer({
           )}
         </div>
 
-        {/* Footer actions */}
+        {/* Footer actions: one quiet row; delete set apart. The header X closes. */}
         {!editMode && (
-        <div className="flex-shrink-0 border-t border-slate-100 px-5 py-4 sm:px-6">
-          <div className="flex flex-col gap-2">
-            {/* Edit job — primary action, mirrors the Calendar's edit button */}
+        <div className="flex-shrink-0 border-t border-slate-100 px-5 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 sm:px-6 sm:pb-4">
+          <div className="flex gap-2">
             {onUpdateBooking && (
               <button
                 onClick={() => setEditMode(true)}
-                className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-2xl bg-amber-500 px-4 py-2.5 text-sm font-semibold text-black transition hover:bg-amber-400"
+                className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-[#0F1B33] transition hover:border-slate-300 hover:bg-slate-50"
               >
-                <Edit3 className="h-4 w-4" />
-                Edit Job
+                <Edit3 className="h-4 w-4 text-slate-500" />
+                Edit
               </button>
             )}
-            {/* Return journey */}
             {/* Not for a booking that already includes its return, or a return leg itself. */}
             {booking.airport && booking.destination && !booking.returnJourney && !isReturnLeg(booking) && (
               <button
                 onClick={() => onCreateReturn?.(booking)}
-                className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-2xl border border-amber-400/20 bg-amber-400/5 px-4 py-2.5 text-sm font-medium text-amber-600 transition hover:bg-amber-400/10"
+                className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-[#0F1B33] transition hover:border-slate-300 hover:bg-slate-50"
               >
-                <RefreshCw className="h-4 w-4" />
-                Create Return Journey
+                <RefreshCw className="h-4 w-4 text-slate-500" />
+                Return
               </button>
             )}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => onTogglePriority?.(booking.id)}
-                className={`flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-medium transition ${
-                  booking.priority
-                    ? "border-red-400/30 bg-red-400/10 text-red-600 hover:bg-red-400/20"
-                    : "border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-600"
-                }`}
-              >
-                <AlertTriangle className="h-4 w-4" />
-                {booking.priority ? "Remove Priority" : "Mark Priority"}
-              </button>
-              <button
-                onClick={onClose}
-                className="min-h-[44px] rounded-2xl border border-slate-200 px-5 py-2.5 text-sm text-slate-500 transition hover:text-[#0F1B33]"
-              >
-                Close
-              </button>
-            </div>
-            {onDelete && (
+            <button
+              onClick={() => onTogglePriority?.(booking.id)}
+              aria-pressed={!!booking.priority}
+              className={`flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl border px-3 text-sm font-semibold transition ${
+                booking.priority
+                  ? "border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
+                  : "border-slate-200 bg-white text-[#0F1B33] hover:border-slate-300 hover:bg-slate-50"
+              }`}
+            >
+              <AlertTriangle className={`h-4 w-4 ${booking.priority ? "" : "text-slate-500"}`} />
+              Priority
+            </button>
+          </div>
+          {onDelete && (
+            <div className="mt-2 flex justify-center">
               <button
                 onClick={() => { setDeleteError(null); setDeletePassword(""); setDeleteOpen(true); }}
-                className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-2xl border border-red-400/20 bg-red-500/10 px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-500/20"
+                className="flex min-h-[36px] items-center gap-1.5 rounded-lg px-3 text-xs font-semibold text-red-600 transition hover:bg-red-50"
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-3.5 w-3.5" />
                 Delete Job
               </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
         )}
       </div>

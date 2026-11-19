@@ -1050,10 +1050,7 @@ export default function InvoicesPage() {
 
         {/* Header + New */}
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-xs text-amber-600">Billing</p>
-            <h2 className="mt-1 text-2xl font-semibold text-[#0F1B33]">Invoices</h2>
-          </div>
+          <div />
           <button onClick={() => setModalOpen(true)} className="flex items-center gap-2 rounded-2xl bg-amber-500 px-4 py-2.5 text-sm font-semibold text-black transition hover:bg-amber-400 sm:px-5 sm:py-3">
             <Plus className="h-4 w-4" /> New Invoice
           </button>

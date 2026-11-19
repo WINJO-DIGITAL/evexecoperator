@@ -109,7 +109,7 @@ export default function TodayPage() {
     reply: { label: "Accept or decline", icon: MessageSquareReply, cls: "bg-amber-50 text-amber-700 border-amber-200" },
     driver: { label: "No driver", icon: UserX, cls: "bg-red-50 text-red-700 border-red-200" },
     unpaid: { label: "Unpaid", icon: CreditCard, cls: "bg-violet-50 text-violet-700 border-violet-200" },
-    finish: { label: "Mark Completed", icon: Flag, cls: "bg-slate-100 text-slate-700 border-slate-300" },
+    finish: { label: "Awaiting completion", icon: Flag, cls: "bg-slate-100 text-slate-700 border-slate-300" },
   };
 
   return (
