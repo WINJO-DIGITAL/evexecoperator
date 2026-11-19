@@ -378,7 +378,7 @@ function BookingCard({ booking, onSelect, drivers = [], onAssign, onRespond, onS
         <div className="w-14 flex-shrink-0">
           <p className={`text-lg font-semibold leading-none tracking-tight ${isDone ? "text-slate-400" : "text-[#0F1B33]"}`}>{booking.time}</p>
           {booking.flight && booking.flight !== "—" && (
-            <p className="mt-1.5 flex items-center gap-0.5 text-[10px] font-medium text-slate-500"><Plane className="h-2.5 w-2.5" />{booking.flight}</p>
+            <p className="mt-1.5 flex items-center gap-0.5 text-[10px] font-medium text-slate-500"><Plane className="h-2.5 w-2.5 text-[#A07D32]" />{booking.flight}</p>
           )}
         </div>
 
@@ -424,7 +424,7 @@ function BookingCard({ booking, onSelect, drivers = [], onAssign, onRespond, onS
                 aria-label={`Call ${booking.customer}`}
                 className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition active:scale-95"
               >
-                <Phone className="h-3.5 w-3.5" />
+                <Phone className="h-3.5 w-3.5 text-[#A07D32]" />
               </a>
             )}
             {isPartnerOpenJob(booking, drivers) && (
@@ -505,7 +505,7 @@ function DesktopRow({ booking, selected, onSelect, drivers, onAssign, onStatus, 
       <div>
         <p className={`text-lg font-semibold leading-none tracking-tight ${isDone ? "text-slate-400" : "text-[#0F1B33]"}`}>{booking.time}</p>
         {booking.flight && booking.flight !== "—" && (
-          <p className="mt-1.5 flex items-center gap-0.5 text-[11px] font-medium text-slate-500"><Plane className="h-3 w-3" />{booking.flight}</p>
+          <p className="mt-1.5 flex items-center gap-0.5 text-[11px] font-medium text-slate-500"><Plane className="h-3 w-3 text-[#A07D32]" />{booking.flight}</p>
         )}
       </div>
       <div className="min-w-0">
@@ -522,7 +522,7 @@ function DesktopRow({ booking, selected, onSelect, drivers, onAssign, onStatus, 
               title={booking.phone}
               className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border border-slate-200 text-slate-500 opacity-70 transition hover:border-amber-300 hover:text-amber-700 group-hover:opacity-100"
             >
-              <Phone className="h-3 w-3" />
+              <Phone className="h-3 w-3 text-[#A07D32]" />
             </a>
           )}
         </div>
@@ -563,7 +563,7 @@ function DesktopRow({ booking, selected, onSelect, drivers, onAssign, onStatus, 
           </>
         )}
       </div>
-      <ChevronRight className="h-4 w-4 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-slate-500" />
+      <ChevronRight className="h-4 w-4 text-[#A07D32] transition group-hover:translate-x-0.5 group-hover:text-slate-500" />
     </li>
   );
 }
@@ -712,7 +712,7 @@ export default function BookingsList() {
               <div className="flex min-w-0 flex-col gap-2 sm:gap-3 lg:flex-1 lg:flex-row-reverse lg:items-center lg:justify-between">
                 {/* Search input — always shown on desktop; toggled on mobile */}
                 <div className={`relative ${searchOpen ? "block" : "hidden"} sm:block`}>
-                  <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-600" />
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#A07D32]" />
                   <input
                     ref={searchRef}
                     value={search}
@@ -768,7 +768,7 @@ export default function BookingsList() {
                         : "border-slate-200 text-slate-500"
                     }`}
                   >
-                    {searchOpen ? <X className="h-3.5 w-3.5" /> : <Search className="h-3.5 w-3.5" />}
+                    {searchOpen ? <X className="h-3.5 w-3.5" /> : <Search className="h-3.5 w-3.5 text-[#A07D32]" />}
                   </button>
                 </div>
               </div>

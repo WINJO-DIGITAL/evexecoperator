@@ -164,7 +164,7 @@ function QuoteRequestCard({
           <div>
             <p className="font-semibold text-slate-800 text-sm leading-tight">{quote.customer_name}</p>
             <div className="flex items-start gap-1.5 mt-1">
-              <MapPin size={12} className="text-amber-600/70 mt-0.5 shrink-0" />
+              <MapPin size={12} className="text-[#A07D32] mt-0.5 shrink-0" />
               <p className="text-xs text-slate-500 leading-relaxed">{route}</p>
             </div>
           </div>
@@ -175,17 +175,17 @@ function QuoteRequestCard({
         <div className="flex items-center gap-3 flex-wrap">
           {dateLabel && (
             <span className="flex items-center gap-1 text-xs text-slate-500">
-              <Calendar size={11} className="text-amber-600/70" /> {dateLabel}
+              <Calendar size={11} className="text-[#A07D32]" /> {dateLabel}
             </span>
           )}
           {timeLabel && (
             <span className="flex items-center gap-1 text-xs text-slate-500">
-              <Clock size={11} className="text-amber-600/70" /> {timeLabel}
+              <Clock size={11} className="text-[#A07D32]" /> {timeLabel}
             </span>
           )}
           {quote.passengers != null && (
             <span className="flex items-center gap-1 text-xs text-slate-500">
-              <Users size={11} className="text-amber-600/70" /> {quote.passengers}
+              <Users size={11} className="text-[#A07D32]" /> {quote.passengers}
             </span>
           )}
         </div>
@@ -209,7 +209,7 @@ function QuoteRequestCard({
 
         {/* Phone */}
         <div className="flex items-center gap-1.5">
-          <Phone size={11} className="text-amber-600/70 shrink-0" />
+          <Phone size={11} className="text-[#A07D32] shrink-0" />
           <span className="text-xs text-slate-500">{quote.phone}</span>
           {quote.contact_method && (
             <span className="text-[10px] text-slate-600 ml-1">via {quote.contact_method}</span>
@@ -219,7 +219,7 @@ function QuoteRequestCard({
         {/* Notes */}
         {quote.notes && (
           <div className="flex items-start gap-1.5">
-            <MessageSquare size={11} className="text-amber-600/70 shrink-0 mt-0.5" />
+            <MessageSquare size={11} className="text-[#A07D32] shrink-0 mt-0.5" />
             <span className="text-xs text-slate-500 italic">{quote.notes}</span>
           </div>
         )}
@@ -328,12 +328,12 @@ function ContactMessageCard({
           <div className="flex items-center gap-3 mt-1 flex-wrap">
             {message.phone && (
               <span className="flex items-center gap-1 text-xs text-slate-500">
-                <Phone size={11} className="text-amber-600/70" /> {message.phone}
+                <Phone size={11} className="text-[#A07D32]" /> {message.phone}
               </span>
             )}
             {message.email && (
               <span className="flex items-center gap-1 text-xs text-slate-500">
-                <Mail size={11} className="text-amber-600/70" /> {message.email}
+                <Mail size={11} className="text-[#A07D32]" /> {message.email}
               </span>
             )}
           </div>

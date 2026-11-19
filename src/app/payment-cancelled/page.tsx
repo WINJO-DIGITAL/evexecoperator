@@ -14,7 +14,7 @@ export default async function PaymentCancelledPage({
   return (
     <main className="flex min-h-screen flex-col items-center justify-center px-6 text-center">
       <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-400/10">
-        <XCircle className="h-9 w-9 text-slate-400" />
+        <XCircle className="h-9 w-9 text-[#A07D32]" />
       </div>
       <h1 className="mt-6 text-2xl font-semibold text-white">Payment Cancelled</h1>
       <p className="mt-2 max-w-sm text-sm text-slate-400">

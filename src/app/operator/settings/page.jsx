@@ -295,7 +295,7 @@ function PushDeviceRow() {
   return (
     <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
       <div className="flex items-center gap-3">
-        <BellRing className="h-4 w-4 flex-shrink-0 text-amber-600" />
+        <BellRing className="h-4 w-4 flex-shrink-0 text-[#A07D32]" />
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium text-[#0F1B33]">Push notifications on this device</p>
           <p className="mt-0.5 text-[11px] leading-relaxed text-slate-500">
@@ -350,7 +350,7 @@ function NotificationCenter() {
         <div className="space-y-2">
           {channels.map((c) => (
             <div key={c.key} className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
-              <c.icon className="h-4 w-4 flex-shrink-0 text-slate-500" />
+              <c.icon className="h-4 w-4 flex-shrink-0 text-[#A07D32]" />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-[#0F1B33]">{c.label}</p>
                 {c.note && <p className="text-[11px] text-slate-600">{c.note}</p>}
@@ -781,7 +781,7 @@ function PortalRow({ portalKey, toast }) {
     <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4 sm:p-5">
       <div className="flex items-start gap-3">
         <div className="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl border border-slate-100 bg-slate-50">
-          <Icon className="h-4 w-4 text-amber-600" />
+          <Icon className="h-4 w-4 text-[#A07D32]" />
         </div>
         <div className="min-w-0 flex-1">
           <p className="font-medium text-[#0F1B33]">{portal.label}</p>
@@ -818,7 +818,7 @@ function IntegrationItem({ name, description, connected, onAction, actionLabel }
           {connected ? (
             <CheckCircle2 className="h-4 w-4 text-emerald-600" />
           ) : (
-            <Circle className="h-4 w-4 text-slate-600" />
+            <Circle className="h-4 w-4 text-[#A07D32]" />
           )}
         </div>
         <div>

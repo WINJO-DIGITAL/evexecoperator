@@ -72,7 +72,7 @@ export default function BookingCard({ booking, drivers, notification, unavailabl
     <div className="rounded-2xl border border-slate-200 bg-white shadow-card overflow-hidden transition-all hover:border-gold/20">
       <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
         <div className="flex items-center gap-2">
-          <Clock size={14} className="text-amber-600/80" />
+          <Clock size={14} className="text-[#A07D32]" />
           <span className="text-xl font-bold text-slate-800 tracking-tight">{time}</span>
           {booking.priority && (
             <span className="flex items-center gap-0.5 text-[10px] font-bold text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded-full">
@@ -91,7 +91,7 @@ export default function BookingCard({ booking, drivers, notification, unavailabl
         <div>
           <p className="font-semibold text-slate-800 text-sm leading-tight">{booking.customer_name}</p>
           <div className="flex items-start gap-1.5 mt-1">
-            <MapPin size={12} className="text-amber-600/70 mt-0.5 shrink-0" />
+            <MapPin size={12} className="text-[#A07D32] mt-0.5 shrink-0" />
             <p className="text-xs text-slate-500 leading-relaxed">{route}</p>
           </div>
         </div>
@@ -167,10 +167,10 @@ export default function BookingCard({ booking, drivers, notification, unavailabl
             {booking.travel_date && <DetailRow label="Date" value={displayDate(booking.travel_date) ?? booking.travel_date} />}
             {booking.journey_type && <DetailRow label="Journey" value={booking.journey_type.replace(/_/g, " ")} />}
             {booking.vehicle_type && <DetailRow label="Vehicle" value={booking.vehicle_type} />}
-            {booking.customer_phone && <div className="flex items-center gap-1.5"><Phone size={11} className="text-amber-600/70 shrink-0" /><span className="text-xs text-slate-500">{booking.customer_phone}</span></div>}
+            {booking.customer_phone && <div className="flex items-center gap-1.5"><Phone size={11} className="text-[#A07D32] shrink-0" /><span className="text-xs text-slate-500">{booking.customer_phone}</span></div>}
             {booking.customer_email && <DetailRow label="Email" value={booking.customer_email} />}
-            {(booking.notes || booking.operator_note) && <div className="flex items-start gap-1.5"><MessageSquare size={11} className="text-amber-600/70 shrink-0 mt-0.5" /><span className="text-xs text-slate-500 italic">{booking.notes || booking.operator_note}</span></div>}
-            {notification?.lastSent && <div className="flex items-center gap-1.5"><Bell size={11} className="text-amber-600/70 shrink-0" /><span className="text-xs text-slate-500">{NOTIFICATION_TYPE_LABELS[notification.lastSent.type] ?? notification.lastSent.type} sent {formatDistanceToNow(parseISO(notification.lastSent.sent_at), { addSuffix: true })}</span></div>}
+            {(booking.notes || booking.operator_note) && <div className="flex items-start gap-1.5"><MessageSquare size={11} className="text-[#A07D32] shrink-0 mt-0.5" /><span className="text-xs text-slate-500 italic">{booking.notes || booking.operator_note}</span></div>}
+            {notification?.lastSent && <div className="flex items-center gap-1.5"><Bell size={11} className="text-[#A07D32] shrink-0" /><span className="text-xs text-slate-500">{NOTIFICATION_TYPE_LABELS[notification.lastSent.type] ?? notification.lastSent.type} sent {formatDistanceToNow(parseISO(notification.lastSent.sent_at), { addSuffix: true })}</span></div>}
             {notification && notification.pendingCount > 0 && <div className="flex items-center gap-1.5 text-xs text-amber-600 bg-amber-100 px-3 py-1.5 rounded-lg"><Bell size={11} />{notification.pendingCount} notification{notification.pendingCount === 1 ? "" : "s"} pending</div>}
             {notification && notification.failedCount > 0 && <div className="flex items-center gap-1.5 text-xs text-red-600 bg-red-100 px-3 py-1.5 rounded-lg"><AlertTriangle size={11} />{notification.failedCount} notification{notification.failedCount === 1 ? "" : "s"} failed to send</div>}
             {(booking.pob_at || booking.completed_at || (proofs && proofs.length > 0)) && (

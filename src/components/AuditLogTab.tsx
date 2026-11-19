@@ -27,7 +27,7 @@ export default function AuditLogTab({ entries, heading = "Activity Log" }: Props
 
       {entries.length === 0 ? (
         <div className="flex flex-col items-center py-12 text-slate-600">
-          <History size={32} className="mb-2 text-slate-700" />
+          <History size={32} className="mb-2 text-[#A07D32]" />
           <p className="text-sm">No activity yet</p>
         </div>
       ) : (
@@ -48,7 +48,7 @@ function AuditLogEntryCard({ entry }: { entry: DbAuditLogEntry }) {
     <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-card">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-1.5 min-w-0">
-          <Icon size={12} className="text-amber-600/80 shrink-0" />
+          <Icon size={12} className="text-[#A07D32] shrink-0" />
           <p className="text-sm font-semibold text-slate-700 truncate">{config.label}</p>
         </div>
         {when && <span className="text-[10px] text-slate-600 shrink-0 whitespace-nowrap">{when}</span>}
@@ -56,7 +56,7 @@ function AuditLogEntryCard({ entry }: { entry: DbAuditLogEntry }) {
 
       <div className="flex items-center gap-2 mt-1.5 flex-wrap">
         <ValueLabel field={entry.field} value={entry.old_value} />
-        <ArrowRight size={11} className="text-slate-600 shrink-0" />
+        <ArrowRight size={11} className="text-[#A07D32] shrink-0" />
         <ValueLabel field={entry.field} value={entry.new_value} />
       </div>
 

@@ -97,11 +97,11 @@ export default function SetupChecklist({ drivers, hasBookings }) {
         {(showDone ? steps : steps.filter((s) => !s.done)).map((s) => (
           <li key={s.key}>
             <Link href={s.href} className="flex items-center gap-3 px-4 py-3 transition hover:bg-slate-50 sm:px-5">
-              {s.done ? <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-emerald-500" /> : <Circle className="h-5 w-5 flex-shrink-0 text-slate-300" />}
+              {s.done ? <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-emerald-500" /> : <Circle className="h-5 w-5 flex-shrink-0 text-[#A07D32]" />}
               <span className={`flex-1 text-sm ${s.done ? "text-slate-400 line-through" : "text-[#0F1B33]"}`}>
                 {s.label}{s.optional && !s.done && <span className="ml-1.5 text-xs text-slate-400">(optional)</span>}
               </span>
-              {!s.done && <ChevronRight className="h-4 w-4 text-slate-300" />}
+              {!s.done && <ChevronRight className="h-4 w-4 text-[#A07D32]" />}
             </Link>
           </li>
         ))}

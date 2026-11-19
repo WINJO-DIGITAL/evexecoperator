@@ -16,7 +16,7 @@ const SEVERITY_STYLES: Record<string, { border: string; bg: string; text: string
     border: "border-amber-300",
     bg: "bg-amber-50",
     text: "text-amber-700",
-    icon: <AlertTriangle className="h-4 w-4 text-amber-600" />,
+    icon: <AlertTriangle className="h-4 w-4 text-[#A07D32]" />,
   },
   red: {
     border: "border-red-300",
@@ -80,7 +80,7 @@ export default function FlightVerificationCard({
       {verification && (
         <div className="mb-3 space-y-2 rounded-2xl border border-slate-100 bg-slate-50 p-4 text-sm">
           <div className="flex items-center gap-2 text-[#0F1B33]">
-            <Plane className="h-4 w-4 flex-shrink-0 text-slate-500" />
+            <Plane className="h-4 w-4 flex-shrink-0 text-[#A07D32]" />
             <span className="font-semibold">{verification.flight_number}</span>
             {(verification.departure_iata || verification.arrival_iata) && (
               <span className="text-slate-500">

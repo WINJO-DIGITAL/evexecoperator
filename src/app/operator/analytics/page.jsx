@@ -406,7 +406,7 @@ export default function Analytics() {
         {/* Status breakdown */}
         <div className="card p-5 sm:p-6">
           <div className="mb-6 flex items-center gap-3">
-            <PieChart className="h-4 w-4 text-amber-600" />
+            <PieChart className="h-4 w-4 text-[#A07D32]" />
             <div>
               <h2 className="text-lg font-semibold text-[#0F1B33]">Jobs by Status</h2>
             </div>
@@ -440,7 +440,7 @@ export default function Analytics() {
         {/* Driver leaderboard */}
         <div className="card p-5 sm:p-6">
           <div className="mb-6 flex items-center gap-3">
-            <Trophy className="h-4 w-4 text-amber-600" />
+            <Trophy className="h-4 w-4 text-[#A07D32]" />
             <div>
               <h2 className="text-lg font-semibold text-[#0F1B33]">Driver Leaderboard</h2>
             </div>

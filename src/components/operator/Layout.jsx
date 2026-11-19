@@ -161,7 +161,7 @@ function AccountMenu({ user, tenant, onSignOut }) {
           <span className="block max-w-[10rem] truncate text-sm font-medium text-[#0F1B33]">{display}</span>
           <span className="block text-xs text-slate-500">{role}</span>
         </span>
-        <ChevronDown className="hidden h-3.5 w-3.5 text-slate-400 lg:block" />
+        <ChevronDown className="hidden h-3.5 w-3.5 text-[#A07D32] lg:block" />
       </button>
       {open && (
         <div role="menu" className="absolute right-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
@@ -171,10 +171,10 @@ function AccountMenu({ user, tenant, onSignOut }) {
             <p className="mt-1 text-xs text-slate-500">{role}{tenant?.name ? ` · ${tenant.name}` : ""}</p>
           </div>
           <Link role="menuitem" href="/operator/settings" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 py-3 text-sm text-slate-700 transition hover:bg-slate-50">
-            <SettingsIcon className="h-4 w-4 text-slate-500" /> Settings
+            <SettingsIcon className="h-4 w-4 text-[#A07D32]" /> Settings
           </Link>
           <Link role="menuitem" href="/operator/settings?section=security" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 py-3 text-sm text-slate-700 transition hover:bg-slate-50">
-            <KeyRound className="h-4 w-4 text-slate-500" /> Change password
+            <KeyRound className="h-4 w-4 text-[#A07D32]" /> Change password
           </Link>
           <button role="menuitem" onClick={() => { setOpen(false); onSignOut?.(); }} className="flex w-full items-center gap-3 border-t border-slate-100 px-4 py-3 text-left text-sm text-red-600 transition hover:bg-red-50">
             <LogOut className="h-4 w-4" /> Sign out
@@ -304,7 +304,7 @@ export default function Layout({ children, onSignOut }) {
             {searchOpen && (
               <form onSubmit={submitSearch} className="flex flex-1 items-center gap-2 sm:hidden">
                 <div className="glass flex flex-1 items-center gap-3 rounded-2xl px-4 py-3">
-                  <Search className="h-4 w-4 flex-shrink-0 text-slate-500" />
+                  <Search className="h-4 w-4 flex-shrink-0 text-[#A07D32]" />
                   <input
                     autoFocus
                     type="search"
@@ -329,7 +329,7 @@ export default function Layout({ children, onSignOut }) {
             {/* Desktop centre search */}
             <form onSubmit={submitSearch} className="hidden flex-1 justify-center xl:flex">
               <div className="glass flex w-full max-w-lg items-center gap-3 rounded-2xl px-4 py-3">
-                <Search className="h-4 w-4 text-slate-500" />
+                <Search className="h-4 w-4 text-[#A07D32]" />
                 <input
                   type="search"
                   enterKeyHint="search"
@@ -363,7 +363,7 @@ export default function Layout({ children, onSignOut }) {
                   className="glass flex h-10 w-10 items-center justify-center rounded-2xl xl:hidden"
                   title="Search"
                 >
-                  <Search className="h-4 w-4 text-slate-600" />
+                  <Search className="h-4 w-4 text-[#A07D32]" />
                 </button>
               )}
 
@@ -375,7 +375,7 @@ export default function Layout({ children, onSignOut }) {
                   aria-label={alertCount > 0 ? `New bookings — ${alertCount}` : "New bookings"}
                   title="Notifications"
                 >
-                  <Bell className="h-4 w-4 text-slate-600 sm:h-5 sm:w-5" />
+                  <Bell className="h-4 w-4 text-[#A07D32] sm:h-5 sm:w-5" />
                   {alertCount > 0 && (
                     <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
                       {alertCount > 9 ? "9+" : alertCount}

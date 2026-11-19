@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState, useCallback, useSyncExternalStore } from "react";
 import {
-  FileText, Plus, X, Printer, Trash2, Check, Send, CircleDollarSign, Clock,
+  FileText, Plus, X, Printer, Trash2, Check, Send,
   MapPin, ImageDown,
   Calendar, CreditCard, Gem, Phone, Mail, Globe, Loader2, Search,
 } from "lucide-react";
@@ -191,7 +191,7 @@ function JobPicker({ jobs, loading, invoiceFor, onPick, onOpenInvoice }) {
     <div>
       <p className={labelCls}>Find the job</p>
       <div className="relative">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#A07D32]" />
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
@@ -1034,16 +1034,13 @@ export default function InvoicesPage() {
         {/* Stats */}
         <div className="grid min-w-0 grid-cols-3 gap-3 sm:gap-4">
           {[
-            { label: "Outstanding", value: money(stats.outstanding), icon: Clock, color: "text-amber-600" },
-            { label: "Paid", value: money(stats.paid), icon: CircleDollarSign, color: "text-emerald-600" },
-            { label: "Unpaid", value: stats.unpaidCount, icon: FileText, color: "text-[#0F1B33]" },
+            { label: "Outstanding", value: money(stats.outstanding) },
+            { label: "Paid", value: money(stats.paid) },
+            { label: "Unpaid", value: stats.unpaidCount },
           ].map((s) => (
-            <div key={s.label} className="card min-w-0 p-3 sm:p-5">
-              <div className="mb-2 flex items-center justify-between">
-                <s.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${s.color}`} />
-              </div>
-              <p className={`truncate text-lg font-bold sm:text-2xl ${s.color}`}>{s.value}</p>
-              <p className="mt-1 truncate text-[11px] text-slate-500 sm:text-sm">{s.label}</p>
+            <div key={s.label} className="card min-w-0 px-3 py-3 sm:px-5 sm:py-4">
+              <p className="truncate text-xs text-slate-500">{s.label}</p>
+              <p className="mt-1 truncate text-lg font-semibold leading-none tabular-nums text-[#0F1B33] sm:text-2xl">{s.value}</p>
             </div>
           ))}
         </div>
@@ -1058,7 +1055,7 @@ export default function InvoicesPage() {
 
         {/* Search + filter chips */}
         <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#A07D32]" />
           <input value={search} onChange={(e) => setSearch(e.target.value)} className={inputCls + " pl-9"}
             placeholder="Search invoices: number, job ref, customer, phone, address or date" />
         </div>
@@ -1078,7 +1075,7 @@ export default function InvoicesPage() {
             <p className="py-10 text-center text-sm text-slate-600">Loading invoices…</p>
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-14">
-              <FileText className="mb-3 h-8 w-8 text-slate-700" />
+              <FileText className="mb-3 h-8 w-8 text-[#A07D32]" />
               <p className="text-sm text-slate-600">{invoices.length === 0 ? "No invoices yet." : search.trim() ? "No invoices match your search." : `No ${filter.toLowerCase()} invoices.`}</p>
               {invoices.length === 0 && (
                 <button onClick={() => setModalOpen(true)} className="mt-4 rounded-xl border border-slate-200 px-4 py-2 text-xs text-slate-500 hover:text-amber-600">
@@ -1092,7 +1089,7 @@ export default function InvoicesPage() {
                 <button key={inv.id} onClick={() => setPreview(inv)}
                   className="flex w-full items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-3 text-left transition hover:border-amber-400/20 hover:bg-slate-50">
                   <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-amber-400/10">
-                    <FileText className="h-4 w-4 text-amber-600" />
+                    <FileText className="h-4 w-4 text-[#A07D32]" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold text-[#0F1B33]">{inv.customer}</p>

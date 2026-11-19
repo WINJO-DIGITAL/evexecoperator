@@ -76,7 +76,7 @@ function CustomerPicker({ customers, onPick }) {
 
   return (
     <div ref={ref} className="relative mb-4">
-      <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+      <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#A07D32]" />
       <input
         value={q}
         onChange={(e) => { setQ(e.target.value); setOpen(true); }}
@@ -168,7 +168,7 @@ function Select({ value, onChange, options, placeholder }) {
           </option>
         ))}
       </select>
-      <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+      <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#A07D32]" />
     </div>
   );
 }
@@ -522,7 +522,7 @@ export default function BookingModal({ open, onClose, onSubmit, initialValues, c
             <div>
               <label className="flex cursor-pointer items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
                 <span className="flex items-center gap-2 text-sm font-medium text-[#0F1B33]">
-                  <ArrowLeftRight className="h-4 w-4 text-amber-600" />
+                  <ArrowLeftRight className="h-4 w-4 text-[#A07D32]" />
                   Add return journey
                 </span>
                 <input

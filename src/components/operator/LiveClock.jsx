@@ -13,7 +13,7 @@ export default function LiveClock() {
 
   return (
     <div className="glass flex items-center gap-2 rounded-2xl px-4 py-3">
-      <Clock3 className="h-4 w-4 text-amber-600" />
+      <Clock3 className="h-4 w-4 text-[#A07D32]" />
       <span className="text-sm font-medium text-[#0F1B33] tracking-wide">
         {time.toLocaleTimeString("en-GB")}
       </span>

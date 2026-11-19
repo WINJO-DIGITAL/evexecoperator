@@ -128,10 +128,10 @@ export default function TeamSettings({ toast }) {
 
       {state.canManage ? (
         <form onSubmit={invite} className="space-y-3 rounded-2xl border border-amber-400/20 bg-amber-400/[0.04] p-4">
-          <p className="flex items-center gap-2 text-sm font-semibold text-[#0F1B33]"><UserPlus className="h-4 w-4 text-amber-600" /> Invite someone</p>
+          <p className="flex items-center gap-2 text-sm font-semibold text-[#0F1B33]"><UserPlus className="h-4 w-4 text-[#A07D32]" /> Invite someone</p>
           <div className="flex flex-col gap-2 sm:flex-row">
             <label className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3">
-              <Mail className="h-4 w-4 flex-shrink-0 text-slate-400" />
+              <Mail className="h-4 w-4 flex-shrink-0 text-[#A07D32]" />
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@example.com" aria-label="Email" className="min-w-0 flex-1 bg-transparent py-2.5 text-sm outline-none" />
             </label>
             <select value={role} onChange={(e) => setRole(e.target.value)} aria-label="Role" className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm">

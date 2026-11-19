@@ -99,7 +99,7 @@ export default function StatusActionMenu({ bookingId, currentStatus, onUpdate, d
                   onClick={() => applyStatus(reverse)}
                   className="flex w-full items-center gap-2.5 px-4 py-3 text-xs text-slate-700 transition hover:bg-slate-100"
                 >
-                  <RotateCcw className="h-3.5 w-3.5 text-amber-600" />
+                  <RotateCcw className="h-3.5 w-3.5 text-[#A07D32]" />
                   {reverseLabel(currentStatus)}
                 </button>
               )}

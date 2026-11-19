@@ -80,7 +80,7 @@ export default function DriverDropdown({
           }
         `}
       >
-        <User size={13} className="text-amber-600/80 shrink-0" />
+        <User size={13} className="text-[#A07D32] shrink-0" />
         <span className={selected ? "text-slate-700" : "text-slate-500"}>
           {selected ? selected.name : "Unassigned"}
         </span>

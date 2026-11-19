@@ -50,7 +50,7 @@ function BookingRow({ b, onOpen, aside, action }) {
         <div className="mt-1.5 flex flex-wrap items-center gap-2 sm:hidden">{aside}{action}</div>
       </div>
       <div className="hidden flex-shrink-0 flex-col items-end gap-1 sm:flex">{aside}{action}</div>
-      <ChevronRight className="hidden h-4 w-4 flex-shrink-0 text-slate-300 sm:block" />
+      <ChevronRight className="hidden h-4 w-4 flex-shrink-0 text-[#A07D32] sm:block" />
     </button>
   );
 }

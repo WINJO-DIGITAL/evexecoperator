@@ -33,7 +33,7 @@ export default function TextsToSend() {
     <section className="card overflow-hidden">
       <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 sm:px-5">
         <h2 className="flex items-center gap-2 text-base font-semibold text-[#0F1B33]">
-          <MessageSquareText className="h-4 w-4 text-amber-600" /> Texts to send
+          <MessageSquareText className="h-4 w-4 text-[#A07D32]" /> Texts to send
         </h2>
         <span className="text-xs text-slate-500">{tasks.length}</span>
       </div>

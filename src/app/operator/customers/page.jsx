@@ -113,7 +113,7 @@ export default function CustomersPage() {
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 sm:max-w-md">
-          <Search className="h-4 w-4 flex-shrink-0 text-slate-400" />
+          <Search className="h-4 w-4 flex-shrink-0 text-[#A07D32]" />
           <input
             type="search"
             value={q}
@@ -158,7 +158,7 @@ export default function CustomersPage() {
                   <span className="hidden text-sm text-slate-600 lg:block">{c.lastTrip ? fmtDate(c.lastTrip) : "—"}</span>
                   <span className="hidden text-sm text-slate-600 lg:block">{c.nextTrip ? `${fmtDate(c.nextTrip.travelDate)} ${c.nextTrip.time}` : "—"}</span>
                   <span className={`text-right text-sm ${c.unpaid ? "font-medium text-red-600" : "text-slate-400"}`}>{c.unpaid ? money(c.unpaid) : <span className="hidden lg:inline">—</span>}</span>
-                  <ChevronRight className="hidden h-4 w-4 text-slate-300 lg:block" />
+                  <ChevronRight className="hidden h-4 w-4 text-[#A07D32] lg:block" />
                 </button>
               </li>
             ))}

@@ -327,7 +327,7 @@ function DriverMenu({ driver, access, onClose, onUpdateStatus, onAssignJob, onEd
         onClick={onClose}
         className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-600 transition hover:bg-slate-100"
       >
-        <Phone className="h-3.5 w-3.5 text-slate-500" />
+        <Phone className="h-3.5 w-3.5 text-[#A07D32]" />
         Call
       </a>
       {driver.email && (
@@ -336,7 +336,7 @@ function DriverMenu({ driver, access, onClose, onUpdateStatus, onAssignJob, onEd
           onClick={onClose}
           className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-600 transition hover:bg-slate-100"
         >
-          <Mail className="h-3.5 w-3.5 text-slate-500" />
+          <Mail className="h-3.5 w-3.5 text-[#A07D32]" />
           Email
         </a>
       )}
@@ -344,7 +344,7 @@ function DriverMenu({ driver, access, onClose, onUpdateStatus, onAssignJob, onEd
         onClick={() => { onAssignJob(driver); onClose(); }}
         className="flex w-full items-center gap-2.5 px-4 py-2.5 text-xs text-slate-600 transition hover:bg-slate-100"
       >
-        <Car className="h-3.5 w-3.5 text-slate-500" />
+        <Car className="h-3.5 w-3.5 text-[#A07D32]" />
         Assign Job
       </button>
       {driver.kind !== "partner" && (
@@ -352,7 +352,7 @@ function DriverMenu({ driver, access, onClose, onUpdateStatus, onAssignJob, onEd
           onClick={() => { onInvite(driver); onClose(); }}
           className="flex w-full items-center gap-2.5 px-4 py-2.5 text-xs text-slate-600 transition hover:bg-slate-100"
         >
-          <Send className="h-3.5 w-3.5 text-slate-500" />
+          <Send className="h-3.5 w-3.5 text-[#A07D32]" />
           {access?.status === "active" ? "Send password link" : access?.status === "invited" ? "Resend invite" : "Invite to Driver App"}
         </button>
       )}
@@ -386,7 +386,7 @@ function DriverMenu({ driver, access, onClose, onUpdateStatus, onAssignJob, onEd
         onClick={() => { onEdit(driver); onClose(); }}
         className="flex w-full items-center gap-2.5 px-4 py-2.5 text-xs text-slate-600 transition hover:bg-slate-100"
       >
-        <Edit2 className="h-3.5 w-3.5 text-slate-500" />
+        <Edit2 className="h-3.5 w-3.5 text-[#A07D32]" />
         Edit Details
       </button>
       <button
@@ -433,7 +433,7 @@ function DriverCard({ driver, access, inviting, onAssignJob, onUpdateStatus, onE
             className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-600 transition hover:bg-slate-100 hover:text-slate-500"
             title="Driver options"
           >
-            <MoreVertical className="h-4 w-4" />
+            <MoreVertical className="h-4 w-4 text-[#A07D32]" />
           </button>
           {menuOpen && (
             <DriverMenu
@@ -462,7 +462,7 @@ function DriverCard({ driver, access, inviting, onAssignJob, onUpdateStatus, onE
       <div className="space-y-3 text-sm">
         {hasVal(driver.vehicle) && (
           <div className="flex items-center gap-2 text-slate-500">
-            <Car className="h-4 w-4 text-slate-400" />
+            <Car className="h-4 w-4 text-[#A07D32]" />
             {driver.vehicle}
           </div>
         )}
@@ -471,7 +471,7 @@ function DriverCard({ driver, access, inviting, onAssignJob, onUpdateStatus, onE
             href={`tel:${driver.phone}`}
             className="flex items-center gap-2 text-slate-500 transition hover:text-[#0F1B33]"
           >
-            <Phone className="h-4 w-4 text-slate-400" />
+            <Phone className="h-4 w-4 text-[#A07D32]" />
             {driver.phone}
           </a>
         )}
@@ -480,12 +480,12 @@ function DriverCard({ driver, access, inviting, onAssignJob, onUpdateStatus, onE
             href={`mailto:${driver.email}`}
             className="flex items-center gap-2 truncate text-slate-500 transition hover:text-[#0F1B33]"
           >
-            <Mail className="h-4 w-4 flex-shrink-0 text-slate-600" />
+            <Mail className="h-4 w-4 flex-shrink-0 text-[#A07D32]" />
             {driver.email}
           </a>
         )}
         <div className="flex items-center gap-2 text-slate-500">
-          <Clock className="h-4 w-4 text-slate-400" />
+          <Clock className="h-4 w-4 text-[#A07D32]" />
           {driver.job}
         </div>
       </div>
@@ -661,7 +661,7 @@ export default function DriversPage() {
               rel="noopener noreferrer"
               className="flex items-center gap-2 rounded-2xl border border-slate-200 px-4 py-2.5 text-sm text-slate-600 transition hover:border-amber-400/20 hover:text-amber-600"
             >
-              <ExternalLink className="h-4 w-4" />
+              <ExternalLink className="h-4 w-4 text-[#A07D32]" />
               <span className="hidden sm:inline">Driver Portal</span>
             </a>
             <button
@@ -692,7 +692,7 @@ export default function DriversPage() {
           ))}
           {drivers.length === 0 && (
             <div className="col-span-full flex flex-col items-center justify-center rounded-2xl border border-slate-100 bg-slate-50 py-16">
-              <Car className="mb-3 h-8 w-8 text-slate-700" />
+              <Car className="mb-3 h-8 w-8 text-[#A07D32]" />
               <p className="text-sm text-slate-600">No drivers in the fleet yet.</p>
               <button
                 onClick={() => setAddModal(true)}
@@ -752,7 +752,7 @@ export default function DriversPage() {
 
           {todayJobs.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-100 bg-slate-50 py-12">
-              <MapPin className="mb-3 h-8 w-8 text-slate-700" />
+              <MapPin className="mb-3 h-8 w-8 text-[#A07D32]" />
               <p className="text-sm text-slate-600">No pickups with a scheduled time for today.</p>
               <button
                 onClick={() => router.push("/operator/bookings")}

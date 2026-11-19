@@ -18,7 +18,7 @@ function Row({ icon: Icon, label, value, muted }) {
   if (!value) return null;
   return (
     <div className="flex items-start gap-3">
-      <Icon className="mt-0.5 h-4 w-4 flex-shrink-0 text-slate-600" />
+      <Icon className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#A07D32]" />
       <div>
         <p className="text-xs text-slate-600">{label}</p>
         <p className={`mt-0.5 text-sm ${muted ? "text-slate-500" : "text-[#0F1B33]"}`}>{value}</p>
@@ -110,7 +110,7 @@ function StatusPicker({ currentStatus, onUpdate }) {
                   onClick={() => handleSelect(reverse)}
                   className="flex w-full items-center gap-2.5 px-4 py-3 text-xs text-slate-700 transition hover:bg-slate-100"
                 >
-                  <RotateCcw className="h-3.5 w-3.5 text-amber-600" />
+                  <RotateCcw className="h-3.5 w-3.5 text-[#A07D32]" />
                   {reverseLabel(currentStatus)}
                 </button>
               )}
@@ -174,7 +174,7 @@ function DriverPicker({ currentDriverId, drivers, onAssign }) {
       >
         {pending ? (
           <>
-            <Loader2 className="h-4 w-4 animate-spin text-slate-500" />
+            <Loader2 className="h-4 w-4 animate-spin text-[#A07D32]" />
             <span className="flex-1 text-left text-slate-500">Assigning…</span>
           </>
         ) : current ? (
@@ -189,7 +189,7 @@ function DriverPicker({ currentDriverId, drivers, onAssign }) {
             <span className="flex-1 text-left font-medium">Assign a driver…</span>
           </>
         )}
-        <ChevronDown className="h-4 w-4 flex-shrink-0 text-slate-500" />
+        <ChevronDown className="h-4 w-4 flex-shrink-0 text-[#A07D32]" />
       </button>
       {open && !pending && (
         <div
@@ -788,7 +788,7 @@ export default function BookingDetailDrawer({
                 aria-label="Edit booking"
                 className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 text-slate-500 transition hover:bg-slate-100 hover:text-amber-600"
               >
-                <Edit3 className="h-4 w-4" />
+                <Edit3 className="h-4 w-4 text-[#A07D32]" />
               </button>
             )}
             <button
@@ -884,7 +884,7 @@ export default function BookingDetailDrawer({
               <div className="space-y-3">
                 {booking.phone && (
                   <div className="flex items-center gap-3">
-                    <Phone className="h-4 w-4 flex-shrink-0 text-slate-600" />
+                    <Phone className="h-4 w-4 flex-shrink-0 text-[#A07D32]" />
                     <div className="flex-1 min-w-0">
                       <p className="text-xs text-slate-600">Phone</p>
                       <div className="mt-0.5 flex flex-wrap items-center gap-2">
@@ -913,7 +913,7 @@ export default function BookingDetailDrawer({
                 )}
                 {booking.email && (
                   <div className="flex items-center gap-3">
-                    <Mail className="h-4 w-4 flex-shrink-0 text-slate-600" />
+                    <Mail className="h-4 w-4 flex-shrink-0 text-[#A07D32]" />
                     <div className="min-w-0">
                       <p className="text-xs text-slate-600">Email</p>
                       <a
@@ -951,7 +951,7 @@ export default function BookingDetailDrawer({
                 } />
                 <Row icon={PoundSterling} label="Price" value={isReturnLeg(booking) ? "Paid with the outbound booking" : booking.price} />
                 <div className="flex items-start gap-3">
-                  <CreditCard className="mt-0.5 h-4 w-4 flex-shrink-0 text-slate-600" />
+                  <CreditCard className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#A07D32]" />
                   <div>
                     <p className="text-xs text-slate-600">Payment</p>
                     <div className="mt-1.5 flex flex-wrap items-center gap-2">
@@ -1129,7 +1129,7 @@ export default function BookingDetailDrawer({
                 onClick={() => setEditMode(true)}
                 className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-[#0F1B33] transition hover:border-slate-300 hover:bg-slate-50"
               >
-                <Edit3 className="h-4 w-4 text-slate-500" />
+                <Edit3 className="h-4 w-4 text-[#A07D32]" />
                 Edit
               </button>
             )}
@@ -1139,7 +1139,7 @@ export default function BookingDetailDrawer({
                 onClick={() => onCreateReturn?.(booking)}
                 className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-[#0F1B33] transition hover:border-slate-300 hover:bg-slate-50"
               >
-                <RefreshCw className="h-4 w-4 text-slate-500" />
+                <RefreshCw className="h-4 w-4 text-[#A07D32]" />
                 Return
               </button>
             )}
@@ -1152,7 +1152,7 @@ export default function BookingDetailDrawer({
                   : "border-slate-200 bg-white text-[#0F1B33] hover:border-slate-300 hover:bg-slate-50"
               }`}
             >
-              <AlertTriangle className={`h-4 w-4 ${booking.priority ? "" : "text-slate-500"}`} />
+              <AlertTriangle className={`h-4 w-4 ${booking.priority ? "" : "text-[#A07D32]"}`} />
               Priority
             </button>
           </div>
