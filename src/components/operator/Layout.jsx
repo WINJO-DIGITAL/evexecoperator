@@ -295,8 +295,7 @@ export default function Layout({ children, onSignOut }) {
 
             {/* Page title — hidden when mobile search is open */}
             <div className={`min-w-0 flex-1 sm:flex-none ${searchOpen ? "hidden sm:block" : ""}`}>
-              <p className="text-xs uppercase tracking-[0.3em] text-amber-600">{meta.label}</p>
-              <h1 className="mt-1 text-xl font-semibold tracking-tight text-[#0F1B33] sm:text-3xl">
+              <h1 className="text-xl font-semibold tracking-tight text-[#0F1B33] sm:text-2xl">
                 {meta.title}
               </h1>
             </div>
@@ -352,7 +351,7 @@ export default function Layout({ children, onSignOut }) {
                 onClick={() => openNewBooking()}
                 title="New Booking"
                 aria-label="New Booking"
-                className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gold-gradient text-navy-900 shadow-gold-sm transition hover:shadow-gold-md active:scale-95 sm:h-12 sm:w-12"
+                className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-500 text-navy-900 transition hover:bg-amber-400 active:scale-95 sm:h-12 sm:w-12"
               >
                 <Plus className="h-5 w-5" strokeWidth={2.75} />
               </button>

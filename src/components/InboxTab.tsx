@@ -3,8 +3,6 @@
 import { useState } from "react";
 import { formatDistanceToNow, parseISO } from "date-fns";
 import {
-  Inbox,
-  PhoneMissed,
   Phone,
   Mail,
   MapPin,
@@ -53,18 +51,14 @@ export default function InboxTab({
       {/* Quote Requests */}
       <section className="space-y-2">
         <div className="flex items-center justify-between mb-1">
-          <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-            <Inbox size={16} className="text-amber-600/80" />
+          <h2 className="text-base font-semibold text-slate-900">
             Quote Requests
           </h2>
           <span className="text-xs text-slate-500">{newQuotes.length} new</span>
         </div>
 
         {newQuotes.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 rounded-2xl border border-dashed border-slate-200 text-slate-600">
-            <Inbox size={24} className="mb-2 text-slate-700" />
-            <p className="text-sm">No new quote requests</p>
-          </div>
+          <p className="py-2 text-sm text-slate-500">No new quote requests</p>
         ) : (
           newQuotes.map((quote) => (
             <QuoteRequestCard
@@ -81,8 +75,7 @@ export default function InboxTab({
       {/* Missed Calls */}
       <section className="space-y-2">
         <div className="flex items-center justify-between mb-1">
-          <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-            <PhoneMissed size={16} className="text-amber-600/80" />
+          <h2 className="text-base font-semibold text-slate-900">
             Missed Calls
           </h2>
           <button
@@ -94,10 +87,7 @@ export default function InboxTab({
         </div>
 
         {visibleCalls.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 rounded-2xl border border-dashed border-slate-200 text-slate-600">
-            <PhoneMissed size={24} className="mb-2 text-slate-700" />
-            <p className="text-sm">{showResolved ? "No missed calls" : "No unresolved missed calls"}</p>
-          </div>
+          <p className="py-2 text-sm text-slate-500">{showResolved ? "No missed calls" : "No unresolved missed calls"}</p>
         ) : (
           visibleCalls.map((call) => (
             <MissedCallCard
@@ -112,8 +102,7 @@ export default function InboxTab({
       {/* Contact Messages */}
       <section className="space-y-2">
         <div className="flex items-center justify-between mb-1">
-          <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-            <Mail size={16} className="text-amber-600/80" />
+          <h2 className="text-base font-semibold text-slate-900">
             Messages
           </h2>
           <button
@@ -125,10 +114,7 @@ export default function InboxTab({
         </div>
 
         {visibleMessages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 rounded-2xl border border-dashed border-slate-200 text-slate-600">
-            <Mail size={24} className="mb-2 text-slate-700" />
-            <p className="text-sm">{showRead ? "No messages" : "No new messages"}</p>
-          </div>
+          <p className="py-2 text-sm text-slate-500">{showRead ? "No messages" : "No new messages"}</p>
         ) : (
           visibleMessages.map((message) => (
             <ContactMessageCard

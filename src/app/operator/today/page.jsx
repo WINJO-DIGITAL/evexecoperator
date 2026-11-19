@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
-  AlertCircle, CheckCircle2, ChevronRight, Clock, CreditCard, Inbox, MessageSquareReply, UserX, Flag,
+  AlertCircle, ChevronRight, CreditCard, MessageSquareReply, UserX, Flag,
 } from "lucide-react";
 import { useBookings, ukDateDaysAgo } from "@/hooks/operator/useBookings";
 import { useDrivers } from "@/hooks/operator/useDrivers";
@@ -18,20 +18,16 @@ import { DONE_STATUSES as DONE, ON_ROAD_STATUSES, awaitingReply, needsDriver, un
 // Home screen: what needs the office now, today's jobs in time order, and
 // where each driver is in their day. Every row opens the booking drawer.
 
-function Tile({ icon: Icon, label, sub, value, tone, href }) {
+// A figure and what it counts. Colour only appears when the number needs action.
+function Tile({ label, sub, value, alert, href }) {
   const body = (
-    <div className="card flex items-center gap-3 p-4 sm:p-5">
-      <span className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl ${tone}`}>
-        <Icon className="h-5 w-5" />
-      </span>
-      <div className="min-w-0">
-        <p className="text-2xl font-semibold leading-none text-[#0F1B33]">{value}</p>
-        <p className="mt-1 text-xs leading-snug text-slate-500">{label}</p>
-        {sub && <p className="hidden text-[11px] leading-snug text-slate-400 sm:block">{sub}</p>}
-      </div>
+    <div className="card px-4 py-3.5">
+      <p className="text-xs text-slate-500">{label}</p>
+      <p className={`mt-1 text-2xl font-semibold leading-none tabular-nums ${alert && value > 0 ? "text-red-600" : "text-[#0F1B33]"}`}>{value}</p>
+      {sub && <p className="mt-1 text-xs text-slate-400">{sub}</p>}
     </div>
   );
-  return href ? <Link href={href} className="block transition hover:-translate-y-0.5">{body}</Link> : body;
+  return href ? <Link href={href} className="block transition hover:opacity-80">{body}</Link> : body;
 }
 
 function BookingRow({ b, onOpen, aside }) {
@@ -126,10 +122,10 @@ export default function TodayPage() {
       <SetupChecklist drivers={drivers} hasBookings={api.totalCount > 0 || bookings.length > 0} />
 
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        <Tile icon={Clock} label="Jobs today" sub={`£${view.revenue.toLocaleString("en-GB")}`} value={view.todays.length} tone="bg-amber-50 text-amber-600" href="/operator/bookings" />
-        <Tile icon={MessageSquareReply} label="To reply to" value={view.reply.length} tone="bg-amber-50 text-amber-600" />
-        <Tile icon={UserX} label="Need a driver" sub="next 48h" value={view.noDriver.length} tone="bg-red-50 text-red-600" />
-        <Tile icon={Inbox} label="Inbox" value={inbox.count} tone="bg-slate-100 text-slate-600" href="/operator/inbox" />
+        <Tile label="Jobs today" sub={view.revenue ? `£${view.revenue.toLocaleString("en-GB")}` : undefined} value={view.todays.length} href="/operator/bookings" />
+        <Tile label="To reply to" value={view.reply.length} />
+        <Tile label="Need a driver" sub="next 48 hours" value={view.noDriver.length} alert />
+        <Tile label="Inbox" value={inbox.count} href="/operator/inbox" />
       </div>
 
       <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
@@ -137,17 +133,13 @@ export default function TodayPage() {
           <TextsToSend />
           <section className="card overflow-hidden">
             <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 sm:px-5">
-              <h2 className="text-base font-semibold text-[#0F1B33]">Needs you</h2>
-              <span className="text-xs text-slate-500">{view.needs.length}</span>
+              <h2 className="text-sm font-semibold text-[#0F1B33]">Needs you</h2>
+              {view.needs.length > 0 && <span className="text-xs font-medium text-red-600">{view.needs.length}</span>}
             </div>
             {loading && bookings.length === 0 ? (
-              <p className="px-5 py-8 text-center text-sm text-slate-500">Loading…</p>
+              <p className="px-5 py-6 text-sm text-slate-500">Loading…</p>
             ) : view.needs.length === 0 ? (
-              <div className="flex flex-col items-center gap-2 px-5 py-8 text-center">
-                <CheckCircle2 className="h-6 w-6 text-emerald-500" />
-                <p className="text-sm font-medium text-[#0F1B33]">All clear</p>
-                <p className="text-xs text-slate-500">No requests to answer, no jobs without a driver, nothing unpaid.</p>
-              </div>
+              <p className="px-5 py-6 text-sm text-slate-500">Nothing needs you right now.</p>
             ) : (
               <div className="divide-y divide-slate-100">
                 {view.needs.map(({ b, kind }) => {
@@ -167,11 +159,11 @@ export default function TodayPage() {
 
           <section className="card overflow-hidden">
             <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 sm:px-5">
-              <h2 className="text-base font-semibold text-[#0F1B33]">Today · {fmtDate(today)}</h2>
+              <h2 className="text-sm font-semibold text-[#0F1B33]">Today <span className="font-normal text-slate-500">· {fmtDate(today)}</span></h2>
               <Link href="/operator/bookings" className="text-xs font-medium text-amber-600 hover:underline">All bookings</Link>
             </div>
             {view.todays.length === 0 ? (
-              <p className="px-5 py-8 text-center text-sm text-slate-500">{loading ? "Loading…" : "No pickups today."}</p>
+              <p className="px-5 py-6 text-sm text-slate-500">{loading ? "Loading…" : "No pickups today."}</p>
             ) : (
               <div className="divide-y divide-slate-100">
                 {view.todays.map((b) => (
@@ -192,14 +184,14 @@ export default function TodayPage() {
 
         <section className="card h-fit min-w-0 overflow-hidden">
           <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 sm:px-5">
-            <h2 className="text-base font-semibold text-[#0F1B33]">Drivers today</h2>
-            <Link href="/operator/drivers" className="text-xs font-medium text-amber-600 hover:underline">Drivers</Link>
+            <h2 className="text-sm font-semibold text-[#0F1B33]">Drivers</h2>
+            <Link href="/operator/drivers" className="text-xs font-medium text-amber-600 hover:underline">Manage</Link>
           </div>
           {view.driverDay.length === 0 ? (
             <p className="px-5 py-8 text-center text-sm text-slate-500">No drivers yet.</p>
           ) : (
             <ul className="divide-y divide-slate-100">
-              {view.driverDay.map(({ d, jobs, live, next }) => (
+              {view.driverDay.filter(({ jobs }) => jobs.length > 0).map(({ d, jobs, live, next }) => (
                 <li key={d.id} className="flex items-center gap-3 px-4 py-3 sm:px-5">
                   <span className={`h-2.5 w-2.5 flex-shrink-0 rounded-full ${live ? "bg-blue-500" : next ? "bg-amber-400" : "bg-emerald-500"}`} />
                   <div className="min-w-0 flex-1">
@@ -212,6 +204,11 @@ export default function TodayPage() {
                 </li>
               ))}
             </ul>
+          )}
+          {view.driverDay.some(({ jobs }) => jobs.length === 0) && (
+            <p className="border-t border-slate-100 px-4 py-3 text-xs text-slate-500 first:border-t-0 sm:px-5">
+              No jobs today: {view.driverDay.filter(({ jobs }) => jobs.length === 0).map(({ d }) => d.name).join(", ")}
+            </p>
           )}
           {view.noDriver.length > 0 && (
             <p className="flex items-center gap-2 border-t border-slate-100 bg-red-50/50 px-4 py-3 text-xs text-red-700 sm:px-5">

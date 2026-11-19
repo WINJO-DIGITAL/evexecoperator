@@ -48,6 +48,18 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Surfaces: flat white, hairline border, modest radius. */
+.card {
+  background: #fff;
+  border: 1px solid #e4e7ee;
+  border-radius: 14px;
+}
+.glass {
+  background: #fff;
+  border: 1px solid #e4e7ee;
+}
+.glass:hover { border-color: #cfd4de; }
+
 /* Custom scrollbar */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }

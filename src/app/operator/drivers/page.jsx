@@ -3,7 +3,7 @@
 import React, { useMemo, useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Car, Phone, CheckCircle2, Clock, UserX, MoreVertical, Plus, X,
+  Car, Phone, Clock, MoreVertical, Plus, X,
   User, Hash, Truck, MapPin, ExternalLink, Edit2, Trash2, Mail, Send, Handshake,
 } from "lucide-react";
 import { useDrivers } from "@/hooks/operator/useDrivers";
@@ -400,6 +400,8 @@ function DriverMenu({ driver, access, onClose, onUpdateStatus, onAssignJob, onEd
   );
 }
 
+const hasVal = (v) => v && v !== "—";
+
 // ── Driver Card ───────────────────────────────────────────────────────────────
 const ACCESS_CHIP = {
   partner: { label: "Trusted partner · no app", cls: "border-violet-200 bg-violet-50 text-violet-700" },
@@ -414,15 +416,15 @@ function DriverCard({ driver, access, inviting, onAssignJob, onUpdateStatus, onE
   const chip = ACCESS_CHIP[partner ? "partner" : access?.status];
 
   return (
-    <div className="card relative flex flex-col gap-5 p-6">
+    <div className="card relative flex flex-col gap-4 p-5">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-4">
-          <div className={`flex h-14 w-14 items-center justify-center rounded-2xl text-xl font-semibold ${partner ? "bg-violet-50 text-violet-600" : "bg-amber-400/10 text-amber-600"}`}>
-            {partner ? <Handshake className="h-6 w-6" /> : driver.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+          <div className={`flex h-11 w-11 items-center justify-center rounded-full text-sm font-semibold ${partner ? "bg-violet-50 text-violet-600" : "bg-slate-100 text-slate-700"}`}>
+            {partner ? <Handshake className="h-5 w-5" /> : driver.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
           </div>
           <div>
             <h3 className="font-semibold text-[#0F1B33]">{driver.name}</h3>
-            <p className="mt-0.5 text-xs text-slate-500">{driver.plate}</p>
+            {hasVal(driver.plate) && <p className="mt-0.5 text-xs text-slate-500">{driver.plate}</p>}
           </div>
         </div>
         <div className="relative">
@@ -458,17 +460,21 @@ function DriverCard({ driver, access, inviting, onAssignJob, onUpdateStatus, onE
       </div>
 
       <div className="space-y-3 text-sm">
-        <div className="flex items-center gap-2 text-slate-500">
-          <Car className="h-4 w-4 text-slate-600" />
-          {driver.vehicle}
-        </div>
-        <a
-          href={`tel:${driver.phone}`}
-          className="flex items-center gap-2 text-slate-500 transition hover:text-[#0F1B33]"
-        >
-          <Phone className="h-4 w-4 text-slate-600" />
-          {driver.phone}
-        </a>
+        {hasVal(driver.vehicle) && (
+          <div className="flex items-center gap-2 text-slate-500">
+            <Car className="h-4 w-4 text-slate-400" />
+            {driver.vehicle}
+          </div>
+        )}
+        {hasVal(driver.phone) && (
+          <a
+            href={`tel:${driver.phone}`}
+            className="flex items-center gap-2 text-slate-500 transition hover:text-[#0F1B33]"
+          >
+            <Phone className="h-4 w-4 text-slate-400" />
+            {driver.phone}
+          </a>
+        )}
         {driver.email && (
           <a
             href={`mailto:${driver.email}`}
@@ -479,7 +485,7 @@ function DriverCard({ driver, access, inviting, onAssignJob, onUpdateStatus, onE
           </a>
         )}
         <div className="flex items-center gap-2 text-slate-500">
-          <Clock className="h-4 w-4 text-slate-600" />
+          <Clock className="h-4 w-4 text-slate-400" />
           {driver.job}
         </div>
       </div>
@@ -487,7 +493,7 @@ function DriverCard({ driver, access, inviting, onAssignJob, onUpdateStatus, onE
       <div className="flex items-center justify-between border-t border-slate-100 pt-4">
         <div className="text-center">
           <p className="text-lg font-semibold text-[#0F1B33]">{driver.completedToday}</p>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-slate-600">Today</p>
+          <p className="text-xs text-slate-500">today</p>
         </div>
         <div className="flex gap-2">
           {!partner && access && access.status !== "active" && (
@@ -631,17 +637,14 @@ export default function DriversPage() {
         {/* Stats strip */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           {[
-            { label: "Total Drivers", value: drivers.length, icon: CheckCircle2, color: "text-[#0F1B33]" },
-            { label: "On Job", value: active, icon: Car, color: "text-blue-600" },
-            { label: "Available", value: available, icon: CheckCircle2, color: "text-emerald-600" },
-            { label: "Off Duty", value: offDuty < 0 ? 0 : offDuty, icon: UserX, color: "text-slate-500" },
+            { label: "Drivers", value: drivers.length },
+            { label: "On a job", value: active },
+            { label: "Available", value: available },
+            { label: "Off duty", value: offDuty < 0 ? 0 : offDuty },
           ].map((s) => (
-            <div key={s.label} className="card p-4 sm:p-5">
-              <div className="mb-2 flex items-center justify-between sm:mb-3">
-                <s.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${s.color}`} />
-              </div>
-              <p className={`text-2xl font-semibold sm:text-3xl ${s.color}`}>{s.value}</p>
-              <p className="mt-1 text-xs text-slate-500 sm:text-sm">{s.label}</p>
+            <div key={s.label} className="card px-4 py-3.5">
+              <p className="text-xs text-slate-500">{s.label}</p>
+              <p className="mt-1 text-2xl font-semibold leading-none tabular-nums text-[#0F1B33]">{s.value}</p>
             </div>
           ))}
         </div>
@@ -649,8 +652,7 @@ export default function DriversPage() {
         {/* Section header + Add Driver */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-xs uppercase tracking-[0.28em] text-amber-600">Fleet</p>
-            <h2 className="mt-1 text-2xl font-semibold text-[#0F1B33]">Drivers</h2>
+            <h2 className="text-lg font-semibold text-[#0F1B33]">Drivers</h2>
           </div>
           <div className="flex items-center gap-2">
             <a
