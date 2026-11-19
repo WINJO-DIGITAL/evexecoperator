@@ -20,7 +20,7 @@ function Row({ icon: Icon, label, value, muted }) {
     <div className="flex items-start gap-3">
       <Icon className="mt-0.5 h-4 w-4 flex-shrink-0 text-slate-600" />
       <div>
-        <p className="text-[10px] uppercase tracking-[0.2em] text-slate-600">{label}</p>
+        <p className="text-xs text-slate-600">{label}</p>
         <p className={`mt-0.5 text-sm ${muted ? "text-slate-500" : "text-[#0F1B33]"}`}>{value}</p>
       </div>
     </div>
@@ -100,7 +100,7 @@ function StatusPicker({ currentStatus, onUpdate }) {
             </div>
           ) : (
             <>
-              <p className="px-4 pb-1 pt-2 text-[10px] uppercase tracking-[0.2em] text-slate-600">Correct status</p>
+              <p className="px-4 pb-1 pt-2 text-xs text-slate-600">Correct status</p>
               <p className="px-4 pb-2 text-[10px] leading-snug text-slate-600">
                 The driver advances the job in the driver app. Here you can only reverse a step or cancel.
               </p>
@@ -330,7 +330,7 @@ const editInputCls =
 function EditField({ label, icon: Icon, children }) {
   return (
     <div>
-      <p className="mb-1.5 flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-slate-500">
+      <p className="mb-1.5 flex items-center gap-1.5 text-xs text-slate-500">
         {Icon && <Icon className="h-3 w-3" />} {label}
       </p>
       {children}
@@ -399,7 +399,7 @@ function BookingEditForm({ booking, onSave, onCancel, onUpdatePaymentStatus, onU
 
   return (
     <div className="space-y-4 px-5 py-5 sm:px-6">
-      <p className="text-[10px] uppercase tracking-[0.28em] text-amber-600">Edit booking</p>
+      <p className="text-xs text-amber-600">Edit booking</p>
 
       <EditField label="Customer" icon={User}>
         <input className={editInputCls} value={form.customer} onChange={set("customer")} placeholder="Customer name" />
@@ -526,7 +526,7 @@ function RespondPanel({ booking, onRespond }) {
 
   return (
     <div className="flex-shrink-0 border-b border-slate-100 bg-amber-400/[0.06] px-5 py-4 sm:px-6">
-      <p className="text-[10px] uppercase tracking-[0.28em] text-amber-600">New website request</p>
+      <p className="text-xs text-amber-600">New website request</p>
       <p className="mt-1 text-sm text-slate-600">
         Accept to confirm the job, or reject to decline. The customer is notified by email (SMS if there's no email).
       </p>
@@ -819,13 +819,13 @@ export default function BookingDetailDrawer({
           <div className="space-y-6 px-5 py-5 sm:px-6">
             {/* Contact */}
             <div>
-              <p className="mb-3 text-[10px] uppercase tracking-[0.28em] text-amber-600">Contact</p>
+              <p className="mb-3 text-xs text-amber-600">Contact</p>
               <div className="space-y-3">
                 {booking.phone && (
                   <div className="flex items-center gap-3">
                     <Phone className="h-4 w-4 flex-shrink-0 text-slate-600" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-[10px] uppercase tracking-[0.2em] text-slate-600">Phone</p>
+                      <p className="text-xs text-slate-600">Phone</p>
                       <div className="mt-0.5 flex flex-wrap items-center gap-2">
                         <p className="text-sm text-[#0F1B33]">{booking.phone}</p>
                         {phoneHref && (
@@ -854,7 +854,7 @@ export default function BookingDetailDrawer({
                   <div className="flex items-center gap-3">
                     <Mail className="h-4 w-4 flex-shrink-0 text-slate-600" />
                     <div className="min-w-0">
-                      <p className="text-[10px] uppercase tracking-[0.2em] text-slate-600">Email</p>
+                      <p className="text-xs text-slate-600">Email</p>
                       <a
                         href={`mailto:${booking.email}`}
                         className="mt-0.5 truncate text-sm text-blue-600 hover:underline"
@@ -870,7 +870,7 @@ export default function BookingDetailDrawer({
 
             {/* Journey */}
             <div>
-              <p className="mb-3 text-[10px] uppercase tracking-[0.28em] text-amber-600">Journey</p>
+              <p className="mb-3 text-xs text-amber-600">Journey</p>
               <div className="space-y-3">
                 <Row icon={MapPin} label="Route" value={booking.route} />
                 <Row icon={MapPin} label="Pickup address" value={booking.pickupLocation || booking.airport || null} />
@@ -892,7 +892,7 @@ export default function BookingDetailDrawer({
                 <div className="flex items-start gap-3">
                   <CreditCard className="mt-0.5 h-4 w-4 flex-shrink-0 text-slate-600" />
                   <div>
-                    <p className="text-[10px] uppercase tracking-[0.2em] text-slate-600">Payment</p>
+                    <p className="text-xs text-slate-600">Payment</p>
                     <div className="mt-1.5 flex flex-wrap items-center gap-2">
                       <PaymentBadge
                         paymentStatus={booking.paymentStatus ?? "Unpaid"}
@@ -909,7 +909,7 @@ export default function BookingDetailDrawer({
                     </p>
                     {onUpdatePaymentMethod && (
                       <div className="mt-3">
-                        <p className="mb-1.5 text-[10px] uppercase tracking-[0.2em] text-slate-600">Method</p>
+                        <p className="mb-1.5 text-xs text-slate-600">Method</p>
                         <PaymentMethodPicker
                           value={booking.paymentMethod ?? null}
                           onSelect={(m) => onUpdatePaymentMethod?.(booking.id, m)}
@@ -979,7 +979,7 @@ export default function BookingDetailDrawer({
             {/* Return journey (customer booked a return on the same request) */}
             {booking.returnJourney && (
               <div>
-                <p className="mb-3 text-[10px] uppercase tracking-[0.28em] text-amber-600">Return journey</p>
+                <p className="mb-3 text-xs text-amber-600">Return journey</p>
                 <div className="space-y-3">
                   <Row icon={RotateCcw} label="Return route" value={booking.returnRoute} />
                   <Row icon={Plane} label="Return flight" value={booking.returnFlight && booking.returnFlight !== "—" ? booking.returnFlight : null} />
@@ -991,7 +991,7 @@ export default function BookingDetailDrawer({
 
             {/* Driver */}
             <div>
-              <p className="mb-3 text-[10px] uppercase tracking-[0.28em] text-amber-600">Driver</p>
+              <p className="mb-3 text-xs text-amber-600">Driver</p>
               <DriverPicker
                 currentDriverId={booking.driverId}
                 drivers={drivers}
@@ -1002,7 +1002,7 @@ export default function BookingDetailDrawer({
             {/* Notes */}
             <div>
               <div className="mb-2 flex items-center justify-between">
-                <p className="text-[10px] uppercase tracking-[0.28em] text-amber-600">Notes</p>
+                <p className="text-xs text-amber-600">Notes</p>
                 {!editingNotes && (
                   <button
                     onClick={() => setEditingNotes(true)}
@@ -1137,7 +1137,7 @@ export default function BookingDetailDrawer({
             {deleteError && (
               <p className="mt-3 rounded-2xl border border-red-400/20 bg-red-400/10 px-4 py-3 text-xs text-red-600">{deleteError}</p>
             )}
-            <label className="mt-4 block text-xs font-semibold uppercase tracking-wider text-slate-500">Operator password</label>
+            <label className="mt-4 block text-xs font-semibold text-slate-500">Operator password</label>
             <input
               type="password"
               value={deletePassword}

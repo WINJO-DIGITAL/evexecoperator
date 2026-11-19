@@ -87,7 +87,7 @@ export default function StatusActionMenu({ bookingId, currentStatus, onUpdate, d
             </div>
           ) : (
             <>
-              <p className="px-4 pb-1 pt-2 text-[10px] uppercase tracking-[0.2em] text-slate-600">
+              <p className="px-4 pb-1 pt-2 text-xs text-slate-600">
                 Correct status
               </p>
               <p className="px-4 pb-2 text-[10px] leading-snug text-slate-600">

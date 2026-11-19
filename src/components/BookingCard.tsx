@@ -363,7 +363,7 @@ function EditBookingModal({ booking, onClose }: { booking: DbBooking; onClose: (
 
         <div className="sticky bottom-0 flex gap-3 border-t border-slate-200 bg-white px-5 py-4">
           <button type="button" onClick={onClose} disabled={saving} className="flex-1 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 hover:border-slate-300 disabled:opacity-50">Cancel</button>
-          <button type="submit" disabled={saving || !form.customer_name.trim()} className="flex-1 rounded-2xl bg-gold-gradient px-4 py-3 text-sm font-bold text-navy-900 disabled:opacity-50">{saving ? "Saving…" : "Save changes"}</button>
+          <button type="submit" disabled={saving || !form.customer_name.trim()} className="flex-1 rounded-2xl bg-amber-500 px-4 py-3 text-sm font-bold text-navy-900 disabled:opacity-50">{saving ? "Saving…" : "Save changes"}</button>
         </div>
       </form>
     </div>
@@ -377,7 +377,7 @@ function Field({ label, value, onChange, type = "text", required, min }: { label
 }
 
 function InfoPill({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
-  return <div className="rounded-xl border border-slate-100 bg-slate-50 px-3 py-2"><div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-slate-600">{icon}{label}</div><div className="mt-1 text-xs font-semibold text-slate-700">{value}</div></div>;
+  return <div className="rounded-xl border border-slate-100 bg-slate-50 px-3 py-2"><div className="flex items-center gap-1.5 text-xs text-slate-600">{icon}{label}</div><div className="mt-1 text-xs font-semibold text-slate-700">{value}</div></div>;
 }
 
 function DetailRow({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) {

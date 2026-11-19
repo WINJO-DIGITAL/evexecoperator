@@ -215,7 +215,7 @@ function MobileDriverSheet({ booking, drivers, onAssign, onClose }) {
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
           <div>
-            <p className="text-[10px] uppercase tracking-[0.22em] text-amber-600">Assign Driver</p>
+            <p className="text-xs text-amber-600">Assign Driver</p>
             <p className="mt-0.5 text-sm font-semibold text-[#0F1B33]">{booking.customer}</p>
           </div>
           <button onClick={onClose} className="text-slate-500 transition hover:text-[#0F1B33]">

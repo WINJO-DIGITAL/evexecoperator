@@ -79,7 +79,7 @@ export default function QuoteDetailModal({ quote, businessName, onClose, onSaved
         className="w-full sm:max-w-lg max-h-[92vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-white shadow-xl">
         <div className="flex items-start justify-between gap-3 px-5 pt-5">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Quote request</p>
+            <p className="text-[11px] font-semibold text-slate-500">Quote request</p>
             <h2 className="text-lg font-semibold text-slate-900">{quote.customer_name || "Customer"}</h2>
           </div>
           <button onClick={onClose} aria-label="Close" className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"><X size={18} /></button>
@@ -114,7 +114,7 @@ export default function QuoteDetailModal({ quote, businessName, onClose, onSaved
 
         {preview && (
           <div className="mx-5 mt-4">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">The text the customer gets</p>
+            <p className="text-xs font-semibold text-slate-500">The text the customer gets</p>
             <pre className="mt-1.5 whitespace-pre-wrap rounded-xl bg-slate-50 border border-slate-200 p-3 text-sm text-slate-700 font-sans">{preview}</pre>
           </div>
         )}

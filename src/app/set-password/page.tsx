@@ -70,7 +70,7 @@ function SetPasswordContent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#020813] px-4 py-10">
       <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl">
-        <p className="text-xs uppercase tracking-[0.28em] text-amber-600">Operator app</p>
+        <p className="text-xs text-amber-600">Operator app</p>
         {stage === "verifying" && <p className="mt-4 text-sm text-slate-600">Checking your link…</p>}
         {stage === "error" && (
           <>

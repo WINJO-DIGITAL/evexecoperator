@@ -134,7 +134,7 @@ export default function LegalSettings({ toast }) {
       )}
 
       <div className="space-y-5">
-        <p className="text-xs uppercase tracking-[0.28em] text-amber-600">Your business</p>
+        <p className="text-xs text-amber-600">Your business</p>
         <Field label="Legal name" hint="The name that appears in your terms, if different from your trading name.">
           {input("legalName")}
         </Field>
@@ -165,7 +165,7 @@ export default function LegalSettings({ toast }) {
       </div>
 
       <div className="space-y-5">
-        <p className="text-xs uppercase tracking-[0.28em] text-amber-600">Licence and data protection</p>
+        <p className="text-xs text-amber-600">Licence and data protection</p>
         <Field label="Private hire operator licence" hint="Your licence number, e.g. PHO0079. It appears on your terms and emails.">
           <input className={INPUT} value={form.licence} onChange={(e) => set("licence")(e.target.value)} disabled={off} />
         </Field>
@@ -181,7 +181,7 @@ export default function LegalSettings({ toast }) {
       </div>
 
       <div className="space-y-5">
-        <p className="text-xs uppercase tracking-[0.28em] text-amber-600">Cancellation charges</p>
+        <p className="text-xs text-amber-600">Cancellation charges</p>
         <p className="text-xs text-slate-500">
           Free cancellation until the first notice below. Each band charges its percentage of the fare once it starts. After the last band, cancelling costs the full fare. Standard EV Exec charges are shown until you change them.
         </p>
@@ -199,7 +199,7 @@ export default function LegalSettings({ toast }) {
       </div>
 
       <div className="space-y-5">
-        <p className="text-xs uppercase tracking-[0.28em] text-amber-600">Terms and conditions</p>
+        <p className="text-xs text-amber-600">Terms and conditions</p>
         <Field label="Which terms do your customers accept?">
           <select className={INPUT} value={form.termsMode} onChange={(e) => set("termsMode")(e.target.value)} disabled={off}>
             <option value="standard">Standard terms (built from the details above)</option>
@@ -241,7 +241,7 @@ export default function LegalSettings({ toast }) {
       </div>
 
       <div className="space-y-3">
-        <p className="text-xs uppercase tracking-[0.28em] text-amber-600">Who is responsible</p>
+        <p className="text-xs text-amber-600">Who is responsible</p>
         <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-[#0F1B33]">
           <p>
             This platform is software only: a booking website, an Operator app and a Driver App. It is not a private hire operator, is not a party to your bookings, and does not provide, check or supervise your licences, insurance, vehicles or drivers. It checks none of what you enter here. You alone are responsible for:
@@ -263,7 +263,7 @@ export default function LegalSettings({ toast }) {
       </div>
 
       <div className="space-y-3">
-        <p className="text-xs uppercase tracking-[0.28em] text-amber-600">Insurance and DBS</p>
+        <p className="text-xs text-amber-600">Insurance and DBS</p>
         <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-[#0F1B33]">
           <input
             type="checkbox"

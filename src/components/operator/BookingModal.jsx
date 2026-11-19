@@ -143,7 +143,7 @@ function getSuggestedPrice(pickup, dropoff, isReturn, airports) {
 function Field({ label, icon: Icon, error, children }) {
   return (
     <div>
-      <label className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-slate-500">
+      <label className="mb-2 flex items-center gap-2 text-xs text-slate-500">
         {Icon && <Icon className="h-3.5 w-3.5" />}
         {label}
       </label>
@@ -406,7 +406,7 @@ export default function BookingModal({ open, onClose, onSubmit, initialValues, c
         {/* Header */}
         <div className="flex flex-shrink-0 items-center justify-between border-b border-slate-100 bg-white px-4 py-4 sm:px-8 sm:py-6">
           <div>
-            <p className="text-xs uppercase tracking-[0.28em] text-amber-600">
+            <p className="text-xs text-amber-600">
               {eyebrow ?? (initialValues ? "Return Journey" : "New Booking")}
             </p>
             <h2 id="booking-modal-title" className="mt-1 text-2xl font-semibold text-[#0F1B33]">
@@ -437,7 +437,7 @@ export default function BookingModal({ open, onClose, onSubmit, initialValues, c
           <form onSubmit={handleSubmit} className="grid gap-5 px-4 py-4 sm:gap-6 sm:px-8 sm:py-6">
             {/* Customer */}
             <div>
-              <p className="mb-4 text-xs uppercase tracking-[0.2em] text-slate-600">
+              <p className="mb-4 text-xs text-slate-600">
                 Customer Details
               </p>
               <CustomerPicker
@@ -466,7 +466,7 @@ export default function BookingModal({ open, onClose, onSubmit, initialValues, c
             {/* Route — just where from, where to. Type an address or pick a
                 suggestion; either side can be the airport. */}
             <div>
-              <p className="mb-4 text-xs uppercase tracking-[0.2em] text-slate-600">
+              <p className="mb-4 text-xs text-slate-600">
                 Route
               </p>
               <datalist id="location-suggestions">
@@ -483,7 +483,7 @@ export default function BookingModal({ open, onClose, onSubmit, initialValues, c
                 {/* One-tap saved addresses for the picked customer */}
                 {savedAddresses.length > 0 && (
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-[10px] uppercase tracking-[0.18em] text-slate-500">
+                    <span className="text-xs text-slate-500">
                       Saved addresses — tap to use
                     </span>
                     {savedAddresses.map((a) => (
@@ -505,7 +505,7 @@ export default function BookingModal({ open, onClose, onSubmit, initialValues, c
 
             {/* Schedule */}
             <div>
-              <p className="mb-4 text-xs uppercase tracking-[0.2em] text-slate-600">
+              <p className="mb-4 text-xs text-slate-600">
                 Schedule
               </p>
               <div className="grid gap-4 md:grid-cols-2">

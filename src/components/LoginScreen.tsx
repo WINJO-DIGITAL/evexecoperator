@@ -72,7 +72,7 @@ export default function LoginScreen({ onSignIn }: Props) {
             style={{ maxWidth: "260px", objectFit: "contain" }}
           />
           <p
-            className="text-white/50 font-medium uppercase mt-1 tracking-widest"
+            className="text-white/50 font-medium mt-1 "
             style={{ fontSize: "clamp(0.6rem, 1.5vw, 0.7rem)", letterSpacing: "0.22em" }}
           >
             Operator Portal
@@ -83,7 +83,7 @@ export default function LoginScreen({ onSignIn }: Props) {
           <h2 className="text-[#0F1B33] text-xl font-bold">Sign in</h2>
 
           <div className="space-y-1.5">
-            <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+            <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 ">
               <Mail size={11} className="text-amber-600/80" />
               Email
             </label>
@@ -99,7 +99,7 @@ export default function LoginScreen({ onSignIn }: Props) {
           </div>
 
           <div className="space-y-1.5">
-            <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+            <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 ">
               <Lock size={11} className="text-amber-600/80" />
               Password
             </label>
@@ -143,7 +143,7 @@ export default function LoginScreen({ onSignIn }: Props) {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-3 rounded-2xl text-sm font-semibold bg-gold-gradient text-navy-900 hover:opacity-90 active:scale-[0.98] disabled:opacity-60 transition-all"
+            className="w-full py-3 rounded-2xl text-sm font-semibold bg-amber-500 text-navy-900 hover:opacity-90 active:scale-[0.98] disabled:opacity-60 transition-all"
           >
             {submitting ? "Signing in…" : "Sign In"}
           </button>

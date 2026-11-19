@@ -355,7 +355,7 @@ export default function Analytics() {
         {/* Revenue bar chart */}
         <div className="card p-5 sm:p-6">
           <div className="mb-6">
-            <p className="text-xs uppercase tracking-[0.28em] text-amber-600">Revenue</p>
+            <p className="text-xs text-amber-600">Revenue</p>
             <h2 className="mt-2 text-2xl font-semibold text-[#0F1B33]">
               {period === "Today" ? "Today's Revenue" : `Revenue — ${period}`}
             </h2>
@@ -384,7 +384,7 @@ export default function Analytics() {
         {/* Top routes */}
         <div className="card p-5 sm:p-6">
           <div className="mb-6">
-            <p className="text-xs uppercase tracking-[0.28em] text-amber-600">Routes</p>
+            <p className="text-xs text-amber-600">Routes</p>
             <h2 className="mt-2 text-2xl font-semibold text-[#0F1B33]">Top Routes</h2>
           </div>
           {topRoutes.length === 0 ? (
@@ -420,7 +420,7 @@ export default function Analytics() {
           <div className="mb-6 flex items-center gap-3">
             <PieChart className="h-4 w-4 text-amber-600" />
             <div>
-              <p className="text-xs uppercase tracking-[0.28em] text-amber-600">Breakdown</p>
+              <p className="text-xs text-amber-600">Breakdown</p>
               <h2 className="mt-1 text-xl font-semibold text-[#0F1B33]">Jobs by Status</h2>
             </div>
           </div>
@@ -455,7 +455,7 @@ export default function Analytics() {
           <div className="mb-6 flex items-center gap-3">
             <Trophy className="h-4 w-4 text-amber-600" />
             <div>
-              <p className="text-xs uppercase tracking-[0.28em] text-amber-600">Performance</p>
+              <p className="text-xs text-amber-600">Performance</p>
               <h2 className="mt-1 text-xl font-semibold text-[#0F1B33]">Driver Leaderboard</h2>
             </div>
           </div>

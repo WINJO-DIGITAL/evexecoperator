@@ -127,7 +127,7 @@ export default function Sidebar({ inboxCount = 0, businessName = DEPLOYMENT_BRAN
         </nav>
 
         <div className="mt-4 flex flex-col gap-1 border-t border-white/5 px-2 pt-4 lg:px-0">
-          <p className="hidden px-3 pb-1 text-[10px] uppercase tracking-[0.2em] text-slate-600 lg:block">Open</p>
+          <p className="hidden px-3 pb-1 text-xs text-slate-600 lg:block">Open</p>
           {portals.map((p) => {
             const Icon = p.icon;
             return (

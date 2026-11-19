@@ -78,7 +78,7 @@ function DriverFormModal({ title, initial, submitLabel, onClose, onSubmit, isNew
         {/* Header */}
         <div className="flex flex-shrink-0 items-center justify-between border-b border-slate-100 px-6 py-5">
           <div>
-            <p className="text-xs uppercase tracking-[0.28em] text-amber-600">Fleet</p>
+            <p className="text-xs text-amber-600">Fleet</p>
             <h2 className="mt-1 text-xl font-semibold text-[#0F1B33]">{title}</h2>
           </div>
           <button
@@ -93,7 +93,7 @@ function DriverFormModal({ title, initial, submitLabel, onClose, onSubmit, isNew
         <div className="flex-1 overflow-y-auto overscroll-contain">
           <form onSubmit={handleSubmit} className="grid gap-4 p-6">
             <div>
-              <p className="mb-2 text-xs uppercase tracking-[0.2em] text-slate-500">Type</p>
+              <p className="mb-2 text-xs text-slate-500">Type</p>
               <div className="grid grid-cols-2 gap-2" role="radiogroup">
                 {KINDS.map((k) => (
                   <button
@@ -115,7 +115,7 @@ function DriverFormModal({ title, initial, submitLabel, onClose, onSubmit, isNew
 
             {DRIVER_FIELDS.map(({ key, label, placeholder, icon: Icon, type }) => (
               <div key={key}>
-                <label className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-slate-500">
+                <label className="mb-2 flex items-center gap-2 text-xs text-slate-500">
                   <Icon className="h-3.5 w-3.5" />
                   {label}{(key === "name" || key === "email") && <span className="text-red-600">*</span>}
                 </label>
@@ -242,7 +242,7 @@ function AssignJobModal({ driver, bookings, onAssign, onClose }) {
       <div className="relative z-10 flex w-full max-w-lg flex-col rounded-3xl border border-slate-200 bg-white shadow-2xl">
         <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
           <div>
-            <p className="text-xs uppercase tracking-[0.28em] text-amber-600">Fleet</p>
+            <p className="text-xs text-amber-600">Fleet</p>
             <h2 className="mt-1 text-xl font-semibold text-[#0F1B33]">
               Assign job to {driver.name}
             </h2>
@@ -735,7 +735,7 @@ export default function DriversPage() {
         <div className="card p-6">
           <div className="mb-5 flex items-center justify-between">
             <div>
-              <p className="text-xs uppercase tracking-[0.28em] text-amber-600">Schedule</p>
+              <p className="text-xs text-amber-600">Schedule</p>
               <h2 className="mt-2 text-2xl font-semibold text-[#0F1B33]">Today's Jobs</h2>
               <p className="mt-1 text-sm text-slate-500">
                 {todayJobs.length === 0

@@ -22,7 +22,7 @@ function CustomerPanel({ customer, onClose, onOpenBooking, onNewBooking }) {
       <div className="relative flex h-full w-full max-w-md flex-col bg-white shadow-2xl">
         <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-5 py-4">
           <div className="min-w-0">
-            <p className="text-xs uppercase tracking-[0.28em] text-amber-600">Customer</p>
+            <p className="text-xs text-amber-600">Customer</p>
             <h2 className="mt-1 truncate text-xl font-semibold text-[#0F1B33]">{customer.name}</h2>
             <div className="mt-2 flex flex-wrap gap-2 text-xs">
               {customer.phone && (
@@ -47,7 +47,7 @@ function CustomerPanel({ customer, onClose, onOpenBooking, onNewBooking }) {
           <div><p className={`text-lg font-semibold ${customer.unpaid ? "text-red-600" : "text-[#0F1B33]"}`}>{money(customer.unpaid)}</p><p className="text-[11px] text-slate-500">Unpaid</p></div>
         </div>
         <div className="flex-1 overflow-y-auto">
-          <p className="px-5 pb-1 pt-4 text-[10px] uppercase tracking-[0.2em] text-slate-500">Bookings</p>
+          <p className="px-5 pb-1 pt-4 text-xs text-slate-500">Bookings</p>
           <ul className="divide-y divide-slate-100">
             {customer.bookings.map((b) => (
               <li key={b.id}>
@@ -129,7 +129,7 @@ export default function CustomersPage() {
       {error && <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">Couldn&apos;t load bookings: {error}</div>}
 
       <div className="card overflow-hidden">
-        <div className="hidden grid-cols-[minmax(0,2fr)_minmax(0,2fr)_80px_110px_140px_100px_24px] gap-3 border-b border-slate-100 px-5 py-3 text-[10px] uppercase tracking-[0.2em] text-slate-500 lg:grid">
+        <div className="hidden grid-cols-[minmax(0,2fr)_minmax(0,2fr)_80px_110px_140px_100px_24px] gap-3 border-b border-slate-100 px-5 py-3 text-xs text-slate-500 lg:grid">
           <span>Customer</span><span>Contact</span><span className="text-right">Trips</span><span>Last trip</span><span>Next trip</span><span className="text-right">Unpaid</span><span />
         </div>
         {loading && customers.length === 0 ? (

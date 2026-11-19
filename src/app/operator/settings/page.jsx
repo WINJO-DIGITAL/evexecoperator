@@ -92,7 +92,7 @@ function Toggle({ value, onChange, label }) {
 function TextInput({ label, value, onChange, type = "text", placeholder = "", disabled = false, autoComplete }) {
   return (
     <div>
-      <label className="mb-2 block text-xs uppercase tracking-[0.2em] text-slate-500">
+      <label className="mb-2 block text-xs text-slate-500">
         {label}
         <input
           type={type}
@@ -111,7 +111,7 @@ function TextInput({ label, value, onChange, type = "text", placeholder = "", di
 function TextArea({ label, value, onChange, rows = 3, placeholder = "", disabled = false, hint }) {
   return (
     <div>
-      <label className="mb-2 block text-xs uppercase tracking-[0.2em] text-slate-500">
+      <label className="mb-2 block text-xs text-slate-500">
         {label}
         <textarea
           value={value}
@@ -219,7 +219,7 @@ function BusinessSettings({ toast }) {
       </div>
       <div className="space-y-5">
         <div>
-          <p className="text-xs uppercase tracking-[0.28em] text-amber-600">Invoice letterhead</p>
+          <p className="text-xs text-amber-600">Invoice letterhead</p>
           <p className="mt-1 text-xs text-slate-500">Shown on the invoices customers download from their account.</p>
         </div>
         <TextArea label="Address" value={form.addressLines} onChange={set("addressLines")} rows={4} disabled={off} hint="One line per row." />
@@ -346,7 +346,7 @@ function NotificationCenter() {
       </div>
 
       <div>
-        <p className="mb-2 text-[10px] uppercase tracking-[0.2em] text-slate-500">Channels</p>
+        <p className="mb-2 text-xs text-slate-500">Channels</p>
         <div className="space-y-2">
           {channels.map((c) => (
             <div key={c.key} className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
@@ -369,7 +369,7 @@ function NotificationCenter() {
       {error && <p className="text-[11px] text-red-600">{error}</p>}
 
       <div>
-        <p className="mb-2 text-[10px] uppercase tracking-[0.2em] text-slate-500">Recent notifications</p>
+        <p className="mb-2 text-xs text-slate-500">Recent notifications</p>
         <div className="divide-y divide-white/5 rounded-2xl border border-slate-100 bg-slate-50">
           {loading ? (
             <p className="px-4 py-6 text-center text-xs text-slate-600">Loading…</p>
@@ -447,7 +447,7 @@ function BrandPreview({ name, logoSrc, primary, accent }) {
         <span className="text-slate-500">Airport transfer</span>
         <span className="font-semibold text-[#0F1B33]">£90.00</span>
       </div>
-      <div className="flex items-center justify-between px-5 py-3 text-sm font-bold uppercase tracking-wider" style={{ background: primary, color: accent }}>
+      <div className="flex items-center justify-between px-5 py-3 text-sm font-bold " style={{ background: primary, color: accent }}>
         <span>Total</span><span>£90.00</span>
       </div>
     </div>
@@ -532,7 +532,7 @@ function BrandingSettings({ toast }) {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={logoSrc} alt="Current logo" className="max-h-full max-w-full object-contain" />
                 ) : (
-                  <span className="text-[10px] uppercase tracking-[0.2em]" style={{ color: form.accent }}>No logo</span>
+                  <span className="text-xs " style={{ color: form.accent }}>No logo</span>
                 )}
               </span>
               {canEdit && (
@@ -590,7 +590,7 @@ function BrandingSettings({ toast }) {
         </div>
 
         <div>
-          <p className="mb-3 text-[10px] uppercase tracking-[0.2em] text-slate-500">Invoice preview</p>
+          <p className="mb-3 text-xs text-slate-500">Invoice preview</p>
           <BrandPreview name={tenant.name || "Your business"} logoSrc={logoSrc} primary={isHexColour(form.primary) ? form.primary : DEFAULT_PRIMARY} accent={isHexColour(form.accent) ? form.accent : DEFAULT_ACCENT} />
         </div>
       </div>
@@ -684,14 +684,14 @@ function PriceSettings({ toast }) {
         </p>
       )}
 
-      <div className="hidden grid-cols-[minmax(0,1fr)_84px_112px_112px_40px] gap-3 px-1 text-[10px] uppercase tracking-[0.2em] text-slate-500 sm:grid">
+      <div className="hidden grid-cols-[minmax(0,1fr)_84px_112px_112px_40px] gap-3 px-1 text-xs text-slate-500 sm:grid">
         <span>Destination</span><span>Code</span><span className="text-right">One way</span><span className="text-right">Return</span><span />
       </div>
       <ul className="space-y-3 sm:space-y-2">
         {form.airports.map((a) => (
           <li key={a.key} className="grid grid-cols-[72px_minmax(0,1fr)_minmax(0,1fr)] gap-3 rounded-2xl border border-slate-100 p-3 sm:grid-cols-[minmax(0,1fr)_84px_112px_112px_40px] sm:items-center sm:rounded-none sm:border-0 sm:p-0">
             <label className="col-span-3 block min-w-0 sm:col-span-1">
-              <span className="mb-1 block text-[10px] uppercase tracking-[0.2em] text-slate-500 sm:sr-only">Destination</span>
+              <span className="mb-1 block text-xs text-slate-500 sm:sr-only">Destination</span>
               <input
                 value={a.name}
                 onChange={(e) => setRow(a.key, "name")(e.target.value)}
@@ -703,14 +703,14 @@ function PriceSettings({ toast }) {
               />
             </label>
             <label className="block min-w-0">
-              <span className="mb-1 block text-[10px] uppercase tracking-[0.2em] text-slate-500 sm:sr-only">Code</span>
+              <span className="mb-1 block text-xs text-slate-500 sm:sr-only">Code</span>
               <input
                 value={a.code}
                 onChange={(e) => setRow(a.key, "code")(e.target.value.toUpperCase().slice(0, 4))}
                 disabled={off}
                 placeholder="Optional"
                 aria-label="Airport code (optional)"
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm uppercase text-[#0F1B33] outline-none focus:border-amber-400 disabled:bg-slate-50 disabled:text-slate-600"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#0F1B33] outline-none focus:border-amber-400 disabled:bg-slate-50 disabled:text-slate-600"
               />
             </label>
             <MoneyInput label="One way" value={a.oneWay} onChange={setRow(a.key, "oneWay")} disabled={off} />
@@ -860,7 +860,7 @@ function FlightVerificationSettings({ toast }) {
 
   return (
     <div>
-      <p className="mb-4 text-xs uppercase tracking-[0.28em] text-amber-600">Flight Verification</p>
+      <p className="mb-4 text-xs text-amber-600">Flight Verification</p>
       <div className="space-y-4">
         <IntegrationItem
           name="AeroDataBox"
@@ -886,7 +886,7 @@ function IntegrationSettings({ toast }) {
     <div className="space-y-8">
       {/* Portals & Website */}
       <div>
-        <p className="mb-1 text-xs uppercase tracking-[0.28em] text-amber-600">Portals & Website</p>
+        <p className="mb-1 text-xs text-amber-600">Portals & Website</p>
         <p className="mb-4 text-xs text-slate-500">
           Quick-launch links for the driver portal and customer-facing website pages. Override any URL
           by setting the corresponding environment variable.
@@ -900,7 +900,7 @@ function IntegrationSettings({ toast }) {
 
       {/* Backend services */}
       <div>
-        <p className="mb-4 text-xs uppercase tracking-[0.28em] text-amber-600">Backend Services</p>
+        <p className="mb-4 text-xs text-amber-600">Backend Services</p>
         <div className="space-y-4">
           <IntegrationItem
             name="Supabase"
@@ -982,7 +982,7 @@ function SecuritySettings({ toast }) {
 
   return (
     <div className="space-y-5">
-      <p className="text-xs uppercase tracking-[0.28em] text-amber-600">Change password</p>
+      <p className="text-xs text-amber-600">Change password</p>
       <TextInput label="Current Password" value={form.current} onChange={set("current")} type="password" autoComplete="current-password" />
       <TextInput label="New Password" value={form.next} onChange={set("next")} type="password" autoComplete="new-password" placeholder="At least 8 characters, a letter and a number" />
       <TextInput label="Confirm New Password" value={form.confirm} onChange={set("confirm")} type="password" autoComplete="new-password" />
@@ -1084,7 +1084,7 @@ export default function Settings() {
         {/* Content panel */}
         <div className="card p-6 sm:p-8">
           <div className="mb-6 sm:mb-8">
-            <p className="text-xs uppercase tracking-[0.28em] text-amber-600">Settings</p>
+            <p className="text-xs text-amber-600">Settings</p>
             <h2 className="mt-2 text-2xl font-semibold text-[#0F1B33]">
               {sections.find((s) => s.key === active)?.label}
             </h2>

@@ -60,7 +60,7 @@ function NotificationPopover({
       className="absolute right-0 top-full z-50 mt-2 w-72 rounded-2xl border border-slate-200 bg-white shadow-2xl sm:w-80"
     >
       <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-600">Notifications</p>
+        <p className="text-xs font-semibold text-amber-600">Notifications</p>
         <div className="flex items-center gap-2">
           {total > 0 && (
             <button
@@ -85,7 +85,7 @@ function NotificationPopover({
         {/* New bookings */}
         {newBookings.length > 0 && (
           <>
-            <p className="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-600/80">
+            <p className="px-4 pt-3 pb-1 text-xs font-semibold text-emerald-600/80">
               New bookings
             </p>
             {newBookings.map((b) => (
