@@ -283,14 +283,14 @@ export function useBookings({ scope = "operational" } = {}) {
     return () => clearInterval(id);
   }, [fetchBookings]);
 
-  const updateStatus = useCallback(async (id, status) => {
+  const updateStatus = useCallback(async (id, status, { partnerJob = false } = {}) => {
     if (!BOOKING_STATUSES.includes(status)) {
       throw new ValidationError(`"${status}" is not a valid booking status`);
     }
 
     const current = bookingsRef.current.find((b) => b.id === id);
     if (current) {
-      validateStatusTransition(current.status, status);
+      validateStatusTransition(current.status, status, { partnerJob });
     }
 
     const snapshot = bookingsRef.current;

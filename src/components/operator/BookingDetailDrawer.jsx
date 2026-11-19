@@ -551,6 +551,58 @@ function RespondPanel({ booking, onRespond }) {
   );
 }
 
+// Statuses a partner's job can be completed from (matches the database rule).
+const PARTNER_COMPLETABLE = ["Dispatched", "Passenger On Board"];
+
+// Office override for a partner driver: no app, so the office confirms the job
+// is done. Asks once before it is written, since it closes the job.
+function PartnerCompletePanel({ driverName, onComplete }) {
+  const [confirming, setConfirming] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const finish = async () => {
+    setBusy(true);
+    try {
+      await onComplete();
+    } finally {
+      setBusy(false);
+      setConfirming(false);
+    }
+  };
+  return (
+    <div className="flex-shrink-0 border-b border-slate-100 bg-violet-50/50 px-5 py-3 sm:px-6">
+      <p className="text-xs text-slate-600">
+        <span className="font-semibold text-[#0F1B33]">{driverName}</span> doesn&apos;t use the Driver App. Mark the job completed once it&apos;s done.
+      </p>
+      {confirming ? (
+        <div className="mt-2.5 flex gap-2">
+          <button
+            onClick={finish}
+            disabled={busy}
+            className="flex min-h-[40px] flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:opacity-60"
+          >
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+            Yes, mark completed
+          </button>
+          <button
+            onClick={() => setConfirming(false)}
+            disabled={busy}
+            className="min-h-[40px] rounded-xl border border-slate-200 px-4 text-sm font-medium text-slate-600 transition hover:bg-white disabled:opacity-60"
+          >
+            Not yet
+          </button>
+        </div>
+      ) : (
+        <button
+          onClick={() => setConfirming(true)}
+          className="mt-2.5 flex min-h-[40px] w-full items-center justify-center gap-1.5 rounded-xl bg-emerald-600 text-sm font-semibold text-white transition hover:bg-emerald-500"
+        >
+          <Check className="h-4 w-4" /> Mark completed
+        </button>
+      )}
+    </div>
+  );
+}
+
 export default function BookingDetailDrawer({
   booking,
   drivers = [],
@@ -579,6 +631,7 @@ export default function BookingDetailDrawer({
   const [linkResult, setLinkResult] = useState(null);
   const drawerRef = useRef(null);
   const bookingId = booking?.id;
+  const partnerDriver = booking?.driverId ? drivers.find((d) => d.id === booking.driverId && d.kind === "partner") : null;
 
   // Reset the editors when a different booking is opened (and the delete dialog
   // with it), or when this booking's notes change underneath us. Done while
@@ -746,6 +799,14 @@ export default function BookingDetailDrawer({
             </button>
           </div>
         </div>
+
+        {/* Partner drivers have no Driver App: the office marks their job done */}
+        {partnerDriver && PARTNER_COMPLETABLE.includes(booking.status) && (
+          <PartnerCompletePanel
+            driverName={partnerDriver.name}
+            onComplete={() => onUpdateStatus?.(booking.id, "Completed", { partnerJob: true })}
+          />
+        )}
 
         {/* Accept / reject for an incoming website request awaiting a decision */}
         {booking.source === "website" &&

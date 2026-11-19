@@ -173,6 +173,18 @@ describe("validateBookingPayload", () => {
 // ─── validateStatusTransition ─────────────────────────────────────────────────
 
 describe("validateStatusTransition", () => {
+  it("allows Dispatched → Completed for a partner's job only", () => {
+    expect(() => validateStatusTransition("Dispatched", "Completed", { partnerJob: true })).not.toThrow();
+    expect(() => validateStatusTransition("Passenger On Board", "Completed", { partnerJob: true })).not.toThrow();
+    expect(() => validateStatusTransition("Dispatched", "Completed")).toThrow();
+    expect(() => validateStatusTransition("Dispatched", "Completed", { partnerJob: false })).toThrow();
+  });
+
+  it("does not let a partner's job skip to Completed from earlier statuses", () => {
+    expect(() => validateStatusTransition("Unassigned", "Completed", { partnerJob: true })).toThrow();
+    expect(() => validateStatusTransition("En Route", "Completed", { partnerJob: true })).toThrow();
+  });
+
   it("allows Dispatched → En Route", () => {
     expect(() => validateStatusTransition("Dispatched", "En Route")).not.toThrow();
   });

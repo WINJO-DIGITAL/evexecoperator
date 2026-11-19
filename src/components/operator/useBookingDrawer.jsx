@@ -32,9 +32,9 @@ export function useBookingDrawer(api, drivers) {
   const { openNewBooking } = useOperator();
   const [selectedBooking, setSelectedBooking] = useState(null);
 
-  const handleStatusUpdate = useCallback(async (id, status) => {
+  const handleStatusUpdate = useCallback(async (id, status, opts) => {
     try {
-      await updateStatus(id, status);
+      await updateStatus(id, status, opts);
       toast({ message: `Status → ${status}`, type: "success" });
       setSelectedBooking((prev) => (prev?.id === id ? { ...prev, status } : prev));
     } catch (err) {

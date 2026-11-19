@@ -38,8 +38,12 @@ export class ValidationError extends Error {
  * Throws ValidationError if the transition from → to is not permitted by the
  * state machine. Silently passes when `from` is falsy (new records).
  */
-export function validateStatusTransition(from, to) {
+export function validateStatusTransition(from, to, { partnerJob = false } = {}) {
   if (!from) return;
+
+  // Partner drivers have no Driver App, so the office completes their jobs
+  // straight from Dispatched (the database allows this for partner jobs only).
+  if (partnerJob && to === "Completed" && (from === "Dispatched" || from === "Passenger On Board")) return;
 
   const allowed = STATUS_TRANSITIONS[from];
   if (allowed === undefined) {
