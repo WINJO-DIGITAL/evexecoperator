@@ -13,6 +13,7 @@ function useDebounce(value, delay) {
   }, [value, delay]);
   return debounced;
 }
+import PartnerCompleteButton, { isPartnerOpenJob } from "@/components/operator/PartnerCompleteButton";
 import StatusActionMenu from "@/components/operator/StatusActionMenu";
 import { useBookingDrawer } from "@/components/operator/useBookingDrawer";
 import { useOperator } from "@/components/operator/OperatorContext";
@@ -340,7 +341,7 @@ function edgeColour(booking, facts) {
 
 // Phone/tablet booking card. The whole card opens the booking; the driver
 // chip, call button and accept/decline are their own targets.
-function BookingCard({ booking, onSelect, drivers = [], onAssign, onRespond }) {
+function BookingCard({ booking, onSelect, drivers = [], onAssign, onRespond, onStatus }) {
   const [driverSheetOpen, setDriverSheetOpen] = useState(false);
   const [respBusy, setRespBusy] = useState(null);
   const facts = bookingFacts(booking);
@@ -425,6 +426,11 @@ function BookingCard({ booking, onSelect, drivers = [], onAssign, onRespond }) {
               >
                 <Phone className="h-3.5 w-3.5" />
               </a>
+            )}
+            {isPartnerOpenJob(booking, drivers) && (
+              <span className="flex-shrink-0" onClick={stop} onKeyDown={stop}>
+                <PartnerCompleteButton compact onComplete={() => onStatus?.(booking.id, "Completed", { partnerJob: true })} />
+              </span>
             )}
             <span className={`flex-shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-medium ${bookingStatusColor(booking.status)}`}>
               {statusLabel}
@@ -549,7 +555,12 @@ function DesktopRow({ booking, selected, onSelect, drivers, onAssign, onStatus, 
             </button>
           </>
         ) : (
-          <StatusActionMenu bookingId={booking.id} currentStatus={booking.status} onUpdate={onStatus} />
+          <>
+            {isPartnerOpenJob(booking, drivers) && (
+              <PartnerCompleteButton compact onComplete={() => onStatus?.(booking.id, "Completed", { partnerJob: true })} />
+            )}
+            <StatusActionMenu bookingId={booking.id} currentStatus={booking.status} onUpdate={onStatus} />
+          </>
         )}
       </div>
       <ChevronRight className="h-4 w-4 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-slate-500" />
@@ -791,6 +802,7 @@ export default function BookingsList() {
                           drivers={drivers}
                           onAssign={handleAssignDriver}
                           onRespond={handleRespond}
+                          onStatus={handleStatusUpdate}
                         />
                       ))}
                     </div>

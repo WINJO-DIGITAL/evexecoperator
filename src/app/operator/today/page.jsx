@@ -13,6 +13,7 @@ import { fmtDate } from "@/lib/dates";
 import StatusChip from "@/components/operator/StatusChip";
 import SetupChecklist from "@/components/operator/SetupChecklist";
 import TextsToSend from "@/components/operator/TextsToSend";
+import PartnerCompleteButton, { isPartnerOpenJob } from "@/components/operator/PartnerCompleteButton";
 import { DONE_STATUSES as DONE, ON_ROAD_STATUSES, awaitingReply, needsDriver, unpaidCompleted, minutesUntil } from "@/lib/operator/bookingBuckets";
 
 // Home screen: what needs the office now, today's jobs in time order, and
@@ -30,7 +31,7 @@ function Tile({ label, sub, value, alert, href }) {
   return href ? <Link href={href} className="block transition hover:opacity-80">{body}</Link> : body;
 }
 
-function BookingRow({ b, onOpen, aside }) {
+function BookingRow({ b, onOpen, aside, action }) {
   return (
     <button
       onClick={() => onOpen(b)}
@@ -46,9 +47,9 @@ function BookingRow({ b, onOpen, aside }) {
         <p className="truncate text-sm font-medium text-[#0F1B33]">{b.customer}</p>
         <p className="truncate text-xs text-slate-500">{b.route}</p>
         {/* Phones: status/driver under the customer so the row never overflows */}
-        <div className="mt-1.5 flex flex-wrap items-center gap-2 sm:hidden">{aside}</div>
+        <div className="mt-1.5 flex flex-wrap items-center gap-2 sm:hidden">{aside}{action}</div>
       </div>
-      <div className="hidden flex-shrink-0 flex-col items-end gap-1 sm:flex">{aside}</div>
+      <div className="hidden flex-shrink-0 flex-col items-end gap-1 sm:flex">{aside}{action}</div>
       <ChevronRight className="hidden h-4 w-4 flex-shrink-0 text-slate-300 sm:block" />
     </button>
   );
@@ -150,6 +151,7 @@ export default function TodayPage() {
                       b={b}
                       onOpen={drawer.open}
                       aside={<span className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium ${k.cls}`}><k.icon className="h-3 w-3" />{k.label}</span>}
+                      action={isPartnerOpenJob(b, drivers) ? <PartnerCompleteButton compact onComplete={() => drawer.setStatus(b.id, "Completed", { partnerJob: true })} /> : null}
                     />
                   );
                 })}
@@ -175,6 +177,7 @@ export default function TodayPage() {
                       <StatusChip status={b.status} />
                       <span className={`text-[11px] ${b.driverId ? "text-slate-500" : "font-medium text-red-600"}`}>{b.driverId ? b.driver : "No driver"}</span>
                     </>}
+                    action={isPartnerOpenJob(b, drivers) ? <PartnerCompleteButton compact onComplete={() => drawer.setStatus(b.id, "Completed", { partnerJob: true })} /> : null}
                   />
                 ))}
               </div>
