@@ -207,7 +207,7 @@ export default function TodayPage() {
           )}
           {view.driverDay.some(({ jobs }) => jobs.length === 0) && (
             <p className="border-t border-slate-100 px-4 py-3 text-xs text-slate-500 first:border-t-0 sm:px-5">
-              No jobs today: {view.driverDay.filter(({ jobs }) => jobs.length === 0).map(({ d }) => d.name).join(", ")}
+              Free today: {new Intl.ListFormat("en-GB", { style: "long", type: "conjunction" }).format(view.driverDay.filter(({ jobs }) => jobs.length === 0).map(({ d }) => d.name))}
             </p>
           )}
           {view.noDriver.length > 0 && (

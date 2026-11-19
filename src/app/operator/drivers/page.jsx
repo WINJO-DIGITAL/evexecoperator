@@ -708,7 +708,7 @@ export default function DriversPage() {
         {partners.length > 0 && (
           <div>
             <div className="mb-4">
-              <h2 className="text-2xl font-semibold text-[#0F1B33]">Trusted Partners</h2>
+              <h2 className="text-lg font-semibold text-[#0F1B33]">Trusted partners</h2>
               <p className="mt-1 text-sm text-slate-500">
                 Outside operators you pass jobs to. They get job details by email and don&apos;t use the Driver App;
                 customer texts for their jobs appear on Today under &ldquo;Texts to send&rdquo;.
@@ -735,8 +735,7 @@ export default function DriversPage() {
         <div className="card p-6">
           <div className="mb-5 flex items-center justify-between">
             <div>
-              <p className="text-xs text-amber-600">Schedule</p>
-              <h2 className="mt-2 text-2xl font-semibold text-[#0F1B33]">Today's Jobs</h2>
+              <h2 className="text-lg font-semibold text-[#0F1B33]">Today's jobs</h2>
               <p className="mt-1 text-sm text-slate-500">
                 {todayJobs.length === 0
                   ? "No scheduled jobs for today"
