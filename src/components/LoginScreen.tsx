@@ -80,7 +80,7 @@ export default function LoginScreen({ onSignIn }: Props) {
         </div>
 
         <form onSubmit={handleSubmit} className="rounded-2xl border border-slate-200 bg-white shadow-card p-6 space-y-4">
-          <h2 className="text-[#0F1B33] text-xl font-bold">Sign in</h2>
+          <h2 className="text-[#0F1B33] text-xl font-bold">Sign In</h2>
 
           <div className="space-y-1.5">
             <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 ">

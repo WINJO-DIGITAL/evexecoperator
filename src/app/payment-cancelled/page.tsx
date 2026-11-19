@@ -16,7 +16,7 @@ export default async function PaymentCancelledPage({
       <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-400/10">
         <XCircle className="h-9 w-9 text-slate-400" />
       </div>
-      <h1 className="mt-6 text-2xl font-semibold text-white">Payment cancelled</h1>
+      <h1 className="mt-6 text-2xl font-semibold text-white">Payment Cancelled</h1>
       <p className="mt-2 max-w-sm text-sm text-slate-400">
         No payment was taken for your {DEPLOYMENT_BRAND.name} airport transfer
         {ref ? <> (ref <span className="font-medium text-slate-200">{ref}</span>)</> : null}.

@@ -187,7 +187,7 @@ export default function BookingCard({ booking, drivers, notification, unavailabl
                 )}
               </div>
             )}
-            <button type="button" onClick={() => setEditing(true)} className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-gold/25 bg-gold/10 px-3 py-2 text-xs font-semibold text-amber-600 transition hover:bg-gold/20"><Pencil size={13} /> Edit job</button>
+            <button type="button" onClick={() => setEditing(true)} className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-gold/25 bg-gold/10 px-3 py-2 text-xs font-semibold text-amber-600 transition hover:bg-gold/20"><Pencil size={13} /> Edit Job</button>
           </div>
         )}
 
@@ -291,7 +291,7 @@ function EditBookingModal({ booking, onClose }: { booking: DbBooking; onClose: (
       <form onSubmit={save} className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-3xl border border-slate-200 bg-white shadow-2xl">
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-5 py-4">
           <div>
-            <h2 className="text-lg font-bold text-[#0F1B33]">Edit job</h2>
+            <h2 className="text-lg font-bold text-[#0F1B33]">Edit Job</h2>
             <p className="text-xs text-slate-500">{booking.ref}</p>
           </div>
           <button type="button" onClick={onClose} className="rounded-xl p-2 text-slate-500 hover:bg-slate-100 hover:text-[#0F1B33]"><X size={16} /></button>

@@ -74,7 +74,7 @@ function SetPasswordContent() {
         {stage === "verifying" && <p className="mt-4 text-sm text-slate-600">Checking your link…</p>}
         {stage === "error" && (
           <>
-            <h1 className="mt-2 text-xl font-semibold text-[#0F1B33]">Link not valid</h1>
+            <h1 className="mt-2 text-xl font-semibold text-[#0F1B33]">Link Not Valid</h1>
             <p role="alert" className="mt-3 text-sm text-slate-600">{error}</p>
             <a href="/operator/today" className="mt-5 block rounded-2xl border border-slate-200 px-4 py-3 text-center text-sm font-medium text-slate-700">Go to sign in</a>
           </>

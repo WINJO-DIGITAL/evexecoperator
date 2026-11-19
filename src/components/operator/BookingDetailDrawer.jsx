@@ -588,7 +588,7 @@ function PartnerCompletePanel({ driverName, onComplete }) {
             disabled={busy}
             className="min-h-[40px] rounded-xl border border-slate-200 px-4 text-sm font-medium text-slate-600 transition hover:bg-white disabled:opacity-60"
           >
-            Not yet
+            Not Yet
           </button>
         </div>
       ) : (
@@ -596,7 +596,7 @@ function PartnerCompletePanel({ driverName, onComplete }) {
           onClick={() => setConfirming(true)}
           className="mt-2.5 flex min-h-[40px] w-full items-center justify-center gap-1.5 rounded-xl bg-emerald-600 text-sm font-semibold text-white transition hover:bg-emerald-500"
         >
-          <Check className="h-4 w-4" /> Mark completed
+          <Check className="h-4 w-4" /> Mark Completed
         </button>
       )}
     </div>
@@ -1184,7 +1184,7 @@ export default function BookingDetailDrawer({
             <div className="flex items-start gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-red-500/10 text-red-600"><ShieldCheck className="h-5 w-5" /></div>
               <div>
-                <h2 className="text-lg font-bold text-[#0F1B33]">Confirm job deletion</h2>
+                <h2 className="text-lg font-bold text-[#0F1B33]">Confirm Job Deletion</h2>
                 <p className="mt-1 text-sm text-slate-500">For security, re-enter your operator password before deleting this booking.</p>
               </div>
             </div>

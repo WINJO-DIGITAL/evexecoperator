@@ -109,7 +109,7 @@ export default function TodayPage() {
     reply: { label: "Accept or decline", icon: MessageSquareReply, cls: "bg-amber-50 text-amber-700 border-amber-200" },
     driver: { label: "No driver", icon: UserX, cls: "bg-red-50 text-red-700 border-red-200" },
     unpaid: { label: "Unpaid", icon: CreditCard, cls: "bg-violet-50 text-violet-700 border-violet-200" },
-    finish: { label: "Mark completed", icon: Flag, cls: "bg-slate-100 text-slate-700 border-slate-300" },
+    finish: { label: "Mark Completed", icon: Flag, cls: "bg-slate-100 text-slate-700 border-slate-300" },
   };
 
   return (
@@ -134,7 +134,7 @@ export default function TodayPage() {
           <TextsToSend />
           <section className="card overflow-hidden">
             <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 sm:px-5">
-              <h2 className="text-sm font-semibold text-[#0F1B33]">Needs you</h2>
+              <h2 className="text-sm font-semibold text-[#0F1B33]">Needs You</h2>
               {view.needs.length > 0 && <span className="text-xs font-medium text-red-600">{view.needs.length}</span>}
             </div>
             {loading && bookings.length === 0 ? (
@@ -210,7 +210,7 @@ export default function TodayPage() {
           )}
           {view.driverDay.some(({ jobs }) => jobs.length === 0) && (
             <p className="border-t border-slate-100 px-4 py-3 text-xs text-slate-500 first:border-t-0 sm:px-5">
-              Free today: {new Intl.ListFormat("en-GB", { style: "long", type: "conjunction" }).format(view.driverDay.filter(({ jobs }) => jobs.length === 0).map(({ d }) => d.name))}
+              Free Today: {new Intl.ListFormat("en-GB", { style: "long", type: "conjunction" }).format(view.driverDay.filter(({ jobs }) => jobs.length === 0).map(({ d }) => d.name))}
             </p>
           )}
           {view.noDriver.length > 0 && (

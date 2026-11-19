@@ -14,7 +14,7 @@ export function isPartnerOpenJob(booking, drivers = []) {
   return driver?.kind === "partner" && PARTNER_COMPLETABLE.includes(booking.status);
 }
 
-// One-tap "Mark completed" for a partner's job. The first tap asks for a
+// One-tap "Mark Completed" for a partner's job. The first tap asks for a
 // confirmation; the second writes it. Clicks don't reach the row behind.
 export default function PartnerCompleteButton({ onComplete, compact = false }) {
   const [confirming, setConfirming] = useState(false);
@@ -50,7 +50,7 @@ export default function PartnerCompleteButton({ onComplete, compact = false }) {
           disabled={busy}
           className={`rounded-lg border border-slate-200 px-2 font-medium text-slate-600 transition hover:bg-white disabled:opacity-60 ${compact ? "h-7 text-[11px]" : "h-8 text-xs"}`}
         >
-          Not yet
+          Not Yet
         </button>
       </span>
     );
@@ -63,7 +63,7 @@ export default function PartnerCompleteButton({ onComplete, compact = false }) {
       onKeyDown={stop}
       className={`inline-flex items-center gap-1 rounded-lg border border-emerald-300 bg-emerald-50 font-semibold text-emerald-700 transition hover:bg-emerald-100 ${compact ? "h-7 px-2 text-[11px]" : "h-8 px-3 text-xs"}`}
     >
-      <Check className="h-3 w-3" /> Mark completed
+      <Check className="h-3 w-3" /> Mark Completed
     </button>
   );
 }

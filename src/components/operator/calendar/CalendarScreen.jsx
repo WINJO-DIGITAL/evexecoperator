@@ -17,7 +17,7 @@ import AgendaView from "./AgendaView";
 import BookingInspector from "./BookingInspector";
 import BookingRow, { ROW_ITEM } from "./BookingRow";
 
-const STATUS_LABEL = { confirmed: "Confirmed", reply: "Awaiting reply", driver: "Need driver", attention: "Needs attention" };
+const STATUS_LABEL = { confirmed: "Confirmed", reply: "Awaiting reply", driver: "Need driver", attention: "Needs Attention" };
 
 function useIsDesktop() {
   const [desktop, setDesktop] = useState(false);
@@ -252,9 +252,9 @@ export default function CalendarScreen({
             ) : view === "month" || view === "week" ? (
               <DaySchedule date={cursor} today={today} bookings={selectedDayList} selectedId={selectedId} onOpen={openBooking} onAction={handleAction} onNewBooking={newBookingOn} onOpenDay={(k) => goToDate(k, "day")} compact emptyHint={filtering ? "No matching transfers on this day." : undefined} />
             ) : (
-              <section aria-label="Needs attention">
+              <section aria-label="Needs Attention">
                 <header className="border-b border-cal-line pb-2.5">
-                  <h3 className="font-display text-cal-lg font-medium text-cal-ink">Needs attention</h3>
+                  <h3 className="font-display text-cal-lg font-medium text-cal-ink">Needs Attention</h3>
                   <p className="mt-0.5 text-cal-xs text-cal-muted">{view === "day" ? "This day" : "This month"} · select a booking for details</p>
                 </header>
                 {attentionList.length === 0 ? (

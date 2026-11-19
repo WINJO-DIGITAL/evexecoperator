@@ -64,7 +64,7 @@ export default function SummaryStrip({ metrics, status, onStatus, complete }) {
       </div>
 
       {complete && (
-        <div role="group" aria-label="Needs attention" className="mt-1.5 flex gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div role="group" aria-label="Needs Attention" className="mt-1.5 flex gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {exceptions.length ? (
             exceptions.map((e) => <Exception key={e.key} {...e} active={status === e.key} onClick={() => toggle(e.key)} />)
           ) : (

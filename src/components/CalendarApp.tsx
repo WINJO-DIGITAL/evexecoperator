@@ -191,7 +191,7 @@ function PasswordConfirmModal({ booking, password, busy, onPasswordChange, onCan
       <div className="w-full max-w-md rounded-3xl border border-red-400/20 bg-white p-5 shadow-2xl">
         <div className="flex items-start gap-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-red-500/10 text-red-600"><ShieldCheck size={20} /></div>
-          <div><h2 className="text-lg font-bold text-[#0F1B33]">Confirm job removal</h2><p className="mt-1 text-sm text-slate-500">For security, re-enter your operator password before removing this booking.</p></div>
+          <div><h2 className="text-lg font-bold text-[#0F1B33]">Confirm Job Removal</h2><p className="mt-1 text-sm text-slate-500">For security, re-enter your operator password before removing this booking.</p></div>
         </div>
         <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-3 text-sm"><p className="font-semibold text-slate-800">{booking.customer_name}</p><p className="mt-1 text-xs text-slate-500">{booking.ref} · {booking.travel_date ? fmtDate(booking.travel_date) : "No date"} {booking.travel_time?.slice(0, 5) ?? ""}</p></div>
         <div className="mt-4 rounded-2xl border border-amber-400/20 bg-amber-400/10 p-3 text-xs text-amber-700 flex gap-2"><AlertTriangle size={15} className="shrink-0" />This action permanently removes the job from the operator calendar and driver view.</div>
