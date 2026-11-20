@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { MessageSquare, reminderHref } from "@/lib/operator/reminderText";
+import { reminderHref } from "@/lib/operator/reminderText";
 import { ukDateDaysAgo } from "@/lib/operator/ukDate";
 import {
   X, Phone, Mail, Plane, MapPin, Clock, Car, PoundSterling,
   User, AlertTriangle, ChevronDown, Check, Edit3, Loader2, RefreshCw,
   CreditCard, Trash2, ShieldCheck, Send, Users, Briefcase, Calendar, RotateCcw, XCircle, Zap,
+  MessageSquare,
 } from "lucide-react";
 import { bookingStatusColor } from "@/lib/operator/statusColor";
 import { reverseTarget, reverseLabel } from "@/lib/operator/statusFlow";
