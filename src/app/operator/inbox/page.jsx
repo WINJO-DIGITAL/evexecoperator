@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import QuoteDetailModal from "@/components/operator/QuoteDetailModal";
-import InboxTab from "@/components/InboxTab";
+import InboxMail from "@/components/operator/InboxMail";
 import { useOperator } from "@/components/operator/OperatorContext";
 import { useOperatorToast } from "@/components/operator/Toast";
 import { quoteToBookingForm } from "@/lib/bookingUtils";
@@ -31,14 +31,14 @@ export default function InboxPage() {
   }, [openNewBooking, inbox, fail]);
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-4 sm:px-6 lg:px-10 lg:py-8">
+    <div className="mx-auto w-full max-w-6xl px-4 py-4 sm:px-6 lg:px-10 lg:py-8">
       {inbox.loading ? (
         <div className="flex items-center justify-center gap-2 py-12 text-sm text-slate-600">
           <span className="h-4 w-4 animate-spin rounded-full border-2 border-gold/30 border-t-gold" />
           Loading…
         </div>
       ) : (
-        <InboxTab
+        <InboxMail
           quoteRequests={inbox.quoteRequests}
           missedCalls={inbox.missedCalls}
           contactMessages={inbox.contactMessages}
