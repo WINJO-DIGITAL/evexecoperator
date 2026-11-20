@@ -88,6 +88,24 @@ export default function PaymentsSettings({ toast }) {
         </button>
       )}
 
+      {view?.connected && (
+        <section className="rounded-2xl border border-slate-200 bg-white p-5">
+          <p className="text-sm font-semibold text-[#0F1B33]">Your Stripe dashboard</p>
+          <p className="mt-1 text-xs text-slate-500">
+            Payouts, refunds and payment reports are in your own Stripe account. Sign in there with the email address you gave Stripe.
+          </p>
+          <a
+            href="https://dashboard.stripe.com/login"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 inline-flex min-h-[44px] items-center gap-2 rounded-2xl border border-slate-200 px-5 text-sm font-semibold text-[#0F1B33] transition hover:border-slate-300 hover:bg-slate-50"
+          >
+            Open Stripe dashboard
+            <span aria-hidden="true">↗</span>
+          </a>
+        </section>
+      )}
+
       <p className="text-xs text-slate-500">
         Stripe holds your payments, pays them out to your bank and sends you your own payment reports. You are responsible for your Stripe account, its terms, refunds, chargebacks and tax.
       </p>
