@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { MessageSquare, reminderHref } from "@/lib/operator/reminderText";
+import { ukDateDaysAgo } from "@/lib/operator/ukDate";
 import {
   X, Phone, Mail, Plane, MapPin, Clock, Car, PoundSterling,
   User, AlertTriangle, ChevronDown, Check, Edit3, Loader2, RefreshCw,
@@ -631,6 +633,11 @@ export default function BookingDetailDrawer({
   const [linkResult, setLinkResult] = useState(null);
   const drawerRef = useRef(null);
   const bookingId = booking?.id;
+  // A reminder the office can send by text (opens Messages filled in): only for a
+  // customer with a phone number and a job still to happen.
+  const reminderLink = booking && booking.travelDate && booking.travelDate >= ukDateDaysAgo(0) && !["Cancelled", "Completed", "No Show"].includes(booking.status)
+    ? reminderHref(booking, ukDateDaysAgo(0))
+    : null;
   const partnerDriver = booking?.driverId ? drivers.find((d) => d.id === booking.driverId && d.kind === "partner") : null;
 
   // Reset the editors when a different booking is opened (and the delete dialog
@@ -1156,6 +1163,15 @@ export default function BookingDetailDrawer({
               Priority
             </button>
           </div>
+          {reminderLink && (
+            <a
+              href={reminderLink}
+              className="mt-2 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-[#0F1B33] transition hover:border-slate-300 hover:bg-slate-50"
+            >
+              <MessageSquare className="h-4 w-4 text-[#A07D32]" />
+              Send Reminder
+            </a>
+          )}
           {onDelete && (
             <div className="mt-2 flex justify-center">
               <button
