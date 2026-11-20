@@ -44,7 +44,6 @@ export default function OperatorCalendar() {
         onRetry={api.refetch}
         unavailableDriverIds={unavailableDriverIds}
         onOpenBooking={drawer.open}
-        onAssign={drawer.assign}
         onNewBooking={newBookingOn}
         initialView={params.get("cv")}
         initialDate={params.get("d")}

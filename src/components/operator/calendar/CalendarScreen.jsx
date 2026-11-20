@@ -14,8 +14,6 @@ import MonthView from "./MonthView";
 import WeekView from "./WeekView";
 import DaySchedule from "./DaySchedule";
 import AgendaView from "./AgendaView";
-import BookingInspector from "./BookingInspector";
-import BookingRow, { ROW_ITEM } from "./BookingRow";
 
 const STATUS_LABEL = { confirmed: "Confirmed", reply: "Awaiting reply", driver: "Need driver", attention: "Needs Attention" };
 
@@ -56,7 +54,7 @@ function useNow(fixed) {
  */
 export default function CalendarScreen({
   bookings, drivers = [], loading = false, error = null, hasEarlier = false, totalCount = 0, loadingMore = false,
-  onLoadEarlier, onLoadMore, onRetry, unavailableDriverIds, onOpenBooking, onAssign, onNewBooking,
+  onLoadEarlier, onLoadMore, onRetry, unavailableDriverIds, onOpenBooking, onNewBooking,
   initialView, initialDate, syncUrl = true, nowOverride,
 }) {
   const now = useNow(nowOverride);
@@ -108,12 +106,9 @@ export default function CalendarScreen({
     lastLoaded,
   });
 
-  const selected = selectedId ? enriched.find((b) => b.id === selectedId) ?? null : null;
-
   const openBooking = useCallback((b) => {
-    if (isDesktop) setSelectedId(b.id);
-    else onOpenBooking(b);
-  }, [isDesktop, onOpenBooking]);
+    onOpenBooking(b);
+  }, [onOpenBooking]);
 
   const lookup = useCallback((id) => enriched.find((b) => b.id === id) ?? null, [enriched]);
 
@@ -144,13 +139,9 @@ export default function CalendarScreen({
   const firstLoad = loading && bookings.length === 0;
   const selectedDayList = byDate.get(cursor) ?? [];
 
-  // Side panel when no booking is open: the selected day (month/week), or
-  // what needs attention in the period (day/list, which already show days).
-  const attentionList = visible.filter((b) => b.attention && inPeriod(b, period) && b.state !== "cancelled");
-
   return (
     <div className="min-h-screen bg-cal-paper pb-28 text-cal-ink lg:pb-16">
-      <div className="mx-auto w-full max-w-[1440px] px-4 pt-3 sm:px-6 lg:grid lg:grid-cols-[minmax(0,1fr)_368px] lg:gap-10 lg:px-10 lg:pt-6">
+      <div className="mx-auto w-full max-w-[1440px] px-4 pt-3 sm:px-6 lg:px-10 lg:pt-6">
         <div className="min-w-0">
           <CalendarToolbar
             period={period}
@@ -215,7 +206,7 @@ export default function CalendarScreen({
                 selected={cursor}
                 today={today}
                 byDate={byDate}
-                onSelect={(k) => { setCursor(k); setSelectedId(null); }}
+                onSelect={(k) => { setCursor(k); setSelectedId(null); if (isDesktop) setView("day"); }}
                 onOpenDay={(k) => goToDate(k, "day")}
               />
               <div className="mt-5 lg:hidden">
@@ -223,7 +214,7 @@ export default function CalendarScreen({
               </div>
             </>
           ) : view === "week" ? (
-            <WeekView period={period} today={today} selected={cursor} byDate={byDate} selectedId={selectedId} onOpen={openBooking} onAction={handleAction} onSelectDay={(k) => { setCursor(k); setSelectedId(null); }} onOpenDay={(k) => goToDate(k, "day")} />
+            <WeekView period={period} today={today} selected={cursor} byDate={byDate} selectedId={selectedId} onOpen={openBooking} onAction={handleAction} onSelectDay={(k) => { setCursor(k); setSelectedId(null); if (isDesktop) setView("day"); }} onOpenDay={(k) => goToDate(k, "day")} />
           ) : view === "day" ? (
             <div className="mt-5">
               <DaySchedule date={cursor} today={today} bookings={selectedDayList} selectedId={selectedId} onOpen={openBooking} onAction={handleAction} onNewBooking={newBookingOn} hideTitle emptyHint={filtering ? "No matching transfers on this day." : undefined} />
@@ -233,41 +224,6 @@ export default function CalendarScreen({
           )}
         </div>
 
-        {/* Side panel (desktop) */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-[124px] flex max-h-[calc(100vh-140px)] flex-col overflow-y-auto rounded-cal-lg border border-cal-line bg-cal-sheet p-5 [scrollbar-width:thin]">
-            {selected ? (
-              <BookingInspector
-                b={selected}
-                drivers={drivers}
-                unavailable={selected.travelDate ? unavailableFor(selected.travelDate) : new Set()}
-                lookup={lookup}
-                onAction={handleAction}
-                onSelect={(o) => setSelectedId(o.id)}
-                onAssign={onAssign}
-                onClose={() => setSelectedId(null)}
-                onOpenFull={onOpenBooking}
-                onGoToDate={(k) => { setSelectedId(null); goToDate(k); }}
-              />
-            ) : view === "month" || view === "week" ? (
-              <DaySchedule date={cursor} today={today} bookings={selectedDayList} selectedId={selectedId} onOpen={openBooking} onAction={handleAction} onNewBooking={newBookingOn} onOpenDay={(k) => goToDate(k, "day")} compact emptyHint={filtering ? "No matching transfers on this day." : undefined} />
-            ) : (
-              <section aria-label="Needs Attention">
-                <header className="border-b border-cal-line pb-2.5">
-                  <h3 className="font-display text-cal-lg font-medium text-cal-ink">Needs Attention</h3>
-                  <p className="mt-0.5 text-cal-xs text-cal-muted">{view === "day" ? "This day" : "This month"} · select a booking for details</p>
-                </header>
-                {attentionList.length === 0 ? (
-                  <p className="py-8 text-center text-cal-sm text-cal-muted">Nothing outstanding.</p>
-                ) : (
-                  <ol className="-mx-3">
-                    {attentionList.map((b) => <li key={b.id} className={ROW_ITEM}><BookingRow b={b} onOpen={openBooking} onAction={handleAction} selected={b.id === selectedId} /></li>)}
-                  </ol>
-                )}
-              </section>
-            )}
-          </div>
-        </aside>
       </div>
     </div>
   );
