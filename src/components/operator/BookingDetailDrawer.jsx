@@ -2,6 +2,8 @@
 
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { reminderHref } from "@/lib/operator/reminderText";
+import { reminderKind, reminderAlreadySent, markReminderSent } from "@/lib/operator/reminderRecord";
+import { supabase } from "@/lib/supabase";
 import { ukDateDaysAgo } from "@/lib/operator/ukDate";
 import {
   X, Phone, Mail, Plane, MapPin, Clock, Car, PoundSterling,
@@ -636,6 +638,30 @@ export default function BookingDetailDrawer({
   const bookingId = booking?.id;
   // A reminder the office can send by text (opens Messages filled in): only for a
   // customer with a phone number and a job still to happen.
+  const reminderKindNow = booking?.travelDate ? reminderKind(booking.travelDate, ukDateDaysAgo(0)) : null;
+  const [reminderSent, setReminderSent] = useState(false);
+  const [reminderBusy, setReminderBusy] = useState(false);
+  const [reminderError, setReminderError] = useState(null);
+  useEffect(() => {
+    let live = true;
+    setReminderError(null);
+    setReminderSent(false);
+    if (!booking?.id || !reminderKindNow || !supabase) return undefined;
+    reminderAlreadySent(supabase, booking.id, reminderKindNow).then((done) => { if (live) setReminderSent(done); }).catch(() => {});
+    return () => { live = false; };
+  }, [booking?.id, reminderKindNow]);
+  const markReminderDone = async () => {
+    if (!reminderKindNow || !supabase) return;
+    setReminderBusy(true); setReminderError(null);
+    try {
+      await markReminderSent(supabase, booking.id, reminderKindNow);
+      setReminderSent(true);
+    } catch (e) {
+      setReminderError(e.message || "Couldn't record the reminder.");
+    } finally {
+      setReminderBusy(false);
+    }
+  };
   const reminderLink = booking && booking.travelDate && booking.travelDate >= ukDateDaysAgo(0) && !["Cancelled", "Completed", "No Show"].includes(booking.status)
     ? reminderHref(booking, ukDateDaysAgo(0))
     : null;
@@ -1165,14 +1191,25 @@ export default function BookingDetailDrawer({
             </button>
           </div>
           {reminderLink && (
-            <a
-              href={reminderLink}
-              className="mt-2 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-[#0F1B33] transition hover:border-slate-300 hover:bg-slate-50"
-            >
-              <MessageSquare className="h-4 w-4 text-[#A07D32]" />
-              Send Reminder
-            </a>
+            <div className="mt-2 flex gap-2">
+              <a
+                href={reminderLink}
+                className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-[#0F1B33] transition hover:border-slate-300 hover:bg-slate-50"
+              >
+                <MessageSquare className="h-4 w-4 text-[#A07D32]" />
+                Send Reminder
+              </a>
+              <button
+                onClick={markReminderDone}
+                disabled={reminderSent || reminderBusy}
+                className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl bg-amber-500 px-3 text-sm font-semibold text-black transition hover:bg-amber-400 disabled:bg-emerald-50 disabled:text-emerald-700"
+              >
+                <Check className="h-4 w-4" />
+                {reminderSent ? "Reminder Sent" : reminderBusy ? "Saving…" : "Mark as Sent"}
+              </button>
+            </div>
           )}
+          {reminderError && <p className="mt-1 text-xs text-red-600">{reminderError}</p>}
           {onDelete && (
             <div className="mt-2 flex justify-center">
               <button
