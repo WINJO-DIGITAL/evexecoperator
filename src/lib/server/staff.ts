@@ -3,9 +3,11 @@
 // import this from client code.
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-export const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+// Trimmed: a space or line break pasted into Vercel makes Supabase refuse the key.
+const clean = (v: string | undefined) => (v ?? "").trim() || undefined;
+export const SUPABASE_URL = clean(process.env.NEXT_PUBLIC_SUPABASE_URL);
+const SERVICE_ROLE_KEY = clean(process.env.SUPABASE_SERVICE_ROLE_KEY);
+const ANON_KEY = clean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 import { senderFor } from "@/lib/server/sender";
 
