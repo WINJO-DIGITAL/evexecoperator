@@ -189,7 +189,7 @@ function JobPicker({ jobs, loading, invoiceFor, onPick, onOpenInvoice }) {
 
   return (
     <div>
-      <p className={labelCls}>Find the job</p>
+      <p className={labelCls}>Find The Job</p>
       <div className="relative">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#A07D32]" />
         <input
@@ -210,7 +210,7 @@ function JobPicker({ jobs, loading, invoiceFor, onPick, onOpenInvoice }) {
       </div>
       <div className="mt-2 max-h-72 space-y-1.5 overflow-y-auto rounded-2xl border border-slate-100 bg-slate-50 p-1.5">
         {loading && jobs.length === 0 ? (
-          <p className="py-6 text-center text-xs text-slate-500">Loading jobs…</p>
+          <p className="py-6 text-center text-xs text-slate-500">Loading Jobs…</p>
         ) : list.length === 0 ? (
           <p className="py-6 text-center text-xs text-slate-500">
             {view === "todo" && !q ? "Every completed job has an invoice." : "No jobs match. Try All jobs, or fewer words."}
@@ -368,7 +368,7 @@ function InvoiceModal({ open, onClose, onCreate, bookings, jobsLoading, invoiceF
           {selectedJob ? (
             <div className="flex items-start gap-3 rounded-2xl border border-amber-400/30 bg-amber-400/5 p-3">
               <div className="min-w-0 flex-1">
-                <p className={labelCls + " mb-1"}>Invoicing job</p>
+                <p className={labelCls + " mb-1"}>Invoicing Job</p>
                 <p className="truncate text-sm font-semibold text-[#0F1B33]">{selectedJob.customer} · {selectedJob.id}</p>
                 <p className="truncate text-xs text-slate-600">{dash(selectedJob.route)}</p>
                 <p className="truncate text-[11px] text-slate-500">{[fmtDate(selectedJob.travelDate), dash(selectedJob.time)].filter(Boolean).join(" ")} · {selectedJob.price}</p>
@@ -384,7 +384,7 @@ function InvoiceModal({ open, onClose, onCreate, bookings, jobsLoading, invoiceF
 
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2">
-              <p className={labelCls}>Customer name *</p>
+              <p className={labelCls}>Customer Name *</p>
               <input value={customer} onChange={(e) => setCustomer(e.target.value)} className={inputCls} placeholder="Customer or company" />
             </div>
             <div>
@@ -396,7 +396,7 @@ function InvoiceModal({ open, onClose, onCreate, bookings, jobsLoading, invoiceF
               <input value={phone} onChange={(e) => setPhone(e.target.value)} className={inputCls} placeholder="Phone" />
             </div>
             <div className="col-span-2">
-              <p className={labelCls}>Billing address</p>
+              <p className={labelCls}>Billing Address</p>
               <input value={address} onChange={(e) => setAddress(e.target.value)} className={inputCls} placeholder="Address (shown under Invoice To)" />
             </div>
           </div>
@@ -408,11 +408,11 @@ function InvoiceModal({ open, onClose, onCreate, bookings, jobsLoading, invoiceF
             </p>
             <div className="grid grid-cols-2 gap-3">
               <div className="col-span-2">
-                <p className={labelCls}>Pickup address</p>
+                <p className={labelCls}>Pickup Address</p>
                 <input value={journey.pickup} onChange={(e) => setJ("pickup", e.target.value)} className={inputCls} placeholder="e.g. 27 Springbrook Avenue, FY5 3SN" />
               </div>
               <div className="col-span-2">
-                <p className={labelCls}>Drop-off address</p>
+                <p className={labelCls}>Drop-off Address</p>
                 <input value={journey.dropoff} onChange={(e) => setJ("dropoff", e.target.value)} className={inputCls} placeholder="e.g. Manchester Airport T2" />
               </div>
               <div>
@@ -420,7 +420,7 @@ function InvoiceModal({ open, onClose, onCreate, bookings, jobsLoading, invoiceF
                 <input type="date" value={journey.date} onChange={(e) => setJ("date", e.target.value)} className={inputCls} />
               </div>
               <div>
-                <p className={labelCls}>Pickup time</p>
+                <p className={labelCls}>Pickup Time</p>
                 <input value={journey.time} onChange={(e) => setJ("time", e.target.value)} className={inputCls} placeholder="e.g. 08.30" />
               </div>
               <div>
@@ -440,11 +440,11 @@ function InvoiceModal({ open, onClose, onCreate, bookings, jobsLoading, invoiceF
                 <input value={journey.luggage} onChange={(e) => setJ("luggage", e.target.value)} inputMode="numeric" className={inputCls} placeholder="e.g. 3" />
               </div>
               <div>
-                <p className={labelCls}>Return date</p>
+                <p className={labelCls}>Return Date</p>
                 <input type="date" value={journey.returnDate} onChange={(e) => setJ("returnDate", e.target.value)} className={inputCls} />
               </div>
               <div>
-                <p className={labelCls}>Return time</p>
+                <p className={labelCls}>Return Time</p>
                 <input value={journey.returnTime} onChange={(e) => setJ("returnTime", e.target.value)} className={inputCls} placeholder="e.g. 17.05" />
               </div>
             </div>
@@ -459,7 +459,7 @@ function InvoiceModal({ open, onClose, onCreate, bookings, jobsLoading, invoiceF
                   <input value={it.description} onChange={(e) => setItem(i, "description", e.target.value)} className={inputCls + " flex-1"} placeholder="What's being charged" />
                   <input value={it.quantity} onChange={(e) => setItem(i, "quantity", e.target.value)} inputMode="numeric" className={inputCls + " w-14 text-center"} placeholder="Qty" />
                   <input value={it.unit_price} onChange={(e) => setItem(i, "unit_price", e.target.value)} inputMode="decimal" className={inputCls + " w-20"} placeholder="£" />
-                  <button onClick={() => removeItem(i)} className="mt-1 flex-shrink-0 text-slate-600 hover:text-red-600" title="Remove line"><X className="h-4 w-4" /></button>
+                  <button onClick={() => removeItem(i)} className="mt-1 flex-shrink-0 text-slate-600 hover:text-red-600" title="Remove Line"><X className="h-4 w-4" /></button>
                 </div>
               ))}
             </div>
@@ -476,11 +476,11 @@ function InvoiceModal({ open, onClose, onCreate, bookings, jobsLoading, invoiceF
               </select>
             </div>
             <div>
-              <p className={labelCls}>Issue date</p>
+              <p className={labelCls}>Issue Date</p>
               <input type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} className={inputCls} />
             </div>
             <div>
-              <p className={labelCls}>Due date</p>
+              <p className={labelCls}>Due Date</p>
               <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className={inputCls} />
             </div>
           </div>
@@ -776,7 +776,7 @@ function InvoicePreview({ invoice, onClose, onStatus, onDelete, onEmailed }) {
               <div className="flex items-start gap-3">
                 <FileText className="mt-0.5 h-5 w-5" style={{ color: GOLD }} />
                 <div>
-                  <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Invoice number</p>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Invoice Number</p>
                   <p className="mt-0.5 font-medium text-slate-800">{inv.number}</p>
                   {inv.status !== "Draft" && (
                     <span className={`mt-1 inline-block rounded-full border px-2 py-0.5 text-[10px] font-semibold ${
@@ -855,7 +855,7 @@ function InvoicePreview({ invoice, onClose, onStatus, onDelete, onEmailed }) {
                 <CreditCard className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: GOLD }} />
               </span>
               <div>
-                <p className="text-[12px] font-bold uppercase tracking-[0.15em] text-slate-800">Payment terms</p>
+                <p className="text-[12px] font-bold uppercase tracking-[0.15em] text-slate-800">Payment Terms</p>
                 <p className="mt-1 whitespace-pre-wrap text-xs leading-relaxed text-slate-600">{terms}</p>
               </div>
             </div>
@@ -864,7 +864,7 @@ function InvoicePreview({ invoice, onClose, onStatus, onDelete, onEmailed }) {
                 <Gem className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: GOLD }} />
               </span>
               <div>
-                <p className="text-[12px] font-bold uppercase tracking-[0.15em] text-slate-800">Thank you</p>
+                <p className="text-[12px] font-bold uppercase tracking-[0.15em] text-slate-800">Thank You</p>
                 <p className="mt-1 text-xs leading-relaxed text-slate-600">We appreciate your business and look forward to our continued partnership.</p>
               </div>
             </div>
@@ -1072,7 +1072,7 @@ export default function InvoicesPage() {
         {/* List */}
         <div className="card min-w-0 p-3 sm:p-4">
           {loading && invoices.length === 0 ? (
-            <p className="py-10 text-center text-sm text-slate-600">Loading invoices…</p>
+            <p className="py-10 text-center text-sm text-slate-600">Loading Invoices…</p>
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-14">
               <FileText className="mb-3 h-8 w-8 text-[#A07D32]" />

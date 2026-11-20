@@ -33,7 +33,7 @@ function ConflictPanel({ b, flag, other, onView }) {
         <span className="block truncate text-cal-xs text-cal-muted">{shortPlace(job.pickupLocation || job.airport)} → {shortPlace(job.dropoffAddress || job.airport)}</span>
       </span>
       {job.id === b.id ? (
-        <span className="shrink-0 text-cal-xs text-cal-muted">This job</span>
+        <span className="shrink-0 text-cal-xs text-cal-muted">This Job</span>
       ) : (
         <button type="button" onClick={() => onView(job)} className="shrink-0 text-cal-xs font-semibold text-cal-ink underline decoration-1 underline-offset-2 hover:decoration-2">
           View {job.id}
@@ -42,7 +42,7 @@ function ConflictPanel({ b, flag, other, onView }) {
     </li>
   );
   return (
-    <section aria-label="Possible clash" className="border-b border-cal-line py-3">
+    <section aria-label="Possible Clash" className="border-b border-cal-line py-3">
       <h4 className="flex items-center gap-1.5 text-cal-sm font-semibold text-cal-alert">
         <ArrowLeftRight className="h-3.5 w-3.5" strokeWidth={2} aria-hidden /> Same driver, {formatGap(Math.abs(flag.gap))} apart
       </h4>
@@ -82,7 +82,7 @@ export default function BookingInspector({ b, lookup, drivers = [], unavailable 
           <p className="mt-1.5 font-display text-cal-2xl font-medium tabular-nums text-cal-ink">{b.minutes == null ? "--:--" : b.time}</p>
           <p className="mt-0.5 text-cal-xs text-cal-muted">{b.travelDate ? longDay(b.travelDate) : "No date"} · <span className="tabular-nums">{b.id}</span></p>
         </div>
-        <button type="button" onClick={onClose} aria-label="Close booking" className="-mr-1 flex h-9 w-9 items-center justify-center rounded-cal text-cal-muted hover:bg-cal-well hover:text-cal-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cal-brass">
+        <button type="button" onClick={onClose} aria-label="Close Booking" className="-mr-1 flex h-9 w-9 items-center justify-center rounded-cal text-cal-muted hover:bg-cal-well hover:text-cal-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cal-brass">
           <X className="h-4 w-4" />
         </button>
       </header>
@@ -109,7 +109,7 @@ export default function BookingInspector({ b, lookup, drivers = [], unavailable 
         <Field label="Drop-off" className="col-span-2">{dropoff}</Field>
         <Field label="Flight">{flight && <span className="inline-flex items-center gap-1.5 tabular-nums"><Plane className="h-3.5 w-3.5 text-cal-muted" />{flight}</span>}</Field>
         <Field label="Journey">{b.journeyType}</Field>
-        <Field label="Vehicle & party" className="col-span-2">{vehicle}</Field>
+        <Field label="Vehicle & Party" className="col-span-2">{vehicle}</Field>
         {canAssign ? (
           <div className="col-span-2">
             <label htmlFor="cal-assign" className="flex items-center gap-1.5 text-cal-label font-semibold text-cal-muted">
@@ -121,7 +121,7 @@ export default function BookingInspector({ b, lookup, drivers = [], unavailable 
               onChange={(e) => onAssign(b.id, e.target.value || null)}
               className={`mt-1 h-9 w-full rounded-cal border bg-cal-sheet px-2 text-cal-sm outline-none focus:border-cal-brass focus-visible:ring-2 focus-visible:ring-cal-brass ${b.driverId ? "border-cal-rule text-cal-ink" : "border-cal-alert/60 text-cal-alert"}`}
             >
-              <option value="">Not assigned</option>
+              <option value="">Not Assigned</option>
               {drivers.map((d) => (
                 <option key={d.id} value={d.id}>
                   {d.name}{d.kind === "partner" ? " (partner)" : ""}{unavailable.has(d.id) ? " — unavailable this day" : ""}
@@ -130,11 +130,11 @@ export default function BookingInspector({ b, lookup, drivers = [], unavailable 
             </select>
           </div>
         ) : (
-          <Field label="Driver">{b.driverId ? b.driver : <span className="text-cal-muted">Not assigned</span>}</Field>
+          <Field label="Driver">{b.driverId ? b.driver : <span className="text-cal-muted">Not Assigned</span>}</Field>
         )}
         <Field label="Fare">{b.fare == null ? <span className="text-cal-muted">TBC</span> : <span className="tabular-nums">{money(b.fare)}</span>}</Field>
         <Field label="Payment">{[b.paymentStatus, b.paymentMethod].filter(Boolean).join(" · ")}</Field>
-        <Field label="Booked via">{b.source === "website" ? "Website" : b.source ? b.source[0].toUpperCase() + b.source.slice(1) : null}</Field>
+        <Field label="Booked Via">{b.source === "website" ? "Website" : b.source ? b.source[0].toUpperCase() + b.source.slice(1) : null}</Field>
         {b.notes && <Field label="Notes" className="col-span-2"><span className="whitespace-pre-line text-cal-ink2">{b.notes}</span></Field>}
         {b.returnJourney && b.returnDate && (
           <Field label="Return" className="col-span-2">

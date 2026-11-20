@@ -145,10 +145,10 @@ function Legend() {
   return (
     <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-cal-xs text-cal-muted">
       <span className="inline-flex items-center gap-1.5 lg:hidden"><span className="font-semibold tabular-nums text-cal-ink2">3</span>transfers</span>
-      <span className="inline-flex items-center gap-1.5"><CriticalMark />Needs a driver or clashes</span>
-      <span className="inline-flex items-center gap-1.5"><StatusMark state="reply" />Awaiting reply or follow-up</span>
+      <span className="inline-flex items-center gap-1.5"><CriticalMark />Needs a Driver or Clashes</span>
+      <span className="inline-flex items-center gap-1.5"><StatusMark state="reply" />Awaiting Reply or Follow-Up</span>
       <span className="hidden items-center gap-1.5 lg:inline-flex"><StatusMark state="assigned" />Assigned</span>
-      <span className="hidden items-center gap-1.5 lg:inline-flex"><StatusMark state="road" />On the road</span>
+      <span className="hidden items-center gap-1.5 lg:inline-flex"><StatusMark state="road" />On The Road</span>
       <span className="hidden items-center gap-1.5 lg:inline-flex"><StatusMark state="done" />Completed</span>
       <span className="hidden items-center gap-1.5 lg:inline-flex"><Plane className="h-3 w-3" strokeWidth={2} />Airport</span>
     </div>

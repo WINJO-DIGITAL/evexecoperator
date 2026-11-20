@@ -54,7 +54,7 @@ export default function DailyView({
       {sorted.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 rounded-2xl border border-dashed border-slate-200 text-slate-600">
           <Calendar size={28} className="mb-2 text-[#A07D32]" />
-          <p className="text-sm">No transfers scheduled</p>
+          <p className="text-sm">No Transfers Scheduled</p>
           <p className="text-xs mt-1">Tap + to add a booking</p>
         </div>
       ) : (

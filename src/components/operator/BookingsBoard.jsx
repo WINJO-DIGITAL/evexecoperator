@@ -13,11 +13,11 @@ import StatusChip from "@/components/operator/StatusChip";
 const BOARD_DAYS = 7;
 
 const COLUMNS = [
-  { key: "reply", title: "Needs reply", hint: "Website requests to accept or decline", accent: "bg-amber-400" },
-  { key: "driver", title: "Needs driver", hint: "Confirmed, no driver yet", accent: "bg-red-400" },
-  { key: "assigned", title: "Driver assigned", hint: "Ready to go", accent: "bg-slate-400" },
-  { key: "road", title: "On the road", hint: "En route, arrived, on board", accent: "bg-blue-500" },
-  { key: "done", title: "Done today", hint: "Completed or no-show today", accent: "bg-emerald-500" },
+  { key: "reply", title: "Needs Reply", hint: "Website requests to accept or decline", accent: "bg-amber-400" },
+  { key: "driver", title: "Needs Driver", hint: "Confirmed, no driver yet", accent: "bg-red-400" },
+  { key: "assigned", title: "Driver Assigned", hint: "Ready to go", accent: "bg-slate-400" },
+  { key: "road", title: "On The Road", hint: "En route, arrived, on board", accent: "bg-blue-500" },
+  { key: "done", title: "Done Today", hint: "Completed or no-show today", accent: "bg-emerald-500" },
 ];
 
 // One job: time and price on top, then the customer, route, driver and status.

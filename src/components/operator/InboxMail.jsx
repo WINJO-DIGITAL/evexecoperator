@@ -13,7 +13,7 @@ import { fmtDayDate, fmtDate } from "@/lib/dates";
 const TYPES = [
   { key: "all", label: "All" },
   { key: "quote", label: "Quotes" },
-  { key: "call", label: "Missed calls" },
+  { key: "call", label: "Missed Calls" },
   { key: "message", label: "Messages" },
 ];
 
@@ -70,7 +70,7 @@ function Detail({ item, onBack, onOpenQuote, onDismissQuote, onConvertQuote, onT
     <div className="flex min-h-0 flex-1 flex-col">
       <header className="flex items-start gap-3 border-b border-slate-200 px-4 py-4 sm:px-6">
         {onBack && (
-          <button onClick={onBack} aria-label="Back to inbox" className="-ml-2 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 lg:hidden">
+          <button onClick={onBack} aria-label="Back To Inbox" className="-ml-2 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 lg:hidden">
             <ArrowLeft className="h-5 w-5" />
           </button>
         )}
@@ -131,7 +131,7 @@ function Detail({ item, onBack, onOpenQuote, onDismissQuote, onConvertQuote, onT
         )}
         {item.type === "call" && (
           <>
-            {r.caller && <a href={`tel:${r.caller}`} className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-slate-200 px-4 text-sm font-medium text-[#0F1B33] transition hover:bg-slate-50"><Phone className="h-4 w-4" />Call back</a>}
+            {r.caller && <a href={`tel:${r.caller}`} className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-slate-200 px-4 text-sm font-medium text-[#0F1B33] transition hover:bg-slate-50"><Phone className="h-4 w-4" />Call Back</a>}
             <button onClick={() => onToggleMissedCall(r.id, !r.resolved)} className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl bg-amber-500 px-4 text-sm font-semibold text-black transition hover:bg-amber-400">
               {r.resolved ? <RotateCcw className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}{r.resolved ? "Reopen" : "Mark resolved"}
             </button>
@@ -215,7 +215,7 @@ export default function InboxMail({
         {visible.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-2 px-6 py-16 text-center">
             <InboxIcon className="h-6 w-6 text-slate-300" aria-hidden="true" />
-            <p className="text-sm font-medium text-[#0F1B33]">Nothing waiting</p>
+            <p className="text-sm font-medium text-[#0F1B33]">Nothing Waiting</p>
             <p className="text-xs text-slate-500">New quote requests, missed calls and website messages appear here.</p>
           </div>
         ) : (
@@ -250,7 +250,7 @@ export default function InboxMail({
       </section>
 
       {/* Detail: a full-screen view on phones and tablets portrait; a pane beside the list on wide screens. */}
-      <section className={`min-w-0 flex-1 flex-col ${shown ? (selectedKey ? "fixed inset-0 z-50 flex bg-white lg:static lg:z-auto" : "hidden lg:flex") : "hidden lg:flex"}`} aria-label="Selected item">
+      <section className={`min-w-0 flex-1 flex-col ${shown ? (selectedKey ? "fixed inset-0 z-50 flex bg-white lg:static lg:z-auto" : "hidden lg:flex") : "hidden lg:flex"}`} aria-label="Selected Item">
         {shown ? (
           <Detail item={shown} onBack={selectedKey ? () => setSelectedKey(null) : null} {...detailProps} />
         ) : (

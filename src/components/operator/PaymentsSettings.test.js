@@ -6,13 +6,13 @@ describe("paymentsStatus", () => {
     expect(paymentsStatus({ configured: false }).title).toMatch(/not available yet/);
   });
   it("offers to connect when there is no account", () => {
-    expect(paymentsStatus({ configured: true, connected: false, ready: false }).title).toBe("Connect your Stripe account");
+    expect(paymentsStatus({ configured: true, connected: false, ready: false }).title).toBe("Connect Your Stripe Account");
   });
   it("asks the operator to finish when started but not submitted", () => {
-    expect(paymentsStatus({ configured: true, connected: true, detailsSubmitted: false, ready: false }).title).toBe("Finish setting up Stripe");
+    expect(paymentsStatus({ configured: true, connected: true, detailsSubmitted: false, ready: false }).title).toBe("Finish Setting Up Stripe");
   });
   it("says Stripe is checking once details are sent", () => {
-    expect(paymentsStatus({ configured: true, connected: true, detailsSubmitted: true, ready: false }).title).toMatch(/checking your details/);
+    expect(paymentsStatus({ configured: true, connected: true, detailsSubmitted: true, ready: false }).title).toMatch(/Checking Your Details/);
   });
   it("says card payments are on when ready", () => {
     const s = paymentsStatus({ configured: true, connected: true, detailsSubmitted: true, ready: true });

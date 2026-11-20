@@ -76,7 +76,7 @@ function StatusPicker({ currentStatus, onUpdate }) {
       {open && !isUpdating && (
         <div
           role="menu"
-          aria-label="Correct booking status"
+          aria-label="Correct Booking Status"
           className="absolute left-0 top-full z-[60] mt-1 w-64 rounded-2xl border border-slate-200 bg-white py-1 shadow-2xl"
         >
           {confirmCancel ? (
@@ -100,7 +100,7 @@ function StatusPicker({ currentStatus, onUpdate }) {
             </div>
           ) : (
             <>
-              <p className="px-4 pb-1 pt-2 text-xs text-slate-600">Correct status</p>
+              <p className="px-4 pb-1 pt-2 text-xs text-slate-600">Correct Status</p>
               <p className="px-4 pb-2 text-[10px] leading-snug text-slate-600">
                 The driver advances the job in the driver app. Here you can only reverse a step or cancel.
               </p>
@@ -186,7 +186,7 @@ function DriverPicker({ currentDriverId, drivers, onAssign }) {
         ) : (
           <>
             <Car className="h-4 w-4 flex-shrink-0" />
-            <span className="flex-1 text-left font-medium">Assign a driver…</span>
+            <span className="flex-1 text-left font-medium">Assign a Driver…</span>
           </>
         )}
         <ChevronDown className="h-4 w-4 flex-shrink-0 text-[#A07D32]" />
@@ -194,7 +194,7 @@ function DriverPicker({ currentDriverId, drivers, onAssign }) {
       {open && !pending && (
         <div
           role="listbox"
-          aria-label="Assign driver"
+          aria-label="Assign Driver"
           className="absolute left-0 right-0 top-full z-[60] mt-1 rounded-2xl border border-slate-200 bg-white py-1 shadow-2xl"
         >
           <button
@@ -399,7 +399,7 @@ function BookingEditForm({ booking, onSave, onCancel, onUpdatePaymentStatus, onU
 
   return (
     <div className="space-y-4 px-5 py-5 sm:px-6">
-      <p className="text-xs text-amber-600">Edit booking</p>
+      <p className="text-xs text-amber-600">Edit Booking</p>
 
       <EditField label="Customer" icon={User}>
         <input className={editInputCls} value={form.customer} onChange={set("customer")} placeholder="Customer name" />
@@ -423,18 +423,18 @@ function BookingEditForm({ booking, onSave, onCancel, onUpdatePaymentStatus, onU
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <EditField label="Pickup date" icon={Calendar}>
+        <EditField label="Pickup Date" icon={Calendar}>
           <input type="date" className={editInputCls} value={form.travelDate} onChange={set("travelDate")} />
         </EditField>
-        <EditField label="Pickup time" icon={Clock}>
+        <EditField label="Pickup Time" icon={Clock}>
           <input type="time" className={editInputCls} value={form.time} onChange={set("time")} />
         </EditField>
       </div>
 
-      <EditField label="Pickup address" icon={MapPin}>
+      <EditField label="Pickup Address" icon={MapPin}>
         <input className={editInputCls} value={form.pickupLocation} onChange={set("pickupLocation")} placeholder="e.g. Manchester Airport (T2), or a full address" />
       </EditField>
-      <EditField label="Drop-off address" icon={MapPin}>
+      <EditField label="Drop-off Address" icon={MapPin}>
         <input className={editInputCls} value={form.dropoffAddress} onChange={set("dropoffAddress")} placeholder="e.g. a full address, or Manchester Airport" />
       </EditField>
 
@@ -465,7 +465,7 @@ function BookingEditForm({ booking, onSave, onCancel, onUpdatePaymentStatus, onU
           has already paid, instead of leaving it unset and defaulting to
           "TBC" in the driver app. Changes here apply immediately, same as
           the other one-tap controls elsewhere in the drawer. */}
-      <EditField label="Payment status" icon={PoundSterling}>
+      <EditField label="Payment Status" icon={PoundSterling}>
         <PaymentBadge
           paymentStatus={booking.paymentStatus ?? "Unpaid"}
           onUpdate={onUpdatePaymentStatus}
@@ -526,7 +526,7 @@ function RespondPanel({ booking, onRespond }) {
 
   return (
     <div className="flex-shrink-0 border-b border-slate-100 bg-amber-400/[0.06] px-5 py-4 sm:px-6">
-      <p className="text-xs text-amber-600">New website request</p>
+      <p className="text-xs text-amber-600">New Website Request</p>
       <p className="mt-1 text-sm text-slate-600">
         Accept to confirm the job, or reject to decline. The customer is notified by email (SMS if there's no email).
       </p>
@@ -784,8 +784,8 @@ export default function BookingDetailDrawer({
             {onUpdateBooking && !editMode && (
               <button
                 onClick={() => setEditMode(true)}
-                title="Edit booking"
-                aria-label="Edit booking"
+                title="Edit Booking"
+                aria-label="Edit Booking"
                 className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 text-slate-500 transition hover:bg-slate-100 hover:text-amber-600"
               >
                 <Edit3 className="h-4 w-4 text-[#A07D32]" />
@@ -925,7 +925,7 @@ export default function BookingDetailDrawer({
                     </div>
                   </div>
                 )}
-                <Row icon={User} label="Preferred contact" value={booking.contactMethod} />
+                <Row icon={User} label="Preferred Contact" value={booking.contactMethod} />
               </div>
             </div>
 
@@ -934,13 +934,13 @@ export default function BookingDetailDrawer({
               <p className="mb-3 text-xs text-amber-600">Journey</p>
               <div className="space-y-3">
                 <Row icon={MapPin} label="Route" value={booking.route} />
-                <Row icon={MapPin} label="Pickup address" value={booking.pickupLocation || booking.airport || null} />
-                <Row icon={MapPin} label="Drop-off address" value={booking.dropoffAddress || booking.airport || null} />
+                <Row icon={MapPin} label="Pickup Address" value={booking.pickupLocation || booking.airport || null} />
+                <Row icon={MapPin} label="Drop-off Address" value={booking.dropoffAddress || booking.airport || null} />
                 <Row icon={Plane} label="Flight" value={booking.flight !== "—" ? booking.flight : null} />
                 <Row icon={Users} label="Passengers" value={booking.passengers != null ? String(booking.passengers) : null} />
                 <Row icon={Briefcase} label="Bags" value={booking.luggage || null} />
                 <Row icon={Car} label="Vehicle" value={booking.vehicleType} />
-                <Row icon={Clock} label="Pickup time" value={
+                <Row icon={Clock} label="Pickup Time" value={
                   // The booking's own UK date and time first, so the device's
                   // timezone can never shift it.
                   booking.travelDate && booking.time && booking.time !== "—"
@@ -987,7 +987,7 @@ export default function BookingDetailDrawer({
                         {linkBusy ? (
                           <><Loader2 className="h-3.5 w-3.5 animate-spin" />Sending…</>
                         ) : (
-                          <><Send className="h-3.5 w-3.5" />Send payment link</>
+                          <><Send className="h-3.5 w-3.5" />Send Payment Link</>
                         )}
                       </button>
                     )}
@@ -1040,12 +1040,12 @@ export default function BookingDetailDrawer({
             {/* Return journey (customer booked a return on the same request) */}
             {booking.returnJourney && (
               <div>
-                <p className="mb-3 text-xs text-amber-600">Return journey</p>
+                <p className="mb-3 text-xs text-amber-600">Return Journey</p>
                 <div className="space-y-3">
-                  <Row icon={RotateCcw} label="Return route" value={booking.returnRoute} />
-                  <Row icon={Plane} label="Return flight" value={booking.returnFlight && booking.returnFlight !== "—" ? booking.returnFlight : null} />
-                  <Row icon={Calendar} label="Return date" value={booking.returnDate ? fmtDayDate(booking.returnDate) : null} />
-                  <Row icon={Clock} label="Return time" value={booking.returnTime ? booking.returnTime.slice(0, 5) : null} />
+                  <Row icon={RotateCcw} label="Return Route" value={booking.returnRoute} />
+                  <Row icon={Plane} label="Return Flight" value={booking.returnFlight && booking.returnFlight !== "—" ? booking.returnFlight : null} />
+                  <Row icon={Calendar} label="Return Date" value={booking.returnDate ? fmtDayDate(booking.returnDate) : null} />
+                  <Row icon={Clock} label="Return Time" value={booking.returnTime ? booking.returnTime.slice(0, 5) : null} />
                 </div>
               </div>
             )}
@@ -1191,7 +1191,7 @@ export default function BookingDetailDrawer({
             {deleteError && (
               <p className="mt-3 rounded-2xl border border-red-400/20 bg-red-400/10 px-4 py-3 text-xs text-red-600">{deleteError}</p>
             )}
-            <label className="mt-4 block text-xs font-semibold text-slate-500">Operator password</label>
+            <label className="mt-4 block text-xs font-semibold text-slate-500">Operator Password</label>
             <input
               type="password"
               value={deletePassword}

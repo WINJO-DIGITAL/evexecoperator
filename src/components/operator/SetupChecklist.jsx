@@ -62,11 +62,11 @@ export default function SetupChecklist({ drivers, hasBookings }) {
   const steps = useMemo(() => {
     const inv = tenant?.brand?.invoice || {};
     const list = [
-      { key: "business", label: "Add your business contact details", done: Boolean(tenant?.contact_email && tenant?.contact_phone), href: "/operator/settings?section=business" },
-      { key: "letterhead", label: "Set up your invoice letterhead", done: Array.isArray(inv.address_lines) && inv.address_lines.length > 0, href: "/operator/settings?section=business" },
-      { key: "driver", label: "Add your first driver", done: drivers.length > 0, href: "/operator/drivers" },
-      { key: "team", label: "Invite your team", done: teamSize != null && teamSize > 1, href: "/operator/settings?section=team", optional: true },
-      { key: "booking", label: "Take your first booking", done: hasBookings, href: "/operator/bookings" },
+      { key: "business", label: "Add Your Business Contact Details", done: Boolean(tenant?.contact_email && tenant?.contact_phone), href: "/operator/settings?section=business" },
+      { key: "letterhead", label: "Set Up Your Invoice Letterhead", done: Array.isArray(inv.address_lines) && inv.address_lines.length > 0, href: "/operator/settings?section=business" },
+      { key: "driver", label: "Add Your First Driver", done: drivers.length > 0, href: "/operator/drivers" },
+      { key: "team", label: "Invite Your Team", done: teamSize != null && teamSize > 1, href: "/operator/settings?section=team", optional: true },
+      { key: "booking", label: "Take Your First Booking", done: hasBookings, href: "/operator/bookings" },
     ];
     // Only when the browser can do push; a desktop without it shouldn't block "done".
     if (push !== null) list.splice(4, 0, { key: "push", label: "Turn on new-booking alerts on this device", done: push, href: "/operator/settings?section=notifications" });
@@ -80,7 +80,7 @@ export default function SetupChecklist({ drivers, hasBookings }) {
   const hide = () => hideChecklist(tenant.id);
 
   return (
-    <section className="card overflow-hidden" aria-label="Get set up">
+    <section className="card overflow-hidden" aria-label="Get Set Up">
       <div className="flex items-center gap-3 border-b border-slate-100 px-4 py-3 sm:px-5">
         <div className="min-w-0 flex-1">
           <h2 className="text-base font-semibold text-[#0F1B33]">Get {tenant.name} set up</h2>
@@ -89,7 +89,7 @@ export default function SetupChecklist({ drivers, hasBookings }) {
           </div>
         </div>
         <span className="text-xs text-slate-500">{doneCount} of {steps.length} done</span>
-        <button onClick={hide} aria-label="Hide setup checklist" className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-600">
+        <button onClick={hide} aria-label="Hide Setup Checklist" className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-600">
           <X className="h-4 w-4" />
         </button>
       </div>

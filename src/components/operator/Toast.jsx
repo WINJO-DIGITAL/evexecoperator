@@ -50,7 +50,7 @@ export function OperatorToastProvider({ children }) {
             <span className="flex-1 text-sm text-[#0F1B33]">{t.message}</span>
             <button
               onClick={() => dismiss(t.id)}
-              aria-label="Dismiss notification"
+              aria-label="Dismiss Notification"
               className="ml-1 flex-shrink-0 text-slate-500 transition hover:text-slate-600"
             >
               <X className="h-3.5 w-3.5" />

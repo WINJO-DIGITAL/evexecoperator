@@ -79,7 +79,7 @@ export default function BookingCard({ booking, drivers, notification, unavailabl
               <Star size={8} fill="currentColor" /> Priority
             </span>
           )}
-          {notification && notification.failedCount > 0 && <AlertTriangle size={12} className="text-red-600" aria-label="Notification failed to send" />}
+          {notification && notification.failedCount > 0 && <AlertTriangle size={12} className="text-red-600" aria-label="Notification Failed To Send" />}
         </div>
         <div className="flex items-center gap-1.5">
           <JobOfferBadge booking={booking} />
@@ -97,8 +97,8 @@ export default function BookingCard({ booking, drivers, notification, unavailabl
         </div>
 
         <div className="rounded-xl border border-slate-100 bg-slate-100 p-3 space-y-2">
-          <DetailRow label="Pick up" value={pickup} strong />
-          <DetailRow label="Drop off" value={dropoff} strong />
+          <DetailRow label="Pick Up" value={pickup} strong />
+          <DetailRow label="Drop Off" value={dropoff} strong />
           {booking.flight_number && <DetailRow label="Flight" value={booking.flight_number} />}
         </div>
 
@@ -113,13 +113,13 @@ export default function BookingCard({ booking, drivers, notification, unavailabl
             <>
               <div className="flex items-center justify-between gap-1.5 text-xs font-bold text-emerald-600">
                 <span className="flex items-center gap-1.5"><RotateCcw size={12} /> Return journey</span>
-                {clickable && <span className="text-[10px] font-semibold text-emerald-600/80">View on calendar →</span>}
+                {clickable && <span className="text-[10px] font-semibold text-emerald-600/80">View On Calendar →</span>}
               </div>
-              {booking.return_date && <DetailRow label="Return date" value={`${displayDate(booking.return_date) ?? booking.return_date}${booking.return_time ? ` · ${booking.return_time.slice(0, 5)}` : ""}`} />}
-              {booking.return_pickup && <DetailRow label="Return pick up" value={booking.return_pickup} />}
-              {booking.return_destination && <DetailRow label="Return drop" value={booking.return_destination} />}
-              {booking.return_airport && <DetailRow label="Return airport" value={booking.return_airport} />}
-              {booking.return_flight && <DetailRow label="Return flight" value={booking.return_flight} />}
+              {booking.return_date && <DetailRow label="Return Date" value={`${displayDate(booking.return_date) ?? booking.return_date}${booking.return_time ? ` · ${booking.return_time.slice(0, 5)}` : ""}`} />}
+              {booking.return_pickup && <DetailRow label="Return Pick Up" value={booking.return_pickup} />}
+              {booking.return_destination && <DetailRow label="Return Drop" value={booking.return_destination} />}
+              {booking.return_airport && <DetailRow label="Return Airport" value={booking.return_airport} />}
+              {booking.return_flight && <DetailRow label="Return Flight" value={booking.return_flight} />}
             </>
           );
           return clickable ? (
@@ -158,7 +158,7 @@ export default function BookingCard({ booking, drivers, notification, unavailabl
             {expanded ? "Less details" : "More details"}
           </button>
           {onDangerAction && (
-            <button type="button" onClick={() => onDangerAction(booking)} title="Remove job" className="flex items-center gap-1 rounded-lg border border-red-400/20 bg-red-500/10 px-2.5 py-1 text-xs font-semibold text-red-600 transition hover:bg-red-500/20"><Trash2 size={12} /> Remove</button>
+            <button type="button" onClick={() => onDangerAction(booking)} title="Remove Job" className="flex items-center gap-1 rounded-lg border border-red-400/20 bg-red-500/10 px-2.5 py-1 text-xs font-semibold text-red-600 transition hover:bg-red-500/20"><Trash2 size={12} /> Remove</button>
           )}
         </div>
 
@@ -176,7 +176,7 @@ export default function BookingCard({ booking, drivers, notification, unavailabl
             {(booking.pob_at || booking.completed_at || (proofs && proofs.length > 0)) && (
               <div className="rounded-xl border border-emerald-400/15 bg-emerald-400/5 p-3 space-y-2">
                 <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600"><ShieldCheck size={12} /> Proof of job</div>
-                {booking.pob_at && <DetailRow label="Picked up" value={proofTime(booking.pob_at)} />}
+                {booking.pob_at && <DetailRow label="Picked Up" value={proofTime(booking.pob_at)} />}
                 {booking.completed_at && <DetailRow label="Completed" value={proofTime(booking.completed_at)} />}
                 {proofs && proofs.length > 0 && (
                   <div className="flex flex-wrap gap-2 pt-1">
@@ -303,14 +303,14 @@ function EditBookingModal({ booking, onClose }: { booking: DbBooking; onClose: (
             <Field label="Date" type="date" value={form.travel_date} onChange={(v) => set("travel_date", v)} />
             <Field label="Time" type="time" value={form.travel_time} onChange={(v) => set("travel_time", v)} />
           </div>
-          <Field label="Customer name" value={form.customer_name} onChange={(v) => set("customer_name", v)} required />
+          <Field label="Customer Name" value={form.customer_name} onChange={(v) => set("customer_name", v)} required />
           <div className="grid grid-cols-2 gap-2">
             <Field label="Phone" value={form.customer_phone} onChange={(v) => set("customer_phone", v)} />
             <Field label="Email" value={form.customer_email} onChange={(v) => set("customer_email", v)} />
           </div>
-          <Field label="Pickup address" value={form.pickup_location} onChange={(v) => set("pickup_location", v)} />
-          <Field label="Drop-off address" value={form.dropoff_address} onChange={(v) => set("dropoff_address", v)} />
-          <Field label="Flight number" value={form.flight_number} onChange={(v) => set("flight_number", v)} />
+          <Field label="Pickup Address" value={form.pickup_location} onChange={(v) => set("pickup_location", v)} />
+          <Field label="Drop-off Address" value={form.dropoff_address} onChange={(v) => set("dropoff_address", v)} />
+          <Field label="Flight Number" value={form.flight_number} onChange={(v) => set("flight_number", v)} />
           {booking.flight_number && (
             <FlightVerificationCard
               bookingId={booking.id}
@@ -326,7 +326,7 @@ function EditBookingModal({ booking, onClose }: { booking: DbBooking; onClose: (
           <Field label="Price (£)" type="number" value={form.quoted_price} onChange={(v) => set("quoted_price", v)} />
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="mb-1 block text-xs text-slate-500">Payment status</label>
+              <label className="mb-1 block text-xs text-slate-500">Payment Status</label>
               <select
                 value={form.payment_status}
                 onChange={(e) => set("payment_status", e.target.value)}
@@ -344,7 +344,7 @@ function EditBookingModal({ booking, onClose }: { booking: DbBooking; onClose: (
                 onChange={(e) => set("payment_method", e.target.value)}
                 className={editInputCls}
               >
-                <option value="">Not set — TBC</option>
+                <option value="">Not Set — TBC</option>
                 <option value="Cash">Cash</option>
                 <option value="Card">Card</option>
                 <option value="Bank Transfer">Bank Transfer</option>

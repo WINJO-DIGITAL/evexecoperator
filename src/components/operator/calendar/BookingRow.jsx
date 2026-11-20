@@ -106,7 +106,7 @@ export default function BookingRow({ b, onOpen, onAction, selected = false }) {
             {from ?? "—"} <span className="text-cal-faint">→</span> {to ?? "—"}
           </p>
           <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-cal-xs text-cal-muted">
-            {b.driverId ? <span>{b.driver}</span> : <span>No driver</span>}
+            {b.driverId ? <span>{b.driver}</span> : <span>No Driver</span>}
             {flight && (
               <>
                 <span aria-hidden>·</span>

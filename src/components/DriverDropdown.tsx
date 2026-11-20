@@ -101,7 +101,7 @@ export default function DriverDropdown({
           {/* Mobile: bottom sheet with a scrollable list — swipe stays in the list */}
           <div className="fixed inset-x-0 bottom-0 z-50 flex max-h-[75vh] flex-col rounded-t-3xl border-t border-slate-200 bg-white shadow-2xl sm:hidden">
             <div className="flex flex-shrink-0 items-center justify-between border-b border-slate-100 px-4 py-3">
-              <p className="text-sm font-semibold text-[#0F1B33]">Assign driver</p>
+              <p className="text-sm font-semibold text-[#0F1B33]">Assign Driver</p>
               <button
                 onClick={() => setOpen(false)}
                 className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 text-slate-500"

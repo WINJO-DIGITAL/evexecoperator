@@ -431,7 +431,7 @@ export default function BookingModal({ open, onClose, onSubmit, initialValues, c
               </svg>
             </div>
             <p className="text-xl font-semibold text-[#0F1B33]">Booking Created</p>
-            <p className="text-sm text-slate-500">Transfer added to dispatch board</p>
+            <p className="text-sm text-slate-500">Transfer Added To Dispatch Board</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="grid gap-5 px-4 py-4 sm:gap-6 sm:px-8 sm:py-6">

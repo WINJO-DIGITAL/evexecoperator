@@ -22,10 +22,10 @@ async function api(method) {
 export function paymentsStatus(v) {
   if (!v) return { tone: "neutral", title: "Checking…", body: "" };
   if (!v.configured) return { tone: "neutral", title: "Card payments are not available yet", body: "Online card payments for your business are being set up on the platform. Until then your customers pay cash or by bank transfer." };
-  if (v.ready) return { tone: "good", title: "Card payments are on", body: "Your customers' card payments go straight to your own Stripe account. You pay Stripe's normal fees, and refunds and disputes come from your Stripe balance." };
-  if (v.connected && v.detailsSubmitted) return { tone: "wait", title: "Stripe is checking your details", body: "You have sent your details. Card payments switch on as soon as Stripe has finished checking them." };
-  if (v.connected) return { tone: "wait", title: "Finish setting up Stripe", body: "Your Stripe account is started but not finished. Continue to complete it." };
-  return { tone: "neutral", title: "Connect your Stripe account", body: "Connect your own Stripe account so customers can pay you by card. It is free to set up; you pay Stripe's normal fees on each payment." };
+  if (v.ready) return { tone: "good", title: "Card Payments Are On", body: "Your customers' card payments go straight to your own Stripe account. You pay Stripe's normal fees, and refunds and disputes come from your Stripe balance." };
+  if (v.connected && v.detailsSubmitted) return { tone: "wait", title: "Stripe Is Checking Your Details", body: "You have sent your details. Card payments switch on as soon as Stripe has finished checking them." };
+  if (v.connected) return { tone: "wait", title: "Finish Setting Up Stripe", body: "Your Stripe account is started but not finished. Continue to complete it." };
+  return { tone: "neutral", title: "Connect Your Stripe Account", body: "Connect your own Stripe account so customers can pay you by card. It is free to set up; you pay Stripe's normal fees on each payment." };
 }
 
 const TONE = {
@@ -90,7 +90,7 @@ export default function PaymentsSettings({ toast }) {
 
       {view?.connected && (
         <section className="rounded-2xl border border-slate-200 bg-white p-5">
-          <p className="text-sm font-semibold text-[#0F1B33]">Your Stripe dashboard</p>
+          <p className="text-sm font-semibold text-[#0F1B33]">Your Stripe Dashboard</p>
           <p className="mt-1 text-xs text-slate-500">
             Payouts, refunds and payment reports are in your own Stripe account. Sign in there with the email address you gave Stripe.
           </p>

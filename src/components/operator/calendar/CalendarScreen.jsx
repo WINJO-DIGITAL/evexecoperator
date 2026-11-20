@@ -231,7 +231,7 @@ export default function CalendarScreen({
 
 function Skeleton() {
   return (
-    <div className="mt-8" aria-busy="true" aria-label="Loading bookings">
+    <div className="mt-8" aria-busy="true" aria-label="Loading Bookings">
       <div className="grid grid-cols-7 border-b border-cal-line">
         {Array.from({ length: 35 }).map((_, i) => (
           <div key={i} className="h-14 border-t border-cal-line p-1.5 sm:h-16 lg:h-[112px]">

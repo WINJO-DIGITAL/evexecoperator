@@ -72,7 +72,7 @@ export default function CalendarToolbar({
 
       {/* Views + search + filters */}
       <div className="flex items-center justify-between gap-2">
-        <div role="tablist" aria-label="Calendar view" className="-mb-px flex">
+        <div role="tablist" aria-label="Calendar View" className="-mb-px flex">
           {VIEW_LABELS.map((v, i) => {
             const active = v.key === view;
             return (
@@ -104,11 +104,11 @@ export default function CalendarToolbar({
               onChange={(e) => onQuery(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Escape") { onQuery(""); setSearchOpen(false); } }}
               placeholder="Name, ref, flight, driver"
-              aria-label="Search the calendar"
+              aria-label="Search The Calendar"
               className="w-28 min-w-0 bg-transparent text-cal-sm text-cal-ink outline-none placeholder:text-cal-faint sm:w-full"
             />
             {query && (
-              <button type="button" onClick={() => onQuery("")} aria-label="Clear search" className="text-cal-muted hover:text-cal-ink">
+              <button type="button" onClick={() => onQuery("")} aria-label="Clear Search" className="text-cal-muted hover:text-cal-ink">
                 <X className="h-3.5 w-3.5" />
               </button>
             )}
@@ -139,8 +139,8 @@ export default function CalendarToolbar({
                   onChange={(e) => onDriver(e.target.value)}
                   className="mt-1.5 h-10 w-full rounded-cal border border-cal-rule bg-cal-sheet px-2 text-cal-sm text-cal-ink outline-none focus:border-cal-brass sm:h-9"
                 >
-                  <option value="all">All drivers</option>
-                  <option value="none">No driver assigned</option>
+                  <option value="all">All Drivers</option>
+                  <option value="none">No Driver Assigned</option>
                   {drivers.map((d) => (
                     <option key={d.id} value={d.id}>{d.name}{d.kind === "partner" ? " (partner)" : ""}</option>
                   ))}

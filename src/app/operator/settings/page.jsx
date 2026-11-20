@@ -57,13 +57,13 @@ const SECTIONS = [
   { key: "payments", label: "Payments", icon: CreditCard },
   { key: "integrations", label: "Integrations", icon: Plug },
   { key: "security", label: "Security", icon: Shield },
-  { key: "activity", label: "Activity log", icon: History },
+  { key: "activity", label: "Activity Log", icon: History },
 ];
 
 // Who changed what on bookings (status, driver, payment), newest first.
 function ActivitySettings() {
   const { entries, loading, error } = useAuditLog();
-  if (loading) return <p className="text-sm text-slate-500">Loading activity…</p>;
+  if (loading) return <p className="text-sm text-slate-500">Loading Activity…</p>;
   if (error) return <p className="text-sm text-red-600">{error}</p>;
   return <AuditLogTab entries={entries} heading={null} />;
 }
@@ -199,7 +199,7 @@ function BusinessSettings({ toast }) {
     }
   }
 
-  if (loading) return <p className="text-sm text-slate-500">Loading business details…</p>;
+  if (loading) return <p className="text-sm text-slate-500">Loading Business Details…</p>;
   if (error || !tenant) {
     return <p className="text-sm text-red-600">{error || "No business is linked to this account."}</p>;
   }
@@ -219,7 +219,7 @@ function BusinessSettings({ toast }) {
       </div>
       <div className="space-y-5">
         <div>
-          <p className="text-xs text-amber-600">Invoice letterhead</p>
+          <p className="text-xs text-amber-600">Invoice Letterhead</p>
           <p className="mt-1 text-xs text-slate-500">Shown on the invoices customers download from their account.</p>
         </div>
         <TextArea label="Address" value={form.addressLines} onChange={set("addressLines")} rows={4} disabled={off} hint="One line per row." />
@@ -297,7 +297,7 @@ function PushDeviceRow() {
       <div className="flex items-center gap-3">
         <BellRing className="h-4 w-4 flex-shrink-0 text-[#A07D32]" />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-[#0F1B33]">Push notifications on this device</p>
+          <p className="text-sm font-medium text-[#0F1B33]">Push Notifications On This Device</p>
           <p className="mt-0.5 text-[11px] leading-relaxed text-slate-500">
             {supported
               ? "Get an alert on this device when a booking comes in from the website — even with the app closed."
@@ -331,7 +331,7 @@ function NotificationCenter() {
   const channels = [
     { key: "push", icon: BellRing, label: "Push / in-app", note: "Set up on each device above", status: "On" },
     { key: "email", icon: Mail, label: "Email", toggle: "email_enabled", enabled: settings.email_enabled },
-    { key: "sms", icon: Smartphone, label: "Text messages", note: "Sent from your own phone with one tap, never automatically", status: "From your phone" },
+    { key: "sms", icon: Smartphone, label: "Text Messages", note: "Sent from your own phone with one tap, never automatically", status: "From your phone" },
   ];
 
   return (
@@ -339,7 +339,7 @@ function NotificationCenter() {
       <PushDeviceRow />
 
       <div className="rounded-2xl border border-amber-400/15 bg-amber-400/[0.04] p-4 text-xs leading-relaxed text-slate-600">
-        <p className="mb-1 font-semibold text-amber-600">How messages are sent</p>
+        <p className="mb-1 font-semibold text-amber-600">How Messages Are Sent</p>
         <strong>Operators</strong> are alerted by push &amp; in-app. <strong>Drivers</strong> get their jobs
         by push and <strong>email</strong>. <strong>Customers</strong> get <strong>email</strong>; when there&apos;s
         no email on file, the driver or office is prompted to send a pre-written text from their own phone.
@@ -369,7 +369,7 @@ function NotificationCenter() {
       {error && <p className="text-[11px] text-red-600">{error}</p>}
 
       <div>
-        <p className="mb-2 text-xs text-slate-500">Recent notifications</p>
+        <p className="mb-2 text-xs text-slate-500">Recent Notifications</p>
         <div className="divide-y divide-white/5 rounded-2xl border border-slate-100 bg-slate-50">
           {loading ? (
             <p className="px-4 py-6 text-center text-xs text-slate-600">Loading…</p>
@@ -444,7 +444,7 @@ function BrandPreview({ name, logoSrc, primary, accent }) {
         </div>
       </div>
       <div className="flex items-center justify-between px-5 py-4 text-sm">
-        <span className="text-slate-500">Airport transfer</span>
+        <span className="text-slate-500">Airport Transfer</span>
         <span className="font-semibold text-[#0F1B33]">£90.00</span>
       </div>
       <div className="flex items-center justify-between px-5 py-3 text-sm font-bold " style={{ background: primary, color: accent }}>
@@ -468,7 +468,7 @@ function BrandingSettings({ toast }) {
     setForm({ logoUrl: b.logoUrl, primary: b.primary, accent: b.accent });
   }
 
-  if (loading && !form) return <p className="text-sm text-slate-500">Loading branding…</p>;
+  if (loading && !form) return <p className="text-sm text-slate-500">Loading Branding…</p>;
   if (!tenant || !form) return <p className="text-sm text-red-600">{error || "No business is linked to this account."}</p>;
 
   const off = !canEdit || busy || uploading;
@@ -532,7 +532,7 @@ function BrandingSettings({ toast }) {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={logoSrc} alt="Current logo" className="max-h-full max-w-full object-contain" />
                 ) : (
-                  <span className="text-xs " style={{ color: form.accent }}>No logo</span>
+                  <span className="text-xs " style={{ color: form.accent }}>No Logo</span>
                 )}
               </span>
               {canEdit && (
@@ -563,14 +563,14 @@ function BrandingSettings({ toast }) {
           </div>
 
           <ColourField
-            label="Main colour"
+            label="Main Colour"
             hint="Behind your logo on invoice headers and footers."
             value={form.primary}
             onChange={(v) => setForm((f) => ({ ...f, primary: v }))}
             disabled={off}
           />
           <ColourField
-            label="Accent colour"
+            label="Accent Colour"
             hint="Headings, lines and icons on the main colour."
             value={form.accent}
             onChange={(v) => setForm((f) => ({ ...f, accent: v }))}
@@ -590,7 +590,7 @@ function BrandingSettings({ toast }) {
         </div>
 
         <div>
-          <p className="mb-3 text-xs text-slate-500">Invoice preview</p>
+          <p className="mb-3 text-xs text-slate-500">Invoice Preview</p>
           <BrandPreview name={tenant.name || "Your business"} logoSrc={logoSrc} primary={isHexColour(form.primary) ? form.primary : DEFAULT_PRIMARY} accent={isHexColour(form.accent) ? form.accent : DEFAULT_ACCENT} />
         </div>
       </div>
@@ -644,7 +644,7 @@ function PriceSettings({ toast }) {
   // Fill the form from the saved prices as soon as they have loaded (while rendering).
   if (tenant && !form) setForm(toForm(pricingFromTenant(tenant.pricing)));
 
-  if (loading && !form) return <p className="text-sm text-slate-500">Loading prices…</p>;
+  if (loading && !form) return <p className="text-sm text-slate-500">Loading Prices…</p>;
   if (!tenant || !form) return <p className="text-sm text-red-600">{error || "No business is linked to this account."}</p>;
 
   const off = !canEdit || busy;
@@ -685,7 +685,7 @@ function PriceSettings({ toast }) {
       )}
 
       <div className="hidden grid-cols-[minmax(0,1fr)_84px_112px_112px_40px] gap-3 px-1 text-xs text-slate-500 sm:grid">
-        <span>Destination</span><span>Code</span><span className="text-right">One way</span><span className="text-right">Return</span><span />
+        <span>Destination</span><span>Code</span><span className="text-right">One Way</span><span className="text-right">Return</span><span />
       </div>
       <ul className="space-y-3 sm:space-y-2">
         {form.airports.map((a) => (
@@ -713,7 +713,7 @@ function PriceSettings({ toast }) {
                 className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#0F1B33] outline-none focus:border-amber-400 disabled:bg-slate-50 disabled:text-slate-600"
               />
             </label>
-            <MoneyInput label="One way" value={a.oneWay} onChange={setRow(a.key, "oneWay")} disabled={off} />
+            <MoneyInput label="One Way" value={a.oneWay} onChange={setRow(a.key, "oneWay")} disabled={off} />
             <MoneyInput label="Return" value={a.ret} onChange={setRow(a.key, "ret")} disabled={off} />
             {canEdit ? (
               <button
@@ -741,8 +741,8 @@ function PriceSettings({ toast }) {
       )}
 
       <div className="max-w-xs border-t border-slate-100 pt-5">
-        <p className="mb-2 text-xs font-medium text-[#0F1B33]">Each extra stop adds</p>
-        <MoneyInput label="Extra stop charge" hideLabel value={form.extraStop} onChange={(v) => setForm((f) => ({ ...f, extraStop: v }))} disabled={off} />
+        <p className="mb-2 text-xs font-medium text-[#0F1B33]">Each Extra Stop Adds</p>
+        <MoneyInput label="Extra Stop Charge" hideLabel value={form.extraStop} onChange={(v) => setForm((f) => ({ ...f, extraStop: v }))} disabled={off} />
       </div>
 
       {canEdit && <SaveButton onClick={handleSave} busy={busy} label="Save Prices" />}
@@ -982,7 +982,7 @@ function SecuritySettings({ toast }) {
 
   return (
     <div className="space-y-5">
-      <p className="text-xs text-amber-600">Change password</p>
+      <p className="text-xs text-amber-600">Change Password</p>
       <TextInput label="Current Password" value={form.current} onChange={set("current")} type="password" autoComplete="current-password" />
       <TextInput label="New Password" value={form.next} onChange={set("next")} type="password" autoComplete="new-password" placeholder="At least 8 characters, a letter and a number" />
       <TextInput label="Confirm New Password" value={form.confirm} onChange={set("confirm")} type="password" autoComplete="new-password" />

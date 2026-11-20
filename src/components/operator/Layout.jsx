@@ -66,7 +66,7 @@ function NotificationPopover({
             <button
               onClick={onClearBookings}
               className="text-[10px] text-slate-500 hover:text-amber-600 transition"
-              title="Mark all as read"
+              title="Mark All as Read"
             >
               Mark all read
             </button>
@@ -79,7 +79,7 @@ function NotificationPopover({
 
       <div className="max-h-80 overflow-y-auto">
         {total === 0 && (
-          <p className="py-6 text-center text-sm text-slate-600">No new bookings</p>
+          <p className="py-6 text-center text-sm text-slate-600">No New Bookings</p>
         )}
 
         {/* New bookings */}
@@ -119,7 +119,7 @@ function NotificationPopover({
         onClick={onClose}
         className="flex items-center justify-between border-t border-slate-100 px-4 py-3 text-xs font-medium text-slate-600 transition hover:bg-slate-50 hover:text-amber-600"
       >
-        <span>Quotes, missed calls &amp; messages</span>
+        <span>Quotes, Missed Calls &amp; Messages</span>
         <span className="flex items-center gap-2">
           {inboxCount > 0 && <span className="rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">{inboxCount}</span>}
           Inbox →
@@ -311,7 +311,7 @@ export default function Layout({ children, onSignOut }) {
                     enterKeyHint="search"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    aria-label="Search bookings and drivers"
+                    aria-label="Search Bookings and Drivers"
                     placeholder="Search bookings, drivers…"
                     className="w-full bg-transparent text-sm text-[#0F1B33] outline-none placeholder:text-slate-400"
                   />
@@ -335,7 +335,7 @@ export default function Layout({ children, onSignOut }) {
                   enterKeyHint="search"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  aria-label="Search bookings, flights and drivers"
+                  aria-label="Search Bookings, Flights and Drivers"
                   placeholder="Search bookings, flights, drivers…"
                   className="w-full bg-transparent text-sm text-[#0F1B33] outline-none placeholder:text-slate-400"
                 />

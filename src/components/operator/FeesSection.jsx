@@ -42,7 +42,7 @@ function TenantRow({ row, defaults, toast, onSaved }) {
         <input className={INPUT} inputMode="decimal" value={monthly} onChange={(e) => setMonthly(e.target.value)} placeholder={`Monthly £ (default ${formatFee(defaults.monthly)})`} />
         <input className={INPUT} inputMode="decimal" value={setup} onChange={(e) => setSetup(e.target.value)} placeholder={`Set-up £ (default ${formatFee(defaults.setup)})`} />
         <button disabled={busy} onClick={() => save(false)} className="rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-black hover:bg-amber-400 disabled:opacity-50">Save</button>
-        <button disabled={busy || !row.custom} onClick={() => save(true)} className="rounded-xl border border-slate-200 px-4 py-2 text-sm text-slate-600 hover:bg-white disabled:opacity-40">Use default</button>
+        <button disabled={busy || !row.custom} onClick={() => save(true)} className="rounded-xl border border-slate-200 px-4 py-2 text-sm text-slate-600 hover:bg-white disabled:opacity-40">Use Default</button>
       </div>
     </div>
   );
@@ -93,7 +93,7 @@ export default function FeesSection({ toast }) {
   }
 
   if (error) return <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>;
-  if (!defaults) return <p className="text-sm text-slate-500">Loading fees…</p>;
+  if (!defaults) return <p className="text-sm text-slate-500">Loading Fees…</p>;
 
   return (
     <div className="space-y-4">
@@ -101,11 +101,11 @@ export default function FeesSection({ toast }) {
         These rates are a record of what each business pays. Nothing is billed automatically from them. A business with no own rate pays the default; an own rate of £0 means free.
       </p>
       <div className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
-        <p className="text-sm font-medium text-[#0F1B33]">Default rates</p>
+        <p className="text-sm font-medium text-[#0F1B33]">Default Rates</p>
         <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
           <label className="text-xs text-slate-500">Monthly (£)<input className={`${INPUT} mt-1`} inputMode="decimal" value={monthly} onChange={(e) => setMonthly(e.target.value)} /></label>
           <label className="text-xs text-slate-500">Set-up (£)<input className={`${INPUT} mt-1`} inputMode="decimal" value={setup} onChange={(e) => setSetup(e.target.value)} /></label>
-          <button disabled={busy} onClick={saveDefaults} className="self-end rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-black hover:bg-amber-400 disabled:opacity-50">Save defaults</button>
+          <button disabled={busy} onClick={saveDefaults} className="self-end rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-black hover:bg-amber-400 disabled:opacity-50">Save Defaults</button>
         </div>
       </div>
       {rows.map((r) => <TenantRow key={r.tenant_id} row={r} defaults={defaults} toast={toast} onSaved={load} />)}

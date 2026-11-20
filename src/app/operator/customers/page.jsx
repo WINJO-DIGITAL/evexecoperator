@@ -119,7 +119,7 @@ export default function CustomersPage() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search name, phone, email or booking ref"
-            aria-label="Search customers"
+            aria-label="Search Customers"
             className="min-w-0 flex-1 bg-transparent text-sm text-[#0F1B33] outline-none placeholder:text-slate-400"
           />
         </div>
@@ -130,7 +130,7 @@ export default function CustomersPage() {
 
       <div className="card overflow-hidden">
         <div className="hidden grid-cols-[minmax(0,2fr)_minmax(0,2fr)_80px_110px_140px_100px_24px] gap-3 border-b border-slate-100 px-5 py-3 text-xs text-slate-500 lg:grid">
-          <span>Customer</span><span>Contact</span><span className="text-right">Trips</span><span>Last trip</span><span>Next trip</span><span className="text-right">Unpaid</span><span />
+          <span>Customer</span><span>Contact</span><span className="text-right">Trips</span><span>Last Trip</span><span>Next Trip</span><span className="text-right">Unpaid</span><span />
         </div>
         {loading && customers.length === 0 ? (
           <p className="px-5 py-10 text-center text-sm text-slate-500">Loading…</p>

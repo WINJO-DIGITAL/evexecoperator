@@ -21,7 +21,7 @@ export default function InboxPage() {
 
   const convertQuote = useCallback((quote) => {
     openNewBooking(quoteToBookingForm(quote), {
-      eyebrow: "Quote request",
+      eyebrow: "Quote Request",
       heading: "Create Booking",
       onCreated: async () => {
         const ok = await inbox.setQuoteStatus(quote.id, QUOTE_REQUEST_STATUS.CONVERTED);

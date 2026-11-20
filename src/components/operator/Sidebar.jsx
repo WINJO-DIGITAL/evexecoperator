@@ -37,8 +37,8 @@ const navItems = [
 ];
 
 const portalLinks = [
-  { label: "Driver app", icon: Car, href: PORTALS.driverApp.url },
-  { label: "Booking page", icon: BookOpen, href: PORTALS.bookingForm.url },
+  { label: "Driver App", icon: Car, href: PORTALS.driverApp.url },
+  { label: "Booking Page", icon: BookOpen, href: PORTALS.bookingForm.url },
 ];
 
 const isActive = (pathname, href) => pathname === href || pathname.startsWith(`${href}/`);
@@ -80,7 +80,7 @@ export default function Sidebar({ inboxCount = 0, businessName = DEPLOYMENT_BRAN
       {/* Tablet & desktop: left sidebar. Icon rail with small labels on
           tablets, full labelled sidebar from lg. */}
       <aside
-        aria-label="Main navigation"
+        aria-label="Main Navigation"
         className="fixed left-0 top-0 z-50 hidden h-screen w-20 flex-col border-r border-white/5 bg-[#050B17] py-5 sm:flex lg:w-60 lg:px-4"
       >
         <Link href="/operator/today" className="mb-8 flex items-center justify-center gap-3 lg:justify-start lg:px-2" title={businessName}>
@@ -150,7 +150,7 @@ export default function Sidebar({ inboxCount = 0, businessName = DEPLOYMENT_BRAN
 
       {/* Phone: four main tabs + More */}
       <nav
-        aria-label="Main navigation"
+        aria-label="Main Navigation"
         className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-white/5 bg-[#050B17]/95 px-1 pb-[calc(env(safe-area-inset-bottom)+0.25rem)] pt-1 backdrop-blur-xl sm:hidden"
       >
         {navItems.filter((i) => i.mobile).map((item) => {

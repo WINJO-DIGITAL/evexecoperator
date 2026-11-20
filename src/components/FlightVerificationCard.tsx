@@ -54,7 +54,7 @@ export default function FlightVerificationCard({
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
-        <p className="text-xs text-amber-600">Flight verification</p>
+        <p className="text-xs text-amber-600">Flight Verification</p>
         <div className="flex items-center gap-1.5 rounded-lg bg-slate-100 p-0.5 text-[11px]">
           <button
             type="button"
@@ -92,25 +92,25 @@ export default function FlightVerificationCard({
           <div className="grid grid-cols-2 gap-x-4 gap-y-2 pt-1">
             {verification.scheduled_departure && (
               <div>
-                <p className="text-xs text-slate-500">Scheduled departure</p>
+                <p className="text-xs text-slate-500">Scheduled Departure</p>
                 <p className="mt-0.5 font-medium text-[#0F1B33]">{formatFlightDateTime(verification.scheduled_departure)}</p>
               </div>
             )}
             {verification.scheduled_arrival && (
               <div>
-                <p className="text-xs text-slate-500">Scheduled arrival</p>
+                <p className="text-xs text-slate-500">Scheduled Arrival</p>
                 <p className="mt-0.5 font-medium text-[#0F1B33]">{formatFlightDateTime(verification.scheduled_arrival)}</p>
               </div>
             )}
             {verification.recommended_pickup && (
               <div>
-                <p className="text-xs text-slate-500">Estimated arrival</p>
+                <p className="text-xs text-slate-500">Estimated Arrival</p>
                 <p className="mt-0.5 font-medium text-[#0F1B33]">{formatFlightDateTime(verification.recommended_pickup)}</p>
               </div>
             )}
             {verification.flight_status && (
               <div>
-                <p className="text-xs text-slate-500">Flight status</p>
+                <p className="text-xs text-slate-500">Flight Status</p>
                 <p className="mt-0.5 font-medium text-[#0F1B33]">{verification.flight_status}</p>
               </div>
             )}

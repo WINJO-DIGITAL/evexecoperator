@@ -141,7 +141,7 @@ function InlineDriverCell({ bookingId, currentDriverId, drivers, onAssign }) {
 
 const LIST_VIEW_TABS = [
   { key: "upcoming", label: "Upcoming" },
-  { key: "action", label: "Needs action", short: "To do" },
+  { key: "action", label: "Needs Action", short: "To do" },
   { key: "past", label: "Past" },
   { key: "all", label: "All" },
 ];
@@ -160,7 +160,7 @@ function dateKeyOf(b) {
 // Day heading: "Today" / "Tomorrow" / "Yesterday" with the date beside it,
 // otherwise the weekday and date ("Thu 01/10/2026").
 function groupLabel(key) {
-  if (!key) return { label: "No date", sub: "" };
+  if (!key) return { label: "No Date", sub: "" };
   const diff = Math.round((Date.parse(`${key}T12:00:00Z`) - Date.parse(`${ukDateDaysAgo(0)}T12:00:00Z`)) / 86400000);
   const rel = diff === 0 ? "Today" : diff === 1 ? "Tomorrow" : diff === -1 ? "Yesterday" : null;
   return rel ? { label: rel, sub: fmtDayDate(key) } : { label: fmtDayDate(key), sub: "" };
@@ -313,10 +313,10 @@ function Badges({ facts }) {
   if (!pendingRequest && !unpaid && !driverUnconfirmed && !awaitingConfirm) return null;
   return (
     <div className="mt-2 flex flex-wrap gap-1.5">
-      {pendingRequest && <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800">New request</span>}
+      {pendingRequest && <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800">New Request</span>}
       {unpaid && <span className="rounded-full bg-violet-50 px-2 py-0.5 text-[11px] font-semibold text-violet-700">Unpaid</span>}
-      {driverUnconfirmed && <span className="rounded-full bg-red-50 px-2 py-0.5 text-[11px] font-semibold text-red-700">Driver hasn&apos;t confirmed</span>}
-      {awaitingConfirm && <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700">Awaiting driver confirm</span>}
+      {driverUnconfirmed && <span className="rounded-full bg-red-50 px-2 py-0.5 text-[11px] font-semibold text-red-700">Driver Hasn&apos;t Confirmed</span>}
+      {awaitingConfirm && <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700">Awaiting Driver Confirm</span>}
     </div>
   );
 }
@@ -400,7 +400,7 @@ function BookingCard({ booking, onSelect, drivers = [], onAssign, onRespond, onS
           {/* Driver · call · status */}
           <div className="mt-2.5 flex items-center gap-2">
             {isDone && !booking.driverId ? (
-              <span className="text-xs text-slate-400">No driver</span>
+              <span className="text-xs text-slate-400">No Driver</span>
             ) : (
             <button
               type="button"
@@ -732,7 +732,7 @@ export default function BookingsList() {
 
                 {/* View switcher (Upcoming / Needs action / Past / All) + mobile search toggle */}
                 <div className="flex min-w-0 items-center gap-2">
-                  <div role="tablist" aria-label="Which bookings" className="flex min-w-0 flex-1 gap-1 overflow-x-auto rounded-2xl bg-slate-100 p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-none">
+                  <div role="tablist" aria-label="Which Bookings" className="flex min-w-0 flex-1 gap-1 overflow-x-auto rounded-2xl bg-slate-100 p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-none">
                     {LIST_VIEW_TABS.map((v) => (
                       <button
                         key={v.key}

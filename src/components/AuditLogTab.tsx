@@ -12,9 +12,9 @@ interface Props {
 }
 
 const FIELD_CONFIG: Record<string, { label: string; icon: LucideIcon }> = {
-  status: { label: "Status changed", icon: Tag },
-  driver: { label: "Driver assignment", icon: UserCog },
-  payment_status: { label: "Payment status", icon: CreditCard },
+  status: { label: "Status Changed", icon: Tag },
+  driver: { label: "Driver Assignment", icon: UserCog },
+  payment_status: { label: "Payment Status", icon: CreditCard },
 };
 
 export default function AuditLogTab({ entries, heading = "Activity Log" }: Props) {
@@ -28,7 +28,7 @@ export default function AuditLogTab({ entries, heading = "Activity Log" }: Props
       {entries.length === 0 ? (
         <div className="flex flex-col items-center py-12 text-slate-600">
           <History size={32} className="mb-2 text-[#A07D32]" />
-          <p className="text-sm">No activity yet</p>
+          <p className="text-sm">No Activity Yet</p>
         </div>
       ) : (
         entries.map((entry) => <AuditLogEntryCard key={entry.id} entry={entry} />)

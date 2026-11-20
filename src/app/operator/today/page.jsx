@@ -106,10 +106,10 @@ export default function TodayPage() {
   }, [bookings, drivers, today, now]);
 
   const KIND = {
-    reply: { label: "Accept or decline", icon: MessageSquareReply, cls: "bg-amber-50 text-amber-700 border-amber-200" },
-    driver: { label: "No driver", icon: UserX, cls: "bg-red-50 text-red-700 border-red-200" },
+    reply: { label: "Accept or Decline", icon: MessageSquareReply, cls: "bg-amber-50 text-amber-700 border-amber-200" },
+    driver: { label: "No Driver", icon: UserX, cls: "bg-red-50 text-red-700 border-red-200" },
     unpaid: { label: "Unpaid", icon: CreditCard, cls: "bg-violet-50 text-violet-700 border-violet-200" },
-    finish: { label: "Awaiting completion", icon: Flag, cls: "bg-slate-100 text-slate-700 border-slate-300" },
+    finish: { label: "Awaiting Completion", icon: Flag, cls: "bg-slate-100 text-slate-700 border-slate-300" },
   };
 
   return (
@@ -123,9 +123,9 @@ export default function TodayPage() {
       <SetupChecklist drivers={drivers} hasBookings={api.totalCount > 0 || bookings.length > 0} />
 
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        <Tile label="Jobs today" sub={view.revenue ? `£${view.revenue.toLocaleString("en-GB")}` : undefined} value={view.todays.length} href="/operator/bookings" />
-        <Tile label="To reply to" value={view.reply.length} />
-        <Tile label="Need a driver" sub="next 48 hours" value={view.noDriver.length} alert />
+        <Tile label="Jobs Today" sub={view.revenue ? `£${view.revenue.toLocaleString("en-GB")}` : undefined} value={view.todays.length} href="/operator/bookings" />
+        <Tile label="To Reply To" value={view.reply.length} />
+        <Tile label="Need a Driver" sub="next 48 hours" value={view.noDriver.length} alert />
         <Tile label="Inbox" value={inbox.count} href="/operator/inbox" />
       </div>
 
@@ -162,7 +162,7 @@ export default function TodayPage() {
           <section className="card overflow-hidden">
             <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 sm:px-5">
               <h2 className="text-sm font-semibold text-[#0F1B33]">Today <span className="font-normal text-slate-500">· {fmtDate(today)}</span></h2>
-              <Link href="/operator/bookings" className="text-xs font-medium text-amber-600 hover:underline">All bookings</Link>
+              <Link href="/operator/bookings" className="text-xs font-medium text-amber-600 hover:underline">All Bookings</Link>
             </div>
             {view.todays.length === 0 ? (
               <p className="px-5 py-6 text-sm text-slate-500">{loading ? "Loading…" : "No pickups today."}</p>

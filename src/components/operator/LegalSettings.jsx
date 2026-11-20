@@ -85,7 +85,7 @@ export default function LegalSettings({ toast }) {
     }
   }
 
-  if (loading) return <p className="text-sm text-slate-500">Loading legal details…</p>;
+  if (loading) return <p className="text-sm text-slate-500">Loading Legal Details…</p>;
   if (error || !tenant) {
     return <p className="text-sm text-red-600">{error || "No business is linked to this account."}</p>;
   }
@@ -124,7 +124,7 @@ export default function LegalSettings({ toast }) {
 
       {links && (
         <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-700">
-          <p className="font-semibold text-[#0F1B33]">Your public pages</p>
+          <p className="font-semibold text-[#0F1B33]">Your Public Pages</p>
           <p className="mt-1">Once the details below are complete and you have confirmed the responsibilities statement, your customers can read your terms and privacy policy here:</p>
           <ul className="mt-2 space-y-1">
             <li><a className="text-amber-700 underline" href={links.terms} target="_blank" rel="noopener noreferrer">{links.terms}</a></li>
@@ -134,11 +134,11 @@ export default function LegalSettings({ toast }) {
       )}
 
       <div className="space-y-5">
-        <p className="text-xs text-amber-600">Your business</p>
-        <Field label="Legal name" hint="The name that appears in your terms, if different from your trading name.">
+        <p className="text-xs text-amber-600">Your Business</p>
+        <Field label="Legal Name" hint="The name that appears in your terms, if different from your trading name.">
           {input("legalName")}
         </Field>
-        <Field label="Trading status">
+        <Field label="Trading Status">
           <select className={INPUT} value={form.status} onChange={(e) => set("status")(e.target.value)} disabled={off}>
             <option value="">Choose…</option>
             {LEGAL_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
@@ -146,18 +146,18 @@ export default function LegalSettings({ toast }) {
         </Field>
         {form.status === "limited company" && (
           <div className="grid gap-5 sm:grid-cols-2">
-            <Field label="Company number">{input("companyNumber")}</Field>
-            <Field label="Registered office address">{input("registeredAddress")}</Field>
+            <Field label="Company Number">{input("companyNumber")}</Field>
+            <Field label="Registered Office Address">{input("registeredAddress")}</Field>
           </div>
         )}
         <div className="grid gap-5 sm:grid-cols-2">
-          <Field label="Where you are based" hint="Town and county, e.g. Southport, Merseyside.">{input("base")}</Field>
-          <Field label="Area you serve">{input("area")}</Field>
+          <Field label="Where You Are Based" hint="Town and county, e.g. Southport, Merseyside.">{input("base")}</Field>
+          <Field label="Area You Serve">{input("area")}</Field>
         </div>
         <Field label="Services">{input("service")}</Field>
         <Field label="Fleet" hint="e.g. a fleet of three electric saloon cars.">{input("fleet")}</Field>
-        <Field label="Luggage included" hint="What your standard fare covers for luggage.">{input("luggage")}</Field>
-        <Field label="Which law applies">
+        <Field label="Luggage Included" hint="What your standard fare covers for luggage.">{input("luggage")}</Field>
+        <Field label="Which Law Applies">
           <select className={INPUT} value={form.jurisdiction} onChange={(e) => set("jurisdiction")(e.target.value)} disabled={off}>
             {LEGAL_JURISDICTIONS.map((j) => <option key={j.value} value={j.value}>{j.label}</option>)}
           </select>
@@ -165,8 +165,8 @@ export default function LegalSettings({ toast }) {
       </div>
 
       <div className="space-y-5">
-        <p className="text-xs text-amber-600">Licence and data protection</p>
-        <Field label="Private hire operator licence" hint="Your licence number, e.g. PHO0079. It appears on your terms and emails.">
+        <p className="text-xs text-amber-600">Licence and Data Protection</p>
+        <Field label="Private Hire Operator Licence" hint="Your licence number, e.g. PHO0079. It appears on your terms and emails.">
           <input className={INPUT} value={form.licence} onChange={(e) => set("licence")(e.target.value)} disabled={off} />
         </Field>
         {canEdit && (
@@ -176,12 +176,12 @@ export default function LegalSettings({ toast }) {
             </button>
           </div>
         )}
-        <Field label="Loyalty points name" hint="Leave blank if you have no points scheme.">{input("pointsName")}</Field>
-        <Field label="ICO registration number" hint="Your data protection fee registration, or “exempt” if the ICO says so.">{input("icoRegistration")}</Field>
+        <Field label="Loyalty Points Name" hint="Leave blank if you have no points scheme.">{input("pointsName")}</Field>
+        <Field label="ICO Registration Number" hint="Your data protection fee registration, or “exempt” if the ICO says so.">{input("icoRegistration")}</Field>
       </div>
 
       <div className="space-y-5">
-        <p className="text-xs text-amber-600">Cancellation charges</p>
+        <p className="text-xs text-amber-600">Cancellation Charges</p>
         <p className="text-xs text-slate-500">
           Free cancellation until the first notice below. Each band charges its percentage of the fare once it starts. After the last band, cancelling costs the full fare. Standard EV Exec charges are shown until you change them.
         </p>
@@ -199,11 +199,11 @@ export default function LegalSettings({ toast }) {
       </div>
 
       <div className="space-y-5">
-        <p className="text-xs text-amber-600">Terms and conditions</p>
+        <p className="text-xs text-amber-600">Terms and Conditions</p>
         <Field label="Which terms do your customers accept?">
           <select className={INPUT} value={form.termsMode} onChange={(e) => set("termsMode")(e.target.value)} disabled={off}>
             <option value="standard">Standard terms (built from the details above)</option>
-            <option value="custom">My own terms</option>
+            <option value="custom">My Own Terms</option>
           </select>
         </Field>
         {form.termsMode === "custom" ? (
@@ -211,7 +211,7 @@ export default function LegalSettings({ toast }) {
             <p className="text-xs text-slate-500">
               Your own words replace the standard terms on your terms page. Start a numbered section with a line beginning <code>## </code>, and make lists with lines beginning <code>- </code>. Plain text only. Make sure it says the same cancellation charges as the bands above. Changing the text creates a new version; bookings already made keep the version their customer accepted.
             </p>
-            <Field label="Your terms">
+            <Field label="Your Terms">
               <textarea
                 className={`${INPUT} min-h-[320px] font-mono`}
                 value={form.customTerms}
@@ -241,7 +241,7 @@ export default function LegalSettings({ toast }) {
       </div>
 
       <div className="space-y-3">
-        <p className="text-xs text-amber-600">Who is responsible</p>
+        <p className="text-xs text-amber-600">Who Is Responsible</p>
         <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-[#0F1B33]">
           <p>
             This platform is software only: a booking website, an Operator app and a Driver App. It is not a private hire operator, is not a party to your bookings, and does not provide, check or supervise your licences, insurance, vehicles or drivers. It checks none of what you enter here. You alone are responsible for:

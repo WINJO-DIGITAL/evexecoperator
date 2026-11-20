@@ -69,7 +69,7 @@ export default function TeamSettings({ toast }) {
     if (done) setEmail("");
   };
 
-  if (state.loading) return <p className="text-sm text-slate-500">Loading team…</p>;
+  if (state.loading) return <p className="text-sm text-slate-500">Loading Team…</p>;
   if (state.error) return <p className="text-sm text-red-600">{state.error}</p>;
 
   return (

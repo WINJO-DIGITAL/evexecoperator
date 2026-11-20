@@ -130,7 +130,7 @@ function InviteForm({ tenants, toast }) {
         onChange={(e) => setTenantId(e.target.value)}
         className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-amber-400"
       >
-        <option value="">Select business…</option>
+        <option value="">Select Business…</option>
         {tenants.map((t) => (
           <option key={t.id} value={t.id}>
             {t.name}
@@ -289,7 +289,7 @@ export default function PlatformSettings() {
       </div>
 
       <div>
-        <p className="mb-3 text-xs text-slate-500">Set up a business</p>
+        <p className="mb-3 text-xs text-slate-500">Set Up a Business</p>
         <CreateTenantForm onCreated={loadTenants} toast={toast} />
       </div>
 

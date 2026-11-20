@@ -33,7 +33,7 @@ const DRIVER_FIELDS = [
 
 const KINDS = [
   { value: "driver", label: "Driver", hint: "Uses the Driver App. Gets an email invite to set a password." },
-  { value: "partner", label: "Trusted partner", hint: "An outside operator you pass jobs to. No app and no invite: job details are emailed, and you send the customer texts for their jobs." },
+  { value: "partner", label: "Trusted Partner", hint: "An outside operator you pass jobs to. No app and no invite: job details are emailed, and you send the customer texts for their jobs." },
 ];
 
 // ── Driver form modal (used for both Add and Edit) ────────────────────────────
@@ -404,8 +404,8 @@ const hasVal = (v) => v && v !== "—";
 
 // ── Driver Card ───────────────────────────────────────────────────────────────
 const ACCESS_CHIP = {
-  partner: { label: "Trusted partner · no app", cls: "border-violet-200 bg-violet-50 text-violet-700" },
-  none: { label: "Not invited to the app", cls: "border-red-200 bg-red-50 text-red-700" },
+  partner: { label: "Trusted Partner · No App", cls: "border-violet-200 bg-violet-50 text-violet-700" },
+  none: { label: "Not Invited to the App", cls: "border-red-200 bg-red-50 text-red-700" },
   invited: { label: "Invited · not signed in yet", cls: "border-amber-200 bg-amber-50 text-amber-700" },
   active: { label: "Using the Driver App", cls: "border-emerald-200 bg-emerald-50 text-emerald-700" },
 };
@@ -431,7 +431,7 @@ function DriverCard({ driver, access, inviting, onAssignJob, onUpdateStatus, onE
           <button
             onClick={() => setMenuOpen((v) => !v)}
             className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-600 transition hover:bg-slate-100 hover:text-slate-500"
-            title="Driver options"
+            title="Driver Options"
           >
             <MoreVertical className="h-4 w-4 text-[#A07D32]" />
           </button>
@@ -638,9 +638,9 @@ export default function DriversPage() {
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           {[
             { label: "Drivers", value: drivers.length },
-            { label: "On a job", value: active },
+            { label: "On a Job", value: active },
             { label: "Available", value: available },
-            { label: "Off duty", value: offDuty < 0 ? 0 : offDuty },
+            { label: "Off Duty", value: offDuty < 0 ? 0 : offDuty },
           ].map((s) => (
             <div key={s.label} className="card px-4 py-3.5">
               <p className="text-xs text-slate-500">{s.label}</p>

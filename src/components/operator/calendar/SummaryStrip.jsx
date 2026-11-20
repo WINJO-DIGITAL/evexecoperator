@@ -45,15 +45,15 @@ export default function SummaryStrip({ metrics, status, onStatus, complete }) {
   const toggle = (key) => onStatus(status === key ? "all" : key);
   const v = (n) => (complete ? n : "—");
   const exceptions = [
-    metrics.driver > 0 && { key: "driver", value: metrics.driver, label: "need driver", labelShort: "need driver", tone: "text-cal-alert", icon: <StatusMark state="driver" /> },
-    metrics.reply > 0 && { key: "reply", value: metrics.reply, label: "awaiting reply", labelShort: "to reply", tone: "text-cal-brass-ink", icon: <StatusMark state="reply" /> },
-    metrics.attention > 0 && { key: "attention", value: metrics.attention, label: "need attention", labelShort: "to check", tone: "text-cal-alert", icon: <AlertTriangle className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden /> },
+    metrics.driver > 0 && { key: "driver", value: metrics.driver, label: "Need Driver", labelShort: "need driver", tone: "text-cal-alert", icon: <StatusMark state="driver" /> },
+    metrics.reply > 0 && { key: "reply", value: metrics.reply, label: "Awaiting Reply", labelShort: "to reply", tone: "text-cal-brass-ink", icon: <StatusMark state="reply" /> },
+    metrics.attention > 0 && { key: "attention", value: metrics.attention, label: "Need Attention", labelShort: "to check", tone: "text-cal-alert", icon: <AlertTriangle className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden /> },
   ].filter(Boolean);
 
   return (
     <div className="border-b border-cal-line py-2">
       <div className="flex items-center justify-between gap-3 text-cal-sm">
-        <div role="group" aria-label="Transfers in this period" className="flex min-w-0 items-baseline gap-3">
+        <div role="group" aria-label="Transfers in This Period" className="flex min-w-0 items-baseline gap-3">
           <CountLink value={v(metrics.total)} label="transfers" active={status === "all"} onClick={() => onStatus("all")} />
           <CountLink value={v(metrics.confirmed)} label="confirmed" active={status === "confirmed"} onClick={() => toggle("confirmed")} />
         </div>

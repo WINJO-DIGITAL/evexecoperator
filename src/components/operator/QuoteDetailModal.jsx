@@ -75,11 +75,11 @@ export default function QuoteDetailModal({ quote, businessName, onClose, onSaved
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/40 p-0 sm:p-4" onClick={onClose}>
-      <div role="dialog" aria-modal="true" aria-label="Quote request" onClick={(e) => e.stopPropagation()}
+      <div role="dialog" aria-modal="true" aria-label="Quote Request" onClick={(e) => e.stopPropagation()}
         className="w-full sm:max-w-lg max-h-[92vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-white shadow-xl">
         <div className="flex items-start justify-between gap-3 px-5 pt-5">
           <div>
-            <p className="text-[11px] font-semibold text-slate-500">Quote request</p>
+            <p className="text-[11px] font-semibold text-slate-500">Quote Request</p>
             <h2 className="text-lg font-semibold text-slate-900">{quote.customer_name || "Customer"}</h2>
           </div>
           <button onClick={onClose} aria-label="Close" className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"><X size={18} /></button>
@@ -102,7 +102,7 @@ export default function QuoteDetailModal({ quote, businessName, onClose, onSaved
         )}
 
         <div className="mx-5 mt-4">
-          <label htmlFor="quote-price" className="text-sm font-semibold text-slate-800">Your price for this journey</label>
+          <label htmlFor="quote-price" className="text-sm font-semibold text-slate-800">Your Price for This Journey</label>
           <div className="mt-1.5 flex items-center gap-2">
             <span className="text-lg text-slate-500">£</span>
             <input id="quote-price" inputMode="decimal" value={price} onChange={(e) => { setPrice(e.target.value); setError(null); }}
@@ -114,7 +114,7 @@ export default function QuoteDetailModal({ quote, businessName, onClose, onSaved
 
         {preview && (
           <div className="mx-5 mt-4">
-            <p className="text-xs font-semibold text-slate-500">The text the customer gets</p>
+            <p className="text-xs font-semibold text-slate-500">The Text The Customer Gets</p>
             <pre className="mt-1.5 whitespace-pre-wrap rounded-xl bg-slate-50 border border-slate-200 p-3 text-sm text-slate-700 font-sans">{preview}</pre>
           </div>
         )}
@@ -125,7 +125,7 @@ export default function QuoteDetailModal({ quote, businessName, onClose, onSaved
             {busy ? "Saving…" : "Confirm price and open Messages"}
           </button>
           <div className="flex gap-2">
-            <button onClick={onConvert} className="flex-1 rounded-xl border border-amber-300 bg-amber-50 py-2.5 text-sm font-semibold text-amber-800">Create booking</button>
+            <button onClick={onConvert} className="flex-1 rounded-xl border border-amber-300 bg-amber-50 py-2.5 text-sm font-semibold text-amber-800">Create Booking</button>
             <button onClick={onDismiss} className="flex-1 rounded-xl border border-slate-200 bg-slate-50 py-2.5 text-sm font-semibold text-slate-600">Dismiss</button>
           </div>
         </div>

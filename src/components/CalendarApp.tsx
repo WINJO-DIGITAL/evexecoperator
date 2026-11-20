@@ -195,7 +195,7 @@ function PasswordConfirmModal({ booking, password, busy, onPasswordChange, onCan
         </div>
         <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-3 text-sm"><p className="font-semibold text-slate-800">{booking.customer_name}</p><p className="mt-1 text-xs text-slate-500">{booking.ref} · {booking.travel_date ? fmtDate(booking.travel_date) : "No date"} {booking.travel_time?.slice(0, 5) ?? ""}</p></div>
         <div className="mt-4 rounded-2xl border border-amber-400/20 bg-amber-400/10 p-3 text-xs text-amber-700 flex gap-2"><AlertTriangle size={15} className="shrink-0" />This action permanently removes the job from the operator calendar and driver view.</div>
-        <label className="mt-4 block text-xs font-semibold uppercase tracking-wider text-slate-500">Operator password</label>
+        <label className="mt-4 block text-xs font-semibold uppercase tracking-wider text-slate-500">Operator Password</label>
         <input type="password" value={password} onChange={(e) => onPasswordChange(e.target.value)} autoFocus className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-[#0F1B33] outline-none focus:border-gold/50" placeholder="Enter password" />
         <div className="mt-5 flex gap-3">
           <button type="button" onClick={onCancel} disabled={busy} className="flex-1 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 hover:border-slate-300 disabled:opacity-50">Cancel</button>

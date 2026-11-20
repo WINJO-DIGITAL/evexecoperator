@@ -26,7 +26,7 @@ function BookingsPageContent() {
   return (
     <div>
       <div className="px-4 pt-4 sm:px-6 lg:px-10 lg:pt-6">
-        <div role="tablist" aria-label="Bookings view" className="inline-flex items-center gap-1 rounded-2xl border border-slate-200 bg-white p-1">
+        <div role="tablist" aria-label="Bookings View" className="inline-flex items-center gap-1 rounded-2xl border border-slate-200 bg-white p-1">
           {VIEWS.map((v) => {
             const active = v.key === view;
             const href = `/operator/bookings${v.key === "list" ? "" : `?view=${v.key}`}`;
