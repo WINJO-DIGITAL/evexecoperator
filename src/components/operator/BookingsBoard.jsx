@@ -20,23 +20,24 @@ const COLUMNS = [
   { key: "done", title: "Done today", hint: "Completed or no-show today", accent: "bg-emerald-500" },
 ];
 
+// One job: time and price on top, then the customer, route, driver and status.
 function Card({ b, today, onOpen }) {
   return (
     <button
       onClick={() => onOpen(b)}
-      className="w-full rounded-2xl border border-slate-200 bg-white p-3 text-left shadow-card transition hover:-translate-y-0.5 hover:border-amber-300"
+      className="group block w-full rounded-xl border border-slate-200/80 bg-white px-3.5 py-3 text-left transition hover:border-slate-300 hover:shadow-sm"
     >
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-sm font-semibold text-[#0F1B33]">
+      <div className="flex items-baseline justify-between gap-2">
+        <p className="text-[15px] font-semibold tabular-nums text-[#0F1B33]">
           {b.time}
           {b.travelDate && b.travelDate !== today && <span className="ml-1.5 text-xs font-normal text-slate-500">{fmtDate(b.travelDate)}</span>}
         </p>
-        <span className="text-xs font-medium text-amber-600">{b.price}</span>
+        <span className={`text-sm font-semibold ${b.price === "TBC" ? "text-xs font-medium text-slate-400" : "text-[#0F1B33]"}`}>{b.price}</span>
       </div>
-      <p className="mt-1 truncate text-sm text-[#0F1B33]">{b.customer}</p>
+      <p className="mt-1.5 truncate text-sm font-medium text-[#0F1B33]">{b.customer}</p>
       <p className="truncate text-xs text-slate-500">{b.route}</p>
-      <div className="mt-2 flex items-center justify-between gap-2">
-        <span className={`truncate text-[11px] ${b.driverId ? "text-slate-500" : "text-red-600"}`}>{b.driverId ? b.driver : "No driver"}</span>
+      <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-slate-100 pt-2.5">
+        <span className={`min-w-0 truncate text-xs ${b.driverId ? "text-slate-600" : "font-medium text-red-600"}`}>{b.driverId ? b.driver : "No driver"}</span>
         <StatusChip status={b.status} />
       </div>
     </button>
@@ -72,23 +73,25 @@ export default function BookingsBoard() {
     <div className="px-4 pb-24 sm:px-6 sm:pb-8 lg:px-10">
       {drawer.element}
       {error && <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">Couldn&apos;t load bookings: {error}</div>}
-      <p className="mb-3 mt-3 text-xs text-slate-500">
+      <p className="mb-4 mt-4 text-xs text-slate-500">
         {fmtDate(today)} to {fmtDate(until)}. Jobs on the road and requests awaiting a reply are shown whatever their date.
       </p>
-      <div className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0 lg:grid lg:grid-cols-5 lg:overflow-visible">
+      {/* Five columns side by side on wide screens; on tablets and phones they
+          scroll sideways at a width that keeps names and status readable. */}
+      <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 sm:mx-0 sm:px-0 xl:grid xl:grid-cols-5 xl:overflow-visible">
         {COLUMNS.map((c) => (
-          <section key={c.key} className="w-[78vw] max-w-[300px] flex-shrink-0 snap-start rounded-3xl bg-slate-100/70 p-2 sm:w-72 lg:w-auto lg:max-w-none">
-            <div className="flex items-center gap-2 px-2 pb-2 pt-1">
-              <span className={`h-2 w-2 rounded-full ${c.accent}`} />
-              <h3 className="flex-1 text-sm font-semibold text-[#0F1B33]">{c.title}</h3>
-              <span className="text-xs text-slate-500">{columns[c.key].length}</span>
-            </div>
-            <p className="px-2 pb-2 text-[11px] text-slate-500">{c.hint}</p>
-            <div className="space-y-2">
+          <section key={c.key} className="flex min-w-[280px] max-w-[320px] flex-shrink-0 snap-start flex-col rounded-2xl bg-[#EEF0F3]/70 p-2.5 xl:min-w-0 xl:max-w-none">
+            <header className="flex items-center gap-2 px-1.5 pb-1 pt-1">
+              <span className={`h-2 w-2 flex-shrink-0 rounded-full ${c.accent}`} aria-hidden="true" />
+              <h3 className="min-w-0 flex-1 truncate text-sm font-semibold text-[#0F1B33]">{c.title}</h3>
+              <span className="flex-shrink-0 rounded-full bg-white px-2 py-0.5 text-xs font-medium tabular-nums text-slate-600">{columns[c.key].length}</span>
+            </header>
+            <p className="px-1.5 pb-3 text-xs text-slate-500">{c.hint}</p>
+            <div className="flex flex-col gap-2">
               {loading && bookings.length === 0 ? (
-                <div className="h-20 animate-pulse rounded-2xl bg-white/70" />
+                <div className="h-20 animate-pulse rounded-xl bg-white/70" />
               ) : columns[c.key].length === 0 ? (
-                <p className="rounded-2xl border border-dashed border-slate-200 px-3 py-6 text-center text-xs text-slate-400">Nothing here</p>
+                <p className="px-1.5 py-6 text-center text-xs text-slate-400">None</p>
               ) : (
                 columns[c.key].map((b) => <Card key={b.id} b={b} today={today} onOpen={drawer.open} />)
               )}
