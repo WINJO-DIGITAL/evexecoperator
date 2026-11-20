@@ -5,18 +5,18 @@
 
 export const calendarTokens = {
   color: {
-    paper: "#F6F2EA",      // page surface
-    sheet: "#FFFDF8",      // raised surface: side panel, popovers, inputs
-    well: "#EEE7D9",       // selection fill (selected row, active control)
-    line: "#E5DDCC",       // hairline separators
-    rule: "#D2C7B1",       // control borders, stronger rules
-    ink: "#141821",        // primary text; selected date
-    ink2: "#3A3F4A",       // secondary text: routes
-    muted: "#6D6656",      // metadata, labels
-    faint: "#8A8170",      // decorative only (out-of-month days, arrows, disabled): 3.4:1, never for meaning
-    brass: "#9C7B34",      // accent: today, focus ring, active filter
-    brassInk: "#76591F",   // accent text on paper; awaiting reply
-    brassSoft: "#F2E8CF",
+    paper: "#F5F6F9",      // page surface
+    sheet: "#FFFFFF",      // raised surface: side panel, popovers, inputs
+    well: "#EBEDF2",       // selection fill (selected row, active control)
+    line: "#E4E7EE",       // hairline separators
+    rule: "#CFD4DE",       // control borders, stronger rules
+    ink: "#0F1B33",        // primary text; selected date
+    ink2: "#3A414C",       // secondary text: routes
+    muted: "#5F6773",      // metadata, labels
+    faint: "#8B93A0",      // decorative only (out-of-month days, arrows, disabled): 3.4:1, never for meaning
+    brass: "#A07D32",      // accent: today, focus ring, active filter
+    brassInk: "#7A5C14",   // accent text on paper; awaiting reply
+    brassSoft: "#F5EFE0",
     ok: "#2F6B50",         // driver assigned
     alert: "#A3402C",      // needs driver, clash, unavailable driver
     alertSoft: "#F7E4DC",
@@ -28,7 +28,7 @@ export const calendarTokens = {
   },
   // name: [size, line height] — text-cal-<name>
   type: {
-    label: ["10.5px", "14px", "uppercase, semibold, 0.09em"],
+    label: ["12px", "16px", "small labels, semibold"],
     xs: ["12px", "16px", "metadata, exceptions"],
     sm: ["13px", "18px", "routes, controls"],
     base: ["14px", "19px", "passenger names"],

@@ -12,7 +12,7 @@ export function StatusMark({ state, className = "" }) {
 export function StateLabel({ state }) {
   const s = STATE_STYLE[state] ?? STATE_STYLE.assigned;
   return (
-    <span className={`inline-flex items-center gap-1.5 text-cal-label font-semibold uppercase ${s.text}`}>
+    <span className={`inline-flex items-center gap-1.5 text-cal-label font-semibold ${s.text}`}>
       <StatusMark state={state} />
       {s.label}
     </span>

@@ -90,7 +90,7 @@ export default function DaySchedule({
           })}
           {untimed.length > 0 && (
             <li className={ROW_ITEM}>
-              <p className="px-3 pb-1 pt-3 text-cal-label font-semibold uppercase text-cal-muted">No pickup time</p>
+              <p className="px-3 pb-1 pt-3 text-cal-label font-semibold text-cal-muted">No pickup time</p>
               <ol>
                 {untimed.map((b) => <li key={b.id} className={ROW_ITEM}>{row(b)}</li>)}
               </ol>

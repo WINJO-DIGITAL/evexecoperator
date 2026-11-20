@@ -9,7 +9,7 @@ function Field({ label, children, className = "" }) {
   if (children == null || children === "" || children === false) return null;
   return (
     <div className={`min-w-0 ${className}`}>
-      <dt className="text-cal-label font-semibold uppercase text-cal-muted">{label}</dt>
+      <dt className="text-cal-label font-semibold text-cal-muted">{label}</dt>
       <dd className="mt-1 text-cal-sm text-cal-ink [overflow-wrap:anywhere]">{children}</dd>
     </div>
   );
@@ -112,7 +112,7 @@ export default function BookingInspector({ b, lookup, drivers = [], unavailable 
         <Field label="Vehicle & party" className="col-span-2">{vehicle}</Field>
         {canAssign ? (
           <div className="col-span-2">
-            <label htmlFor="cal-assign" className="flex items-center gap-1.5 text-cal-label font-semibold uppercase text-cal-muted">
+            <label htmlFor="cal-assign" className="flex items-center gap-1.5 text-cal-label font-semibold text-cal-muted">
               Driver {!b.driverId && <StatusMark state="driver" />}
             </label>
             <select

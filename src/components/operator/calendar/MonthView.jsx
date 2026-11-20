@@ -56,7 +56,7 @@ export default function MonthView({ weeks, monthKey, selected, today, byDate, on
     <div className="mt-3">
       <div className="grid grid-cols-7">
         {WEEKDAYS_SHORT.map((d) => (
-          <div key={d} className={`pb-1.5 text-cal-label font-semibold uppercase lg:px-2 text-cal-muted`}>
+          <div key={d} className={`pb-1.5 text-cal-label font-semibold lg:px-2 text-cal-muted`}>
             <span className="lg:hidden">{d.slice(0, 1)}</span>
             <span className="hidden lg:inline">{d}</span>
           </div>

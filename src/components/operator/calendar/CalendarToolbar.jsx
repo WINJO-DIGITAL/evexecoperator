@@ -43,7 +43,7 @@ export default function CalendarToolbar({
       {/* Heading + navigation, on one baseline */}
       <div className="flex items-end justify-between gap-3 pb-2">
         <div className="min-w-0">
-          <p className="truncate text-cal-label font-semibold uppercase text-cal-brass-ink">
+          <p className="truncate text-cal-label font-semibold text-cal-brass-ink">
             <span className="sm:hidden">{period.eyebrowShort}</span>
             <span className="hidden sm:inline">{period.eyebrow}</span>
           </p>
@@ -132,7 +132,7 @@ export default function CalendarToolbar({
             </button>
             {filtersOpen && (
               <div className="absolute right-0 top-full z-30 mt-1 w-64 rounded-cal-lg border border-cal-rule bg-cal-sheet p-3 shadow-cal-pop">
-                <label className="block text-cal-label font-semibold uppercase text-cal-muted" htmlFor="cal-driver">Driver</label>
+                <label className="block text-cal-label font-semibold text-cal-muted" htmlFor="cal-driver">Driver</label>
                 <select
                   id="cal-driver"
                   value={driver}

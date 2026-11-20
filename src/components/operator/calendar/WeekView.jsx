@@ -33,7 +33,7 @@ export default function WeekView({ period, today, selected, byDate, selectedId, 
                 className="flex items-start justify-between border-b border-cal-line px-2.5 pb-2 pt-2 text-left hover:bg-cal-sheet focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-cal-brass"
               >
                 <span>
-                  <span className={`block text-cal-label font-semibold uppercase ${isToday ? "text-cal-brass-ink" : "text-cal-muted"}`}>{weekdayShort(key)}{isToday ? " · Today" : ""}</span>
+                  <span className={`block text-cal-label font-semibold ${isToday ? "text-cal-brass-ink" : "text-cal-muted"}`}>{weekdayShort(key)}{isToday ? " · Today" : ""}</span>
                   <span className={`mt-0.5 inline-flex h-7 min-w-7 items-center justify-center rounded-cal px-1 font-display text-cal-xl tabular-nums -ml-1 ${isSel ? "bg-cal-ink text-cal-sheet" : isToday ? "text-cal-brass-ink" : "text-cal-ink"}`}>
                     {dayOfMonth(key)}
                   </span>

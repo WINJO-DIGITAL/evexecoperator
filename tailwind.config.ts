@@ -48,28 +48,28 @@ const config: Config = {
           800: "#553f16",
           900: "#2e210a",
         },
-        // Operator calendar (Bookings → Calendar). Warm paper, deep ink and a
-        // muted brass accent; status colours are the only saturated hues.
+        // Operator calendar (Bookings → Calendar). Neutral greys, navy ink and the
+        // app gold; status colours are the only saturated hues.
         // Mirrored in src/components/operator/calendar/tokens.js.
         cal: {
-          paper: "#F6F2EA",
-          sheet: "#FFFDF8",
-          well: "#EEE7D9",
-          line: "#E5DDCC",
-          rule: "#D2C7B1",
-          ink: "#141821",
-          ink2: "#3A3F4A",
-          muted: "#6D6656",
-          faint: "#8A8170",
-          brass: "#9C7B34",
-          "brass-ink": "#76591F",
-          "brass-soft": "#F2E8CF",
+          paper: "#F5F6F9",
+          sheet: "#FFFFFF",
+          well: "#EBEDF2",
+          line: "#E4E7EE",
+          rule: "#CFD4DE",
+          ink: "#0F1B33",
+          ink2: "#3A414C",
+          muted: "#5F6773",
+          faint: "#8B93A0",
+          brass: "#A07D32",
+          "brass-ink": "#7A5C14",
+          "brass-soft": "#F5EFE0",
           ok: "#2F6B50",
           "ok-soft": "#E3EEE6",
           alert: "#A3402C",
           "alert-soft": "#F7E4DC",
           road: "#2E5C88",
-          "road-soft": "#E1EAF3",
+          "road-soft": "#E8EEF5",
         },
       },
       fontFamily: {
@@ -83,7 +83,7 @@ const config: Config = {
       },
       // Operator calendar type scale and radii (see calendar/tokens.js).
       fontSize: {
-        "cal-label": ["10.5px", { lineHeight: "14px", letterSpacing: "0.09em" }],
+        "cal-label": ["12px", { lineHeight: "16px" }],
         "cal-xs": ["12px", { lineHeight: "16px" }],
         "cal-sm": ["13px", { lineHeight: "18px" }],
         "cal-base": ["14px", { lineHeight: "19px" }],

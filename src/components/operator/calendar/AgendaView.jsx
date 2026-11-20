@@ -26,7 +26,7 @@ export default function AgendaView({ period, today, byDate, selectedId, onOpen, 
             >
               <span className={`font-display text-cal-lg font-medium ${tone}`}>
                 {weekdayLong(key)} <span className="tabular-nums">{dayOfMonth(key)}</span>
-                {key === today && <span className="ml-1.5 font-sans text-cal-label font-semibold uppercase">Today</span>}
+                {key === today && <span className="ml-1.5 font-sans text-cal-label font-semibold">Today</span>}
               </span>
               <span className="text-cal-xs tabular-nums text-cal-muted">{live} transfer{live === 1 ? "" : "s"}</span>
             </button>
